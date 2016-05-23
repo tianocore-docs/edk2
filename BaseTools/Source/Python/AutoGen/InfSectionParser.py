@@ -108,6 +108,35 @@ class InfSectionParser():
                         DepexExpresionList.append({SubKey: SectionDataDict[key]})
         return DepexExpresionList
 
+    # Get Section data based on input SectionName
+    #
+    # @return: a list include some dictionary that key is section and value is a list contain all data.
+    def GetSectionData(self, SectionName, Arch = None):
+        SectionDataList = []
+        if not self._FileSectionDataList:
+            return SectionDataList
+        for SectionDataDict in self._FileSectionDataList:
+            for key in SectionDataDict.keys():
+                if key.lower() == "[" + SectionName.lower() + "]" or key.lower().startswith("[" + SectionName.lower() + "."):
+                    SectionLine = key.lstrip(TAB_SECTION_START).rstrip(TAB_SECTION_END)
+                    SubSectionList = [SectionLine]
+                    if str(SectionLine).find(TAB_COMMA_SPLIT) > -1:
+                        SubSectionList = str(SectionLine).split(TAB_COMMA_SPLIT)
+                    for SubSection in SubSectionList:
+                        SectionList = SubSection.split(TAB_SPLIT)
+                        SubKey = ()
+                        if len(SectionList) == 1:
+                            SubKey = (TAB_ARCH_COMMON, TAB_ARCH_COMMON)
+                        elif Arch != None and Arch != SectionList[1]:
+                            continue
+                        elif len(SectionList) == 2:
+                            SubKey = (SectionList[1], TAB_ARCH_COMMON)
+                        elif len(SectionList) == 3:
+                            SubKey = (SectionList[1], SectionList[2])
+                        else:
+                            EdkLogger.error("build", AUTOGEN_ERROR, 'Section %s is invalid.' % key)
+                        SectionDataList.extend(SectionDataDict[key])
+        return SectionDataList
 
 
 
