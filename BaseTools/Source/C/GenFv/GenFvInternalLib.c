@@ -3530,6 +3530,9 @@ Returns:
     case EFI_FV_FILETYPE_COMBINED_PEIM_DRIVER:
     case EFI_FV_FILETYPE_DRIVER:
     case EFI_FV_FILETYPE_DXE_CORE:
+    case EFI_FV_FILETYPE_APPLICATION:
+    case EFI_FV_FILETYPE_SMM:
+    case EFI_FV_FILETYPE_SMM_CORE:
       break;
     case EFI_FV_FILETYPE_FIRMWARE_VOLUME_IMAGE:
       //
@@ -3692,6 +3695,18 @@ Returns:
           //
           Error (NULL, 0, 3000, "Invalid", "PE image Section-Alignment and File-Alignment do not match : %s.", FileName);
           return EFI_ABORTED;
+        }
+        NewPe32BaseAddress = XipBase + (UINTN) CurrentPe32Section.Pe32Section + CurSecHdrSize - (UINTN)FfsFile;
+        break;
+
+      case EFI_FV_FILETYPE_APPLICATION:
+      case EFI_FV_FILETYPE_SMM:
+      case EFI_FV_FILETYPE_SMM_CORE:
+        if (IsRebase) {
+          //
+          // Don't rebase them.
+          //
+          return EFI_SUCCESS;
         }
         NewPe32BaseAddress = XipBase + (UINTN) CurrentPe32Section.Pe32Section + CurSecHdrSize - (UINTN)FfsFile;
         break;
