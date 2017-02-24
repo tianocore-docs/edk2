@@ -124,8 +124,8 @@ typedef struct {
   BOOLEAN                         Initialized;
   BOOLEAN                         DepexProtocolError;
 
-  EFI_HANDLE                      ImageHandle;
-  EFI_LOADED_IMAGE_PROTOCOL       *LoadedImage;
+  EFI_HANDLE                      ImageHandle_Reserved1;
+  EFI_LOADED_IMAGE_PROTOCOL       *LoadedImage_Reserved2;
   //
   // Image EntryPoint in SMRAM
   //

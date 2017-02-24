@@ -89,8 +89,6 @@ EFI_SMRAM_DESCRIPTOR            *mFullSmramRanges;
 
 EFI_SMM_DRIVER_ENTRY            *mSmmCoreDriverEntry;
 
-EFI_LOADED_IMAGE_PROTOCOL       *mSmmCoreLoadedImage;
-
 /**
   Place holder function until all the SMM System Table Service are available.
 
@@ -537,38 +535,6 @@ SmmCoreInstallLoadedImage (
   )
 {
   EFI_STATUS                 Status;
-  EFI_HANDLE                 Handle;
-
-  //
-  // Allocate a Loaded Image Protocol in EfiBootServicesData
-  //
-  Status = gBS->AllocatePool (EfiBootServicesData, sizeof(EFI_LOADED_IMAGE_PROTOCOL), (VOID **)&mSmmCoreLoadedImage);
-  ASSERT_EFI_ERROR (Status);
-
-  ZeroMem (mSmmCoreLoadedImage, sizeof (EFI_LOADED_IMAGE_PROTOCOL));
-  //
-  // Fill in the remaining fields of the Loaded Image Protocol instance.
-  // Note: ImageBase is an SMRAM address that can not be accessed outside of SMRAM if SMRAM window is closed.
-  //
-  mSmmCoreLoadedImage->Revision      = EFI_LOADED_IMAGE_PROTOCOL_REVISION;
-  mSmmCoreLoadedImage->ParentHandle  = gSmmCorePrivate->SmmIplImageHandle;
-  mSmmCoreLoadedImage->SystemTable   = gST;
-
-  mSmmCoreLoadedImage->ImageBase     = (VOID *)(UINTN)gSmmCorePrivate->PiSmmCoreImageBase;
-  mSmmCoreLoadedImage->ImageSize     = gSmmCorePrivate->PiSmmCoreImageSize;
-  mSmmCoreLoadedImage->ImageCodeType = EfiRuntimeServicesCode;
-  mSmmCoreLoadedImage->ImageDataType = EfiRuntimeServicesData;
-
-  //
-  // Create a new image handle in the UEFI handle database for the SMM Driver
-  //
-  Handle = NULL;
-  Status = gBS->InstallMultipleProtocolInterfaces (
-                  &Handle,
-                  &gEfiLoadedImageProtocolGuid, mSmmCoreLoadedImage,
-                  NULL
-                  );
-  ASSERT_EFI_ERROR (Status);
 
   //
   // Allocate a Loaded Image Protocol in SMM

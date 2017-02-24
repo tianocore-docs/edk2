@@ -559,49 +559,12 @@ SmmLoadImage (
   DriverEntry->NumberOfPage     = PageCount;
 
   //
-  // Allocate a Loaded Image Protocol in EfiBootServicesData
-  //
-  Status = gBS->AllocatePool (EfiBootServicesData, sizeof (EFI_LOADED_IMAGE_PROTOCOL), (VOID **)&DriverEntry->LoadedImage);
-  if (EFI_ERROR (Status)) {
-    if (Buffer != NULL) {
-      gBS->FreePool (Buffer);
-    }
-    SmmFreePages (DstBuffer, PageCount);
-    return Status;
-  }
-
-  ZeroMem (DriverEntry->LoadedImage, sizeof (EFI_LOADED_IMAGE_PROTOCOL));
-  //
   // Fill in the remaining fields of the Loaded Image Protocol instance.
-  // Note: ImageBase is an SMRAM address that can not be accessed outside of SMRAM if SMRAM window is closed.
   //
-  DriverEntry->LoadedImage->Revision      = EFI_LOADED_IMAGE_PROTOCOL_REVISION;
-  DriverEntry->LoadedImage->ParentHandle  = gSmmCorePrivate->SmmIplImageHandle;
-  DriverEntry->LoadedImage->SystemTable   = gST;
-  DriverEntry->LoadedImage->DeviceHandle  = DeviceHandle;
-
   DriverEntry->SmmLoadedImage.Revision     = EFI_LOADED_IMAGE_PROTOCOL_REVISION;
   DriverEntry->SmmLoadedImage.ParentHandle = gSmmCorePrivate->SmmIplImageHandle;
   DriverEntry->SmmLoadedImage.SystemTable  = gST;
   DriverEntry->SmmLoadedImage.DeviceHandle = DeviceHandle;
-
-  //
-  // Make an EfiBootServicesData buffer copy of FilePath
-  //
-  Status = gBS->AllocatePool (EfiBootServicesData, GetDevicePathSize (FilePath), (VOID **)&DriverEntry->LoadedImage->FilePath);
-  if (EFI_ERROR (Status)) {
-    if (Buffer != NULL) {
-      gBS->FreePool (Buffer);
-    }
-    SmmFreePages (DstBuffer, PageCount);
-    return Status;
-  }
-  CopyMem (DriverEntry->LoadedImage->FilePath, FilePath, GetDevicePathSize (FilePath));
-
-  DriverEntry->LoadedImage->ImageBase     = (VOID *)(UINTN)DriverEntry->ImageBuffer;
-  DriverEntry->LoadedImage->ImageSize     = ImageContext.ImageSize;
-  DriverEntry->LoadedImage->ImageCodeType = EfiRuntimeServicesCode;
-  DriverEntry->LoadedImage->ImageDataType = EfiRuntimeServicesData;
 
   //
   // Make a buffer copy of FilePath
@@ -611,7 +574,6 @@ SmmLoadImage (
     if (Buffer != NULL) {
       gBS->FreePool (Buffer);
     }
-    gBS->FreePool (DriverEntry->LoadedImage->FilePath);
     SmmFreePages (DstBuffer, PageCount);
     return Status;
   }
@@ -621,16 +583,6 @@ SmmLoadImage (
   DriverEntry->SmmLoadedImage.ImageSize = ImageContext.ImageSize;
   DriverEntry->SmmLoadedImage.ImageCodeType = EfiRuntimeServicesCode;
   DriverEntry->SmmLoadedImage.ImageDataType = EfiRuntimeServicesData;
-
-  //
-  // Create a new image handle in the UEFI handle database for the SMM Driver
-  //
-  DriverEntry->ImageHandle = NULL;
-  Status = gBS->InstallMultipleProtocolInterfaces (
-                  &DriverEntry->ImageHandle,
-                  &gEfiLoadedImageProtocolGuid, DriverEntry->LoadedImage,
-                  NULL
-                  );
 
   //
   // Create a new image handle in the SMM handle database for the SMM Driver
@@ -643,8 +595,8 @@ SmmLoadImage (
              &DriverEntry->SmmLoadedImage
              );
 
-  PERF_START (DriverEntry->ImageHandle, "LoadImage:", NULL, Tick);
-  PERF_END (DriverEntry->ImageHandle, "LoadImage:", NULL, 0);
+  PERF_START (DriverEntry->SmmImageHandle, "LoadImage:", NULL, Tick);
+  PERF_END (DriverEntry->SmmImageHandle, "LoadImage:", NULL, 0);
 
   //
   // Print the load address and the PDB file name if it is available
@@ -869,7 +821,7 @@ SmmDispatcher (
       // Untrused to Scheduled it would have already been loaded so we may need to
       // skip the LoadImage
       //
-      if (DriverEntry->ImageHandle == NULL) {
+      if (DriverEntry->SmmImageHandle == NULL) {
         Status = SmmLoadImage (DriverEntry);
 
         //
@@ -898,8 +850,8 @@ SmmDispatcher (
       REPORT_STATUS_CODE_WITH_EXTENDED_DATA (
         EFI_PROGRESS_CODE,
         EFI_SOFTWARE_SMM_DRIVER | EFI_SW_PC_INIT_BEGIN,
-        &DriverEntry->ImageHandle,
-        sizeof (DriverEntry->ImageHandle)
+        &DriverEntry->SmmImageHandle,
+        sizeof (DriverEntry->SmmImageHandle)
         );
 
       //
@@ -911,26 +863,16 @@ SmmDispatcher (
       // For each SMM driver, pass NULL as ImageHandle
       //
       RegisterSmramProfileImage (DriverEntry, TRUE);
-      PERF_START (DriverEntry->ImageHandle, "StartImage:", NULL, 0);
-      Status = ((EFI_IMAGE_ENTRY_POINT)(UINTN)DriverEntry->ImageEntryPoint)(DriverEntry->ImageHandle, gST);
-      PERF_END (DriverEntry->ImageHandle, "StartImage:", NULL, 0);
+      DEBUG ((EFI_D_INFO, "SMM StartImage - 0x%11p\n", DriverEntry->ImageEntryPoint));
+      PERF_START (DriverEntry->SmmImageHandle, "StartImage:", NULL, 0);
+      Status = ((EFI_IMAGE_ENTRY_POINT)(UINTN)DriverEntry->ImageEntryPoint)(DriverEntry->SmmImageHandle, gST);
+      PERF_END (DriverEntry->SmmImageHandle, "StartImage:", NULL, 0);
       if (EFI_ERROR(Status)){
         UnregisterSmramProfileImage (DriverEntry, TRUE);
         SmmFreePages(DriverEntry->ImageBuffer, DriverEntry->NumberOfPage);
         //
         // Uninstall LoadedImage
         //
-        Status = gBS->UninstallProtocolInterface (
-                        DriverEntry->ImageHandle,
-                        &gEfiLoadedImageProtocolGuid,
-                        DriverEntry->LoadedImage
-                        );
-        if (!EFI_ERROR (Status)) {
-          if (DriverEntry->LoadedImage->FilePath != NULL) {
-            gBS->FreePool (DriverEntry->LoadedImage->FilePath);
-          }
-          gBS->FreePool (DriverEntry->LoadedImage);
-        }
         Status = SmmUninstallProtocolInterface (
                    DriverEntry->SmmImageHandle,
                    &gEfiLoadedImageProtocolGuid,
@@ -946,8 +888,8 @@ SmmDispatcher (
       REPORT_STATUS_CODE_WITH_EXTENDED_DATA (
         EFI_PROGRESS_CODE,
         EFI_SOFTWARE_SMM_DRIVER | EFI_SW_PC_INIT_END,
-        &DriverEntry->ImageHandle,
-        sizeof (DriverEntry->ImageHandle)
+        &DriverEntry->SmmImageHandle,
+        sizeof (DriverEntry->SmmImageHandle)
         );
 
       if (!PreviousSmmEntryPointRegistered && gSmmCorePrivate->SmmEntryPointRegistered) {
@@ -1351,27 +1293,6 @@ SmmDriverDispatchHandler (
             //
             // If this is the SMM core fill in it's DevicePath & DeviceHandle
             //
-            if (mSmmCoreLoadedImage->FilePath == NULL) {
-              //
-              // Maybe one special FV contains only one SMM_CORE module, so its device path must
-              // be initialized completely.
-              //
-              EfiInitializeFwVolDevicepathNode (&mFvDevicePath.File, &NameGuid);
-              SetDevicePathEndNode (&mFvDevicePath.End);
-
-              //
-              // Make an EfiBootServicesData buffer copy of FilePath
-              //
-              Status = gBS->AllocatePool (
-                              EfiBootServicesData,
-                              GetDevicePathSize ((EFI_DEVICE_PATH_PROTOCOL *)&mFvDevicePath),
-                              (VOID **)&mSmmCoreLoadedImage->FilePath
-                              );
-              ASSERT_EFI_ERROR (Status);
-              CopyMem (mSmmCoreLoadedImage->FilePath, &mFvDevicePath, GetDevicePathSize ((EFI_DEVICE_PATH_PROTOCOL *)&mFvDevicePath));
-
-              mSmmCoreLoadedImage->DeviceHandle = FvHandle;
-            }
             if (mSmmCoreDriverEntry->SmmLoadedImage.FilePath == NULL) {
               //
               // Maybe one special FV contains only one SMM_CORE module, so its device path must
