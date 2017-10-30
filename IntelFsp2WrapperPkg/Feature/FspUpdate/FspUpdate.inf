@@ -1,0 +1,79 @@
+## @file
+#
+#  Copyright (c) 2017, Intel Corporation. All rights reserved.<BR>
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#  
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = FspUpdate
+  FILE_GUID                      = B6803F44-6E2A-4556-88B0-FFE0FC826B1B
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = FspFmpMain
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64
+#
+
+[Sources]
+  FspFmp.c
+  FspUpdate.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  IntelFsp2Pkg/IntelFsp2Pkg.dec
+  IntelFsp2WrapperPkg/IntelFsp2WrapperPkg.dec
+  SecurityPkg/SecurityPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  UefiLib
+  BaseMemoryLib
+  DebugLib
+  PcdLib
+  MemoryAllocationLib
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+  DxeServicesLib
+  UefiDriverEntryPoint
+  FspFlashAccessLib
+  FspWrapperApiLib
+  FmpAuthenticationLib
+
+[Guids]
+  gFspFmpImageTypeIdGuid
+  gEfiFirmwareFileSystem3Guid
+  gEfiFirmwareFileSystem2Guid
+  gEfiCertPkcs7Guid                                    ## SOMETIMES_CONSUMES   ## GUID
+  gEfiCertTypeRsa2048Sha256Guid                        ## SOMETIMES_CONSUMES   ## GUID
+
+[Protocols]
+  gEfiFirmwareManagementProtocolGuid            ## SOMTIMES_PRODUCE
+  
+[Pcd]
+  gIntelFsp2WrapperTokenSpaceGuid.PcdFsptBaseAddress               ## CONSUMES
+  gIntelFsp2WrapperTokenSpaceGuid.PcdFsptFlashBaseAddress          ## CONSUMES
+  gIntelFsp2WrapperTokenSpaceGuid.PcdFsptFlashSize                 ## CONSUMES
+  gIntelFsp2WrapperTokenSpaceGuid.PcdFspmBaseAddress               ## CONSUMES
+  gIntelFsp2WrapperTokenSpaceGuid.PcdFspmFlashBaseAddress          ## CONSUMES
+  gIntelFsp2WrapperTokenSpaceGuid.PcdFspmFlashSize                 ## CONSUMES
+  gIntelFsp2WrapperTokenSpaceGuid.PcdFspsBaseAddress               ## CONSUMES
+  gIntelFsp2WrapperTokenSpaceGuid.PcdFspsFlashBaseAddress          ## CONSUMES
+  gIntelFsp2WrapperTokenSpaceGuid.PcdFspsFlashSize                 ## CONSUMES
+  gIntelFsp2WrapperTokenSpaceGuid.PcdFspBinFile                    ## CONSUMES
+  gEfiSecurityPkgTokenSpaceGuid.PcdRsa2048Sha256PublicKeyBuffer               ## CONSUMES
+  gEfiSecurityPkgTokenSpaceGuid.PcdPkcs7CertBuffer                            ## CONSUMES
+
+[Depex]
+  TRUE
