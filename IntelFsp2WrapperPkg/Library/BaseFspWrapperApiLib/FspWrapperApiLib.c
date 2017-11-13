@@ -48,32 +48,46 @@ FspFindFspHeader (
   IN EFI_PHYSICAL_ADDRESS  FlashFvFspBase
   )
 {
-  UINT8 *CheckPointer;
+  EFI_FIRMWARE_VOLUME_HEADER      *FvHeader;
+  EFI_FIRMWARE_VOLUME_EXT_HEADER  *FvExt;
+  UINT8                           *CheckPointer;
+  UINTN                           Offset;
+  FSP_INFO_HEADER                 *FspInfoHeader;
 
+  FvHeader = (EFI_FIRMWARE_VOLUME_HEADER *) (UINTN) FlashFvFspBase;
   CheckPointer = (UINT8 *) (UINTN) FlashFvFspBase;
+  Offset = 0;
 
-  if (((EFI_FIRMWARE_VOLUME_HEADER *)CheckPointer)->Signature != EFI_FVH_SIGNATURE) {
+  if (FvHeader->Signature != EFI_FVH_SIGNATURE) {
     return NULL;
   }
 
-  if (((EFI_FIRMWARE_VOLUME_HEADER *)CheckPointer)->ExtHeaderOffset != 0) {
-    CheckPointer = CheckPointer + ((EFI_FIRMWARE_VOLUME_HEADER *)CheckPointer)->ExtHeaderOffset;
-    CheckPointer = CheckPointer + ((EFI_FIRMWARE_VOLUME_EXT_HEADER *)CheckPointer)->ExtHeaderSize;
-    CheckPointer = (UINT8 *) ALIGN_POINTER (CheckPointer, 8);
+  if (FvHeader->ExtHeaderOffset != 0) {
+    FvExt = (EFI_FIRMWARE_VOLUME_EXT_HEADER *)((UINT8 *)FvHeader + FvHeader->ExtHeaderOffset);
+    Offset = (UINTN)FvHeader->ExtHeaderOffset + (UINTN)FvExt->ExtHeaderSize;
   } else {
-    CheckPointer = CheckPointer + ((EFI_FIRMWARE_VOLUME_HEADER *)CheckPointer)->HeaderLength;
+    Offset = (UINTN)FvHeader->HeaderLength;
   }
+  Offset = (UINTN) ALIGN_POINTER (Offset, 8);
 
+  Offset = Offset + sizeof (EFI_FFS_FILE_HEADER);
 
-  CheckPointer = CheckPointer + sizeof (EFI_FFS_FILE_HEADER);
-
-  if (((EFI_RAW_SECTION *)CheckPointer)->Type != EFI_SECTION_RAW) {
+  if (((EFI_RAW_SECTION *)(CheckPointer + Offset))->Type != EFI_SECTION_RAW) {
     return NULL;
   }
 
-  CheckPointer = CheckPointer + sizeof (EFI_RAW_SECTION);
+  Offset = Offset + sizeof (EFI_RAW_SECTION);
 
-  return (FSP_INFO_HEADER *)CheckPointer;
+  if (Offset != FSP_INFO_HEADER_OFF) {
+    return NULL;
+  }
+
+  FspInfoHeader = (FSP_INFO_HEADER *)(CheckPointer + Offset);
+  if (FspInfoHeader->Signature != FSP_INFO_HEADER_SIGNATURE) {
+    return NULL;
+  }
+
+  return FspInfoHeader;
 }
 
 /**
