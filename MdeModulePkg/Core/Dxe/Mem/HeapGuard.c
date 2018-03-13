@@ -1296,3 +1296,598 @@ DumpGuardedMemoryBitmap (
   }
 }
 
+#define UNGUARD_RECORD_SIGNATURE  SIGNATURE_32 ('U', 'N', 'G', 'D')
+
+typedef struct {
+  UINT32                Signature;
+  LIST_ENTRY            Link;
+  EFI_PHYSICAL_ADDRESS  Memory;
+  UINTN                 NumberOfPages;
+} UNGUARD_RECORD;
+
+#define UNGUARD_POOL_RECORD_SIGNATURE  SIGNATURE_32 ('U', 'N', 'G', 'P')
+
+typedef struct {
+  UINT32                Signature;
+  LIST_ENTRY            Link;
+  VOID                  *Buffer;
+  UINTN                 Size;
+} UNGUARD_POOL_RECORD;
+
+#define HEAP_DRIVER_INFO_SIGNATURE SIGNATURE_32 ('H','P','D','I')
+
+typedef struct {
+  UINT32                        Signature;
+  LIST_ENTRY                    Link;
+  EFI_GUID                      FileName;
+  EFI_DEVICE_PATH_PROTOCOL      *FilePath;
+  PHYSICAL_ADDRESS              ImageBase;
+  UINT64                        ImageSize;
+  PHYSICAL_ADDRESS              EntryPoint;
+  UINT16                        ImageSubsystem;
+  EFI_FV_FILETYPE               FileType;
+} HEAP_DRIVER_INFO_DATA;
+
+
+GLOBAL_REMOVE_IF_UNREFERENCED EFI_LOCK                 mUnguardLockLock = EFI_INITIALIZE_LOCK_VARIABLE (TPL_NOTIFY);
+GLOBAL_REMOVE_IF_UNREFERENCED EFI_DEVICE_PATH_PROTOCOL *mHeapGuardExcludedDriverPath;
+GLOBAL_REMOVE_IF_UNREFERENCED UINTN                    mHeapGuardExcludedDriverPathSize;
+GLOBAL_REMOVE_IF_UNREFERENCED EFI_DEVICE_PATH_PROTOCOL *mHeapGuardIncludedDriverPath;
+GLOBAL_REMOVE_IF_UNREFERENCED UINTN                    mHeapGuardIncludedDriverPathSize;
+
+GLOBAL_REMOVE_IF_UNREFERENCED LIST_ENTRY               gUnguardRecord = INITIALIZE_LIST_HEAD_VARIABLE(gUnguardRecord);
+GLOBAL_REMOVE_IF_UNREFERENCED LIST_ENTRY               gUnguardPoolRecord = INITIALIZE_LIST_HEAD_VARIABLE(gUnguardPoolRecord);
+
+GLOBAL_REMOVE_IF_UNREFERENCED LIST_ENTRY               gHeapDriverRecord = INITIALIZE_LIST_HEAD_VARIABLE(gHeapDriverRecord);
+
+VOID
+CoreAcquireUnguardLock (
+  VOID
+  )
+{
+  CoreAcquireLock (&mUnguardLockLock);
+}
+
+VOID
+CoreReleaseUnguardLock (
+  VOID
+  )
+{
+  CoreReleaseLock (&mUnguardLockLock);
+}
+
+VOID
+HeapGuardInit (
+  VOID
+  )
+{
+  mHeapGuardExcludedDriverPathSize = PcdGetSize (PcdHeapGuardExcludedDriverPath);
+  if (mHeapGuardExcludedDriverPathSize <= 1) {
+    mHeapGuardExcludedDriverPathSize = 0;
+    mHeapGuardExcludedDriverPath = NULL;
+  } else {
+    mHeapGuardExcludedDriverPath = AllocateCopyPool (mHeapGuardExcludedDriverPathSize, PcdGetPtr (PcdHeapGuardExcludedDriverPath));
+  }
+
+  mHeapGuardIncludedDriverPathSize = PcdGetSize (PcdHeapGuardIncludedDriverPath);
+  if (mHeapGuardIncludedDriverPathSize <= 1) {
+    mHeapGuardIncludedDriverPathSize = 0;
+    mHeapGuardIncludedDriverPath = NULL;
+  } else {
+    mHeapGuardIncludedDriverPath = AllocateCopyPool (mHeapGuardIncludedDriverPathSize, PcdGetPtr (PcdHeapGuardIncludedDriverPath));
+  }
+}
+
+EFI_STATUS
+RegisterHeapGuardImage (
+  IN LOADED_IMAGE_PRIVATE_DATA  *DriverEntry,
+  IN EFI_FV_FILETYPE            FileType
+  )
+{
+  HEAP_DRIVER_INFO_DATA  *HeapDriverInfoData;
+  EFI_STATUS             Status;
+  VOID                   *EntryPointInImage;
+  EFI_GUID               *FileName;
+
+  Status = CoreInternalAllocatePool (
+             EfiBootServicesData,
+             sizeof (*HeapDriverInfoData),
+             (VOID **) &HeapDriverInfoData,
+             0
+             );
+  if (EFI_ERROR (Status)) {
+    return EFI_OUT_OF_RESOURCES;
+  }
+  HeapDriverInfoData->Signature = HEAP_DRIVER_INFO_SIGNATURE;
+  FileName = GetFileNameFromFilePath (DriverEntry->Info.FilePath);
+  if (FileName != NULL) {
+    CopyMem (&HeapDriverInfoData->FileName, FileName, sizeof(EFI_GUID));
+    HeapDriverInfoData->FilePath   = DriverEntry->Info.FilePath;
+  } else {
+    FileName = GetFileNameFromFilePath (DriverEntry->LoadedImageDevicePath);
+    if (FileName != NULL) {
+      CopyMem (&HeapDriverInfoData->FileName, FileName, sizeof(EFI_GUID));
+      HeapDriverInfoData->FilePath   = DriverEntry->LoadedImageDevicePath;
+    } else {
+      ZeroMem (&HeapDriverInfoData->FileName, sizeof(EFI_GUID));
+      HeapDriverInfoData->FilePath = DriverEntry->LoadedImageDevicePath;
+    }
+  }
+  HeapDriverInfoData->ImageBase  = DriverEntry->ImageContext.ImageAddress;
+  HeapDriverInfoData->ImageSize  = DriverEntry->ImageContext.ImageSize;
+  HeapDriverInfoData->EntryPoint = DriverEntry->ImageContext.EntryPoint;
+  if ((HeapDriverInfoData->EntryPoint != 0) &&
+      ((HeapDriverInfoData->EntryPoint < HeapDriverInfoData->ImageBase) || (HeapDriverInfoData->EntryPoint >= (HeapDriverInfoData->ImageBase + HeapDriverInfoData->ImageSize)))) {
+    //
+    // If the EntryPoint is not in the range of image buffer, it should come from emulation environment.
+    // So patch ImageBuffer here to align the EntryPoint.
+    //
+    Status = InternalPeCoffGetEntryPoint ((VOID *) (UINTN) HeapDriverInfoData->ImageBase, &EntryPointInImage);
+    ASSERT_EFI_ERROR (Status);
+    HeapDriverInfoData->ImageBase = HeapDriverInfoData->ImageBase + HeapDriverInfoData->EntryPoint - (PHYSICAL_ADDRESS) (UINTN) EntryPointInImage;
+  }
+
+  HeapDriverInfoData->ImageSubsystem = DriverEntry->ImageContext.ImageType;
+  HeapDriverInfoData->FileType = FileType;
+
+  InsertTailList (&gHeapDriverRecord, &HeapDriverInfoData->Link);
+
+  return EFI_SUCCESS;
+}
+
+HEAP_DRIVER_INFO_DATA *
+GetHeapDriverInfoByFileNameAndAddress (
+  IN EFI_GUID                       *FileName,
+  IN PHYSICAL_ADDRESS               Address
+  )
+{
+  HEAP_DRIVER_INFO_DATA             *DriverInfoData;
+  LIST_ENTRY                        *DriverLink;
+  LIST_ENTRY                        *DriverInfoList;
+
+  DriverInfoList = &gHeapDriverRecord;
+
+  for (DriverLink = DriverInfoList->ForwardLink;
+       DriverLink != DriverInfoList;
+       DriverLink = DriverLink->ForwardLink) {
+    DriverInfoData = CR (
+                       DriverLink,
+                       HEAP_DRIVER_INFO_DATA,
+                       Link,
+                       HEAP_DRIVER_INFO_SIGNATURE
+                       );
+    if ((CompareGuid (&DriverInfoData->FileName, FileName)) &&
+        (Address >= DriverInfoData->ImageBase) &&
+        (Address < (DriverInfoData->ImageBase + DriverInfoData->ImageSize))) {
+      return DriverInfoData;
+    }
+  }
+
+  return NULL;
+}
+
+HEAP_DRIVER_INFO_DATA *
+GetHeapDriverInfoFromAddress (
+  IN PHYSICAL_ADDRESS               Address
+  )
+{
+  HEAP_DRIVER_INFO_DATA             *DriverInfoData;
+  LIST_ENTRY                        *DriverLink;
+  LIST_ENTRY                        *DriverInfoList;
+
+  DriverInfoList = &gHeapDriverRecord;
+
+  for (DriverLink = DriverInfoList->ForwardLink;
+       DriverLink != DriverInfoList;
+       DriverLink = DriverLink->ForwardLink) {
+    DriverInfoData = CR (
+                       DriverLink,
+                       HEAP_DRIVER_INFO_DATA,
+                       Link,
+                       HEAP_DRIVER_INFO_SIGNATURE
+                       );
+    if ((Address >= DriverInfoData->ImageBase) &&
+        (Address < (DriverInfoData->ImageBase + DriverInfoData->ImageSize))) {
+      return DriverInfoData;
+    }
+  }
+
+  return NULL;
+}
+
+EFI_STATUS
+UnregisterHeapGuardImage (
+  IN LOADED_IMAGE_PRIVATE_DATA      *DriverEntry
+  )
+{
+  EFI_GUID                          *FileName;
+  PHYSICAL_ADDRESS                  ImageAddress;
+  VOID                              *EntryPointInImage;
+  HEAP_DRIVER_INFO_DATA             *HeapDriverInfoData;
+  EFI_STATUS                        Status;
+
+  HeapDriverInfoData = NULL;
+  FileName = GetFileNameFromFilePath (DriverEntry->Info.FilePath);
+  ImageAddress = DriverEntry->ImageContext.ImageAddress;
+  if ((DriverEntry->ImageContext.EntryPoint < ImageAddress) || (DriverEntry->ImageContext.EntryPoint >= (ImageAddress + DriverEntry->ImageContext.ImageSize))) {
+    //
+    // If the EntryPoint is not in the range of image buffer, it should come from emulation environment.
+    // So patch ImageAddress here to align the EntryPoint.
+    //
+    Status = InternalPeCoffGetEntryPoint ((VOID *) (UINTN) ImageAddress, &EntryPointInImage);
+    ASSERT_EFI_ERROR (Status);
+    ImageAddress = ImageAddress + (UINTN) DriverEntry->ImageContext.EntryPoint - (UINTN) EntryPointInImage;
+  }
+  if (FileName != NULL) {
+    HeapDriverInfoData = GetHeapDriverInfoByFileNameAndAddress (FileName, ImageAddress);
+  }
+  if (HeapDriverInfoData == NULL) {
+    HeapDriverInfoData = GetHeapDriverInfoFromAddress (ImageAddress);
+  }
+  if (HeapDriverInfoData == NULL) {
+    return EFI_NOT_FOUND;
+  }
+
+  RemoveEntryList (&HeapDriverInfoData->Link);
+
+  CoreInternalFreePool (HeapDriverInfoData, NULL);
+  return EFI_SUCCESS;
+}
+
+BOOLEAN
+HasThisDriverPath (
+  IN EFI_DEVICE_PATH_PROTOCOL       *DriverFilePath,
+  IN EFI_DEVICE_PATH_PROTOCOL       *DevicePathInstance
+  )
+{
+  EFI_DEVICE_PATH_PROTOCOL          *TmpDevicePath;
+  UINTN                             DevicePathSize;
+  UINTN                             FilePathSize;
+
+  if (DriverFilePath == NULL) {
+    return FALSE;
+  }
+  
+  //
+  // Record FilePath without END node.
+  //
+  FilePathSize = GetDevicePathSize (DriverFilePath) - sizeof(EFI_DEVICE_PATH_PROTOCOL);
+
+  do {
+    //
+    // Find END node (it might be END_ENTIRE or END_INSTANCE).
+    //
+    TmpDevicePath = DevicePathInstance;
+    while (!IsDevicePathEndType (TmpDevicePath)) {
+      TmpDevicePath = NextDevicePathNode (TmpDevicePath);
+    }
+
+    //
+    // Do not compare END node.
+    //
+    DevicePathSize = (UINTN)TmpDevicePath - (UINTN)DevicePathInstance;
+    if ((FilePathSize == DevicePathSize) &&
+        (CompareMem (DriverFilePath, DevicePathInstance, DevicePathSize) == 0)) {
+      return TRUE;
+    }
+
+    //
+    // Get next instance.
+    //
+    DevicePathInstance = (EFI_DEVICE_PATH_PROTOCOL *)((UINTN)DevicePathInstance + DevicePathSize + DevicePathNodeLength(TmpDevicePath));
+  } while (DevicePathSubType (TmpDevicePath) != END_ENTIRE_DEVICE_PATH_SUBTYPE);
+
+  return FALSE;
+}
+
+BOOLEAN
+HasExcludeThisDriver (
+  IN EFI_DEVICE_PATH_PROTOCOL       *DriverFilePath
+  )
+{
+  if (mHeapGuardExcludedDriverPath == NULL || mHeapGuardExcludedDriverPathSize == 0) {
+    //
+    // Invalid Device Path means record all.
+    //
+    return FALSE;
+  }
+
+  if (!IsDevicePathValid (mHeapGuardExcludedDriverPath, mHeapGuardExcludedDriverPathSize)) {
+    //
+    // Invalid Device Path means record all.
+    //
+    return FALSE;
+  }
+  
+  return HasThisDriverPath (DriverFilePath, mHeapGuardExcludedDriverPath);
+}
+
+BOOLEAN
+HasIncludeThisDriver (
+  IN EFI_DEVICE_PATH_PROTOCOL       *DriverFilePath
+  )
+{
+  if (mHeapGuardIncludedDriverPath == NULL || mHeapGuardIncludedDriverPathSize == 0) {
+    //
+    // Invalid Device Path means record all.
+    //
+    return TRUE;
+  }
+
+  if (!IsDevicePathValid (mHeapGuardIncludedDriverPath, mHeapGuardIncludedDriverPathSize)) {
+    //
+    // Invalid Device Path means record all.
+    //
+    return TRUE;
+  }
+  
+  return HasThisDriverPath (DriverFilePath, mHeapGuardIncludedDriverPath);
+}
+
+BOOLEAN
+IsCallerAddressFromExcludedDriver (
+  IN EFI_PHYSICAL_ADDRESS CallerAddress
+  )
+{
+  HEAP_DRIVER_INFO_DATA       *HeapDriverInfoData;
+
+  HeapDriverInfoData = GetHeapDriverInfoFromAddress (CallerAddress);
+  if (HeapDriverInfoData == NULL) {
+    return FALSE;
+  }
+  return HasExcludeThisDriver (HeapDriverInfoData->FilePath);
+}  
+
+BOOLEAN
+IsCallerAddressFromIncludedDriver (
+  IN EFI_PHYSICAL_ADDRESS CallerAddress
+  )
+{
+  HEAP_DRIVER_INFO_DATA       *HeapDriverInfoData;
+
+  HeapDriverInfoData = GetHeapDriverInfoFromAddress (CallerAddress);
+  if (HeapDriverInfoData == NULL) {
+    return FALSE;
+  }
+  return HasIncludeThisDriver (HeapDriverInfoData->FilePath);
+}  
+
+GUARD_TYPE
+GetCallerGuardType (
+  IN EFI_PHYSICAL_ADDRESS CallerAddress
+  )
+{
+  if (IsCallerAddressFromExcludedDriver (CallerAddress)) {
+    return GuardTypeNeedUnguard;
+  }
+  if (IsCallerAddressFromIncludedDriver (CallerAddress)) {
+    return GuardTypeNeedGuard;
+  }
+  return GuardTypeNoGuard;
+}
+
+BOOLEAN
+IsAdjacentToGuardPage (
+  IN  EFI_PHYSICAL_ADDRESS  Memory,
+  IN  BOOLEAN               CheckTail
+  )
+{
+  LIST_ENTRY                *ListEntry;
+  UNGUARD_RECORD            *UngardRecord;
+
+  ListEntry = &gUnguardRecord;
+  for (ListEntry = ListEntry->BackLink;
+       ListEntry != &gUnguardRecord;
+       ListEntry = ListEntry->BackLink) {
+    UngardRecord = CR(ListEntry, UNGUARD_RECORD, Link, UNGUARD_RECORD_SIGNATURE);
+    if (CheckTail) {
+      if (UngardRecord->Memory + EFI_PAGES_TO_SIZE(UngardRecord->NumberOfPages) == Memory) {
+        return TRUE;
+      }
+    } else {
+      if (UngardRecord->Memory == Memory) {
+        return TRUE;
+      }
+    }
+  }
+  return FALSE;
+}
+
+EFI_STATUS
+RecordUnguardedPage (
+  IN EFI_PHYSICAL_ADDRESS  Memory,
+  IN UINTN                 NumberOfPages,
+  IN BOOLEAN               NeedLock
+  )
+{
+  EFI_STATUS      Status;
+  UNGUARD_RECORD  *UnguardRecord;
+
+  Status = CoreInternalAllocatePool (
+             EfiBootServicesData,
+             sizeof (*UnguardRecord),
+             (VOID **) &UnguardRecord,
+             0
+             );
+  if (EFI_ERROR (Status)) {
+    return EFI_OUT_OF_RESOURCES;
+  }
+  ASSERT (UnguardRecord != NULL);
+
+  UnguardRecord->Signature     = UNGUARD_RECORD_SIGNATURE;
+  UnguardRecord->Memory        = Memory;
+  UnguardRecord->NumberOfPages = NumberOfPages;
+
+  if (NeedLock) {
+    CoreAcquireUnguardLock ();
+  }
+  InsertTailList (&gUnguardRecord, &UnguardRecord->Link);
+  if (NeedLock) {
+    CoreReleaseUnguardLock ();
+  }
+
+  return EFI_SUCCESS;
+}
+
+EFI_STATUS
+GetUnguardedPage (
+  IN  EFI_PHYSICAL_ADDRESS  Memory,
+  IN  UINTN                 NumberOfPages,
+  OUT EFI_PHYSICAL_ADDRESS  *FreeMemory,
+  OUT UINTN                 *FreeNumberOfPages
+  )
+{
+  LIST_ENTRY                *ListEntry;
+  UNGUARD_RECORD            *UngardRecord;
+  BOOLEAN                   Found;
+  EFI_PHYSICAL_ADDRESS      MemoryStart;
+  EFI_PHYSICAL_ADDRESS      MemoryEnd;
+  EFI_PHYSICAL_ADDRESS      FreeMemoryStart;
+  EFI_PHYSICAL_ADDRESS      FreeMemoryEnd;
+
+  *FreeMemory = Memory;
+  *FreeNumberOfPages = NumberOfPages;
+
+  CoreAcquireUnguardLock ();
+
+  Found = FALSE;
+  ListEntry = &gUnguardRecord;
+  for (ListEntry = ListEntry->BackLink;
+       ListEntry != &gUnguardRecord;
+       ListEntry = ListEntry->BackLink) {
+    UngardRecord = CR(ListEntry, UNGUARD_RECORD, Link, UNGUARD_RECORD_SIGNATURE);
+    if ((Memory >= UngardRecord->Memory) &&
+        (Memory + EFI_PAGES_TO_SIZE(NumberOfPages) <= UngardRecord->Memory + EFI_PAGES_TO_SIZE(UngardRecord->NumberOfPages))) {
+      // Entry Found
+      Found = TRUE;
+      RemoveEntryList (&UngardRecord->Link);
+
+      MemoryStart = UngardRecord->Memory - EFI_PAGES_TO_SIZE(1);
+      MemoryEnd   = UngardRecord->Memory + EFI_PAGES_TO_SIZE(UngardRecord->NumberOfPages) + EFI_PAGES_TO_SIZE(1);
+
+      if (UngardRecord->Memory == Memory) {
+        FreeMemoryStart = MemoryStart; // Free the header
+      } else {
+        FreeMemoryStart = Memory + EFI_PAGES_TO_SIZE(1); // Need reserved 1 page for the unguard page of 1st segment
+      }
+
+      if (Memory + EFI_PAGES_TO_SIZE(NumberOfPages) == UngardRecord->Memory + EFI_PAGES_TO_SIZE(UngardRecord->NumberOfPages)) {
+        FreeMemoryEnd = MemoryEnd; // Free the tail
+      } else {
+        FreeMemoryEnd = Memory + EFI_PAGES_TO_SIZE(NumberOfPages) - EFI_PAGES_TO_SIZE(1); // Need reserved 1 page for the unguard page of 2nd segment
+      }
+
+      *FreeMemory = FreeMemoryStart;
+      if (FreeMemoryEnd < FreeMemoryStart) {
+        *FreeNumberOfPages = 0;
+      } else {
+        *FreeNumberOfPages = EFI_SIZE_TO_PAGES((UINTN)(FreeMemoryEnd - FreeMemoryStart));
+        //
+        // handle a corner case:
+        //         +---------+------+---------+------+---------+------+---------+
+        //         | Unguard | Used | Unguard | Used | Unguard | Used | Unguard |
+        //         +---------+------+---------+------+---------+------+---------+
+        //
+        if (IsAdjacentToGuardPage (*FreeMemory, TRUE)) {
+          *FreeMemory = *FreeMemory + EFI_PAGES_TO_SIZE(1);
+          *FreeNumberOfPages = *FreeNumberOfPages - 1;
+        }
+        if (IsAdjacentToGuardPage (*FreeMemory + EFI_PAGES_TO_SIZE(*FreeNumberOfPages), FALSE)) {
+          *FreeNumberOfPages = *FreeNumberOfPages - 1;
+        }
+      }
+
+      if (UngardRecord->Memory != Memory) {
+        RecordUnguardedPage (UngardRecord->Memory, EFI_SIZE_TO_PAGES((UINTN)(Memory - UngardRecord->Memory)), FALSE);
+      }
+      if (UngardRecord->Memory + EFI_PAGES_TO_SIZE(UngardRecord->NumberOfPages) != Memory + EFI_PAGES_TO_SIZE(NumberOfPages)) {
+        RecordUnguardedPage (
+          Memory + EFI_PAGES_TO_SIZE(NumberOfPages),
+          EFI_SIZE_TO_PAGES((UINTN)((UngardRecord->Memory + EFI_PAGES_TO_SIZE(UngardRecord->NumberOfPages)) - (Memory + EFI_PAGES_TO_SIZE(NumberOfPages)))),
+          FALSE
+          );
+      }
+
+      CoreInternalFreePool (UngardRecord, NULL);
+
+      break;
+    }
+  }
+  CoreReleaseUnguardLock ();
+  
+  if (Found) {
+    return EFI_SUCCESS;
+  } else {
+    return EFI_NOT_FOUND;
+  }
+}
+
+EFI_STATUS
+RecordUnguardedPool (
+  IN VOID                  *Buffer,
+  IN UINTN                 Size
+  )
+{
+  EFI_STATUS           Status;
+  UNGUARD_POOL_RECORD  *UnguardPoolRecord;
+
+  Status = CoreInternalAllocatePool (
+             EfiBootServicesData,
+             sizeof (*UnguardPoolRecord),
+             (VOID **) &UnguardPoolRecord,
+             0
+             );
+  if (EFI_ERROR (Status)) {
+    return EFI_OUT_OF_RESOURCES;
+  }
+  ASSERT (UnguardPoolRecord != NULL);
+
+  UnguardPoolRecord->Signature     = UNGUARD_POOL_RECORD_SIGNATURE;
+  UnguardPoolRecord->Buffer        = Buffer;
+  UnguardPoolRecord->Size          = Size;
+
+  CoreAcquireUnguardLock ();
+  InsertTailList (&gUnguardPoolRecord, &UnguardPoolRecord->Link);
+  CoreReleaseUnguardLock ();
+
+  return EFI_SUCCESS;
+}
+
+EFI_STATUS
+GetUnguardedPool (
+  IN VOID                  *Buffer,
+  OUT VOID                 **FreeBuffer
+  )
+{
+  LIST_ENTRY                *ListEntry;
+  UNGUARD_POOL_RECORD       *UngardPoolRecord;
+  BOOLEAN                   Found;
+
+  *FreeBuffer = Buffer;
+
+  CoreAcquireUnguardLock ();
+
+  Found = FALSE;
+  ListEntry = &gUnguardPoolRecord;
+  for (ListEntry = ListEntry->BackLink;
+       ListEntry != &gUnguardPoolRecord;
+       ListEntry = ListEntry->BackLink) {
+    UngardPoolRecord = CR(ListEntry, UNGUARD_POOL_RECORD, Link, UNGUARD_POOL_RECORD_SIGNATURE);
+    if (Buffer == UngardPoolRecord->Buffer) {
+      // Entry Found
+      Found = TRUE;
+      *FreeBuffer = (VOID *)((UINTN)Buffer - EFI_PAGES_TO_SIZE(1));
+      RemoveEntryList (&UngardPoolRecord->Link);
+      CoreInternalFreePool (UngardPoolRecord, NULL);
+      break;
+    }
+  }
+  CoreReleaseUnguardLock ();
+  
+  if (Found) {
+    return EFI_SUCCESS;
+  } else {
+    return EFI_NOT_FOUND;
+  }
+}
+

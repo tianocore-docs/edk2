@@ -1386,11 +1386,45 @@ CoreAllocatePages (
 {
   EFI_STATUS  Status;
   BOOLEAN     NeedGuard;
+  GUARD_TYPE  GuardType;
 
+  GuardType = GuardTypeMax;
   NeedGuard = IsPageTypeToGuard (MemoryType, Type) && !mOnGuarding;
+
+  if (NeedGuard) {
+    GuardType = GetCallerGuardType ((EFI_PHYSICAL_ADDRESS) (UINTN) RETURN_ADDRESS (0));
+    switch (GuardType) {
+    case GuardTypeNeedGuard:
+      NeedGuard = TRUE;
+      break;
+    case GuardTypeNeedUnguard:
+      //
+      // Allocate additional Header and Tail
+      //
+      NumberOfPages += 2;
+      NeedGuard = TRUE;
+      break;
+    case GuardTypeNoGuard:
+      NeedGuard = FALSE;
+      break;
+    default:
+      ASSERT(FALSE);
+      break;
+    }
+  }
+
   Status = CoreInternalAllocatePages (Type, MemoryType, NumberOfPages, Memory,
                                       NeedGuard);
   if (!EFI_ERROR (Status)) {
+    if (GuardType == GuardTypeNeedUnguard) {
+      //
+      // Adjust Unguarded pages and record it.
+      // We cannot FreePages, because FreePages will cause guard page take effect.
+      //
+      NumberOfPages -= 2;
+      *Memory = *Memory + EFI_PAGES_TO_SIZE(1);
+      RecordUnguardedPage (*Memory, NumberOfPages, TRUE);
+    }
     CoreUpdateProfile (
       (EFI_PHYSICAL_ADDRESS) (UINTN) RETURN_ADDRESS (0),
       MemoryProfileActionAllocatePages,
@@ -1511,8 +1545,19 @@ CoreFreePages (
 {
   EFI_STATUS        Status;
   EFI_MEMORY_TYPE   MemoryType;
+  EFI_PHYSICAL_ADDRESS  FreeMemory;
+  UINTN                 FreeNumberOfPages;
 
-  Status = CoreInternalFreePages (Memory, NumberOfPages, &MemoryType);
+  FreeMemory = Memory;
+  FreeNumberOfPages = NumberOfPages;
+  Status = GetUnguardedPage (Memory, NumberOfPages, &FreeMemory, &FreeNumberOfPages);
+  if (!EFI_ERROR(Status)) {
+    if (FreeNumberOfPages == 0) {
+      return EFI_SUCCESS;
+    }
+  }
+
+  Status = CoreInternalFreePages (FreeMemory, FreeNumberOfPages, &MemoryType);
   if (!EFI_ERROR (Status)) {
     CoreUpdateProfile (
       (EFI_PHYSICAL_ADDRESS) (UINTN) RETURN_ADDRESS (0),

@@ -200,6 +200,8 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdHeapGuardPoolType                       ## CONSUMES
   gEfiMdeModulePkgTokenSpaceGuid.PcdHeapGuardPropertyMask                   ## CONSUMES
   gEfiMdeModulePkgTokenSpaceGuid.PcdCpuStackGuard                           ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdHeapGuardExcludedDriverPath
+  gEfiMdeModulePkgTokenSpaceGuid.PcdHeapGuardIncludedDriverPath
 
 # [Hob]
 # RESOURCE_DESCRIPTOR   ## CONSUMES

@@ -14,6 +14,7 @@
 
 #include "DxeMain.h"
 #include "Imem.h"
+#include "HeapGuard.h"
 
 #define IS_UEFI_MEMORY_PROFILE_ENABLED ((PcdGet8 (PcdMemoryProfilePropertyMask) & BIT0) != 0)
 
@@ -437,7 +438,8 @@ BuildDriverInfo (
   Status = CoreInternalAllocatePool (
              EfiBootServicesData,
              sizeof (*DriverInfoData) + sizeof (LIST_ENTRY) + PdbSize,
-             (VOID **) &DriverInfoData
+             (VOID **) &DriverInfoData,
+             0
              );
   if (EFI_ERROR (Status)) {
     return NULL;
@@ -625,6 +627,8 @@ MemoryProfileInit (
 {
   MEMORY_PROFILE_CONTEXT_DATA   *ContextData;
 
+  HeapGuardInit ();
+
   if (!IS_UEFI_MEMORY_PROFILE_ENABLED) {
     return;
   }
@@ -726,6 +730,8 @@ RegisterMemoryProfileImage (
 {
   MEMORY_PROFILE_CONTEXT_DATA       *ContextData;
   MEMORY_PROFILE_DRIVER_INFO_DATA   *DriverInfoData;
+
+  RegisterHeapGuardImage (DriverEntry, FileType);
 
   if (!IS_UEFI_MEMORY_PROFILE_ENABLED) {
     return EFI_UNSUPPORTED;
@@ -864,6 +870,8 @@ UnregisterMemoryProfileImage (
   EFI_GUID                          *FileName;
   PHYSICAL_ADDRESS                  ImageAddress;
   VOID                              *EntryPointInImage;
+
+  UnregisterHeapGuardImage (DriverEntry);
 
   if (!IS_UEFI_MEMORY_PROFILE_ENABLED) {
     return EFI_UNSUPPORTED;
@@ -1041,7 +1049,8 @@ CoreUpdateProfileAllocate (
   Status = CoreInternalAllocatePool (
              EfiBootServicesData,
              sizeof (*AllocInfoData) + ActionStringSize,
-             (VOID **) &AllocInfoData
+             (VOID **) &AllocInfoData,
+             0
              );
   if (EFI_ERROR (Status)) {
     return EFI_OUT_OF_RESOURCES;

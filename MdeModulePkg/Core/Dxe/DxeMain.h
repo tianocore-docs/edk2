@@ -1364,7 +1364,8 @@ EFIAPI
 CoreInternalAllocatePool (
   IN EFI_MEMORY_TYPE  PoolType,
   IN UINTN            Size,
-  OUT VOID            **Buffer
+  OUT VOID            **Buffer,
+  IN EFI_PHYSICAL_ADDRESS CallerAddress
   );
 
 /**

@@ -173,6 +173,28 @@ typedef struct {
   LIST_ENTRY            Link;
 } HEAP_GUARD_NODE;
 
+typedef enum {
+  //
+  // The callee need allocate a GuardPage with CPU protection attribute.
+  // The returned buffer is guarded.
+  //
+  GuardTypeNeedGuard,
+  //
+  // The callee need allocate a GuardPage without CPU protection attribute.
+  // The returned buffer is unguarded.
+  //
+  GuardTypeNeedUnguard,
+  //
+  // The callee does not allocate a guard page.
+  // The return buffer may be guarded, or be unguarded.
+  //
+  GuardTypeNoGuard,
+  //
+  // Unknown
+  //
+  GuardTypeMax,
+} GUARD_TYPE;
+
 /**
   Internal function.  Converts a memory range to the specified type.
   The range must exist in the memory map.
@@ -397,6 +419,86 @@ AdjustPoolHeadF (
 BOOLEAN
 IsHeapGuardEnabled (
   VOID
+  );
+
+/**
+  Get the guard type according to the caller.
+
+  @return GUARD_TYPE.
+**/
+GUARD_TYPE
+GetCallerGuardType (
+  IN EFI_PHYSICAL_ADDRESS CallerAddress
+  );
+
+EFI_STATUS
+RecordUnguardedPage (
+  IN EFI_PHYSICAL_ADDRESS  Memory,
+  IN UINTN                 NumberOfPages,
+  IN BOOLEAN               NeedLock
+  );
+
+EFI_STATUS
+GetUnguardedPage (
+  IN  EFI_PHYSICAL_ADDRESS  Memory,
+  IN  UINTN                 NumberOfPages,
+  OUT EFI_PHYSICAL_ADDRESS  *FreeMemory,
+  OUT UINTN                 *FreeNumberOfPages
+  );
+
+EFI_STATUS
+RecordUnguardedPool (
+  IN VOID                  *Buffer,
+  IN UINTN                 Size
+  );
+
+EFI_STATUS
+GetUnguardedPool (
+  IN VOID                  *Buffer,
+  OUT VOID                 **FreeBuffer
+  );
+
+EFI_STATUS
+RegisterHeapGuardImage (
+  IN LOADED_IMAGE_PRIVATE_DATA  *DriverEntry,
+  IN EFI_FV_FILETYPE            FileType
+  );
+
+EFI_STATUS
+UnregisterHeapGuardImage (
+  IN LOADED_IMAGE_PRIVATE_DATA      *DriverEntry
+  );
+
+EFI_STATUS
+RegisterHeapGuardImage (
+  IN LOADED_IMAGE_PRIVATE_DATA  *DriverEntry,
+  IN EFI_FV_FILETYPE            FileType
+  );
+
+EFI_STATUS
+UnregisterHeapGuardImage (
+  IN LOADED_IMAGE_PRIVATE_DATA      *DriverEntry
+  );
+
+VOID
+HeapGuardInit (
+  VOID
+  );
+
+EFI_GUID *
+GetFileNameFromFilePath (
+  IN EFI_DEVICE_PATH_PROTOCOL   *FilePath
+  );
+
+RETURN_STATUS
+InternalPeCoffGetEntryPoint (
+  IN  VOID  *Pe32Data,
+  OUT VOID  **EntryPoint
+  );
+
+UINT16
+InternalPeCoffGetPeHeaderMagicValue (
+  IN  EFI_IMAGE_OPTIONAL_HEADER_PTR_UNION  Hdr
   );
 
 extern BOOLEAN mOnGuarding;

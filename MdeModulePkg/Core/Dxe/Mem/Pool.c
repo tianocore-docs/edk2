@@ -212,11 +212,15 @@ EFIAPI
 CoreInternalAllocatePool (
   IN EFI_MEMORY_TYPE  PoolType,
   IN UINTN            Size,
-  OUT VOID            **Buffer
+  OUT VOID            **Buffer,
+  IN EFI_PHYSICAL_ADDRESS CallerAddress
   )
 {
   EFI_STATUS            Status;
   BOOLEAN               NeedGuard;
+  GUARD_TYPE            GuardType;
+
+  GuardType = GuardTypeMax;
 
   //
   // If it's not a valid type, fail it
@@ -242,6 +246,28 @@ CoreInternalAllocatePool (
 
   NeedGuard = IsPoolTypeToGuard (PoolType) && !mOnGuarding;
 
+  if (NeedGuard && (CallerAddress != 0)) {
+    GuardType = GetCallerGuardType (CallerAddress);
+    switch (GuardType) {
+    case GuardTypeNeedGuard:
+      NeedGuard = TRUE;
+      break;
+    case GuardTypeNeedUnguard:
+      //
+      // Allocate additional Header and Tail
+      //
+      Size += EFI_PAGES_TO_SIZE(2);
+      NeedGuard = TRUE;
+      break;
+    case GuardTypeNoGuard:
+      NeedGuard = FALSE;
+      break;
+    default:
+      ASSERT(FALSE);
+      break;
+    }
+  }
+
   //
   // Acquire the memory lock and make the allocation
   //
@@ -252,6 +278,15 @@ CoreInternalAllocatePool (
 
   *Buffer = CoreAllocatePoolI (PoolType, Size, NeedGuard);
   CoreReleaseLock (&mPoolMemoryLock);
+
+  if ((Buffer != NULL) && (GuardType == GuardTypeNeedUnguard)) {
+    //
+    // Adjust Unguarded pool and record it.
+    //
+    *Buffer = (VOID *)((UINTN)*Buffer + EFI_PAGES_TO_SIZE(1));
+    RecordUnguardedPool (*Buffer, Size - EFI_PAGES_TO_SIZE(2));
+  }
+
   return (*Buffer != NULL) ? EFI_SUCCESS : EFI_OUT_OF_RESOURCES;
 }
 
@@ -280,7 +315,7 @@ CoreAllocatePool (
 {
   EFI_STATUS  Status;
 
-  Status = CoreInternalAllocatePool (PoolType, Size, Buffer);
+  Status = CoreInternalAllocatePool (PoolType, Size, Buffer, (EFI_PHYSICAL_ADDRESS) (UINTN) RETURN_ADDRESS (0));
   if (!EFI_ERROR (Status)) {
     CoreUpdateProfile (
       (EFI_PHYSICAL_ADDRESS) (UINTN) RETURN_ADDRESS (0),
@@ -579,8 +614,12 @@ CoreFreePool (
 {
   EFI_STATUS        Status;
   EFI_MEMORY_TYPE   PoolType;
+  VOID              *FreeBuffer;
 
-  Status = CoreInternalFreePool (Buffer, &PoolType);
+  FreeBuffer = Buffer;
+  GetUnguardedPool (Buffer, &FreeBuffer);
+
+  Status = CoreInternalFreePool (FreeBuffer, &PoolType);
   if (!EFI_ERROR (Status)) {
     CoreUpdateProfile (
       (EFI_PHYSICAL_ADDRESS) (UINTN) RETURN_ADDRESS (0),
