@@ -45,8 +45,8 @@ EFI_MEMORY_TYPE_INFORMATION mDefaultMemoryTypeInformation[] = {
   { EfiReservedMemoryType,  0x0004 },
   { EfiRuntimeServicesCode, 0x0040 },
   { EfiRuntimeServicesData, 0x0040 },
-  { EfiBootServicesCode,    0x0300 },
-  { EfiBootServicesData,    0x1000 },
+//{ EfiBootServicesCode,    0x0300 },
+//{ EfiBootServicesData,    0x1000 },
   { EfiMaxMemoryType,       0      }
 };
 
