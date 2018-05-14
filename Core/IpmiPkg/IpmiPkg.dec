@@ -1,0 +1,32 @@
+## @file
+# Network Package.
+#
+# This package provides network modules that conform to UEFI 2.4 specification.
+#
+# Copyright (c) 2009 - 2018, Intel Corporation. All rights reserved.<BR>
+# (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP<BR>
+#
+# This program and the accompanying materials are licensed and made available under
+# the terms and conditions of the BSD License which accompanies this distribution.
+# The full text of the license may be found at
+# http://opensource.org/licenses/bsd-license.php
+#
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = IpmiPkg
+  PACKAGE_GUID                   = 08A58027-3CBA-4DEF-98B5-7C7909B66CD6
+  PACKAGE_VERSION                = 0.1
+
+[Ppis]
+  ## Include/Ppi/IpmiPpi.h
+  gPeiIpmiPpiGuid               =  { 0xa9731431, 0xd968, 0x4277, { 0xb7, 0x52, 0xa3, 0xa9, 0xa6, 0xae, 0x18, 0x98 }}
+
+[Protocols]
+  ## Include/Protocol/IpmiProtocol.h
+  gIpmiProtocolGuid    = { 0xdbc6381f, 0x5554, 0x4d14, { 0x8f, 0xfd, 0x76, 0xd7, 0x87, 0xb8, 0xac, 0xbf } }
+  gSmmIpmiProtocolGuid = { 0x5169af60, 0x8c5a, 0x4243, { 0xb3, 0xe9, 0x56, 0xc5, 0x6d, 0x18, 0xee, 0x26 } }

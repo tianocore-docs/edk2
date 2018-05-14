@@ -1,0 +1,107 @@
+## @file
+# Network Package.
+#
+# This package provides network modules that conform to UEFI 2.4 specification.
+#
+# Copyright (c) 2009 - 2018, Intel Corporation. All rights reserved.<BR>
+# (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP<BR>
+#
+# This program and the accompanying materials are licensed and made available under
+# the terms and conditions of the BSD License which accompanies this distribution.
+# The full text of the license may be found at
+# http://opensource.org/licenses/bsd-license.php
+#
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = SecureBootPkg
+  PACKAGE_GUID                   = 21C0922E-0119-4F69-BE45-24BD3D7EAFA2
+  PACKAGE_VERSION                = 0.1
+
+[Includes]
+  Include
+
+[Includes.Common.Private]
+  Include/Private
+
+[Guids]
+  gEfiSecureBootPkgTokenSpaceGuid      = { 0x7375b4ab, 0x51e0, 0x4597, { 0xa8, 0xbc, 0xca, 0xf6, 0x20, 0x8d, 0x2e, 0x9 }}
+
+  ## GUID used to "SecureBootEnable" variable for the Secure Boot feature enable/disable.
+  #  This variable is used for allowing a physically present user to disable Secure Boot via firmware setup without the possession of PKpriv.
+  #  Include/Guid/AuthenticatedVariableFormat.h
+  gEfiSecureBootEnableDisableGuid    = { 0xf0a30bc7, 0xaf08, 0x4556, { 0x99, 0xc4, 0x0, 0x10, 0x9, 0xc9, 0x3a, 0x44 } }
+
+  ## GUID used to "CustomMode" variable for two Secure Boot modes feature: "Custom" and "Standard".
+  #  Standard Secure Boot mode is the default mode as UEFI Spec's description.
+  #  Custom Secure Boot mode allows for more flexibility as specified in the following:
+  #  Can enroll or delete PK without existing PK's private key.
+  #  Can enroll or delete KEK without existing PK's private key.
+  #  Can enroll or delete signature from DB/DBX without KEK's private key.
+  #  Include/Guid/AuthenticatedVariableFormat.h
+  gEfiCustomModeEnableGuid           = { 0xc076ec0c, 0x7028, 0x4399, { 0xa0, 0x72, 0x71, 0xee, 0x5c, 0x44, 0x8b, 0x9f } }
+
+  ## GUID used to "VendorKeysNv" variable to record the out of band secure boot keys modification.
+  #  This variable is a read-only NV variable that indicates whether someone other than the platform vendor has used a 
+  #  mechanism not defined by the UEFI Specification to transition the system to setup mode or to update secure boot keys.
+  #  Include/Guid/AuthenticatedVariableFormat.h
+  gEfiVendorKeysNvGuid               = { 0x9073e4e0, 0x60ec, 0x4b6e, { 0x99, 0x3, 0x4c, 0x22, 0x3c, 0x26, 0xf, 0x3c } }
+
+  ## GUID used to "certdb"/"certdbv" variable to store the signer's certificates for common variables with EFI_VARIABLE_TIME_BASED_AUTHENTICATED_WRITE_ACCESS attribute.
+  #  Include/Guid/AuthenticatedVariableFormat.h
+  gEfiCertDbGuid                     = { 0xd9bee56e, 0x75dc, 0x49d9, { 0xb4, 0xd7, 0xb5, 0x34, 0x21, 0xf, 0x63, 0x7a } }
+  
+  ## GUID used for FormSet.
+  #  Include/Guid/SecureBootConfigHii.h
+  gSecureBootConfigFormSetGuid       = { 0x5daf50a5, 0xea81, 0x4de2, {0x8f, 0x9b, 0xca, 0xbd, 0xa9, 0xcf, 0x5c, 0x14}}
+
+[PcdsFixedAtBuild, PcdsPatchableInModule]
+  ## Image verification policy for removable media which includes CD-ROM, Floppy, USB and network.
+  #  Only following values are valid:<BR><BR>
+  #  NOTE: Do NOT use 0x5 and 0x2 since it violates the UEFI specification and has been removed.<BR>
+  #  0x00000000      Always trust the image.<BR>
+  #  0x00000001      Never trust the image.<BR>
+  #  0x00000002      Allow execution when there is security violation.<BR>
+  #  0x00000003      Defer execution when there is security violation.<BR>
+  #  0x00000004      Deny execution when there is security violation.<BR>
+  #  0x00000005      Query user when there is security violation.<BR>
+  # @Prompt Set policy for the image from removable media.
+  # @ValidRange 0x80000001 | 0x00000000 - 0x00000005
+  gEfiSecureBootPkgTokenSpaceGuid.PcdRemovableMediaImageVerificationPolicy|0x04|UINT32|0x00000002
+
+  ## Image verification policy for fixed media which includes hard disk.
+  #  Only following values are valid:<BR><BR>
+  #  NOTE: Do NOT use 0x5 and 0x2 since it violates the UEFI specification and has been removed.<BR>
+  #  0x00000000      Always trust the image.<BR>
+  #  0x00000001      Never trust the image.<BR>
+  #  0x00000002      Allow execution when there is security violation.<BR>
+  #  0x00000003      Defer execution when there is security violation.<BR>
+  #  0x00000004      Deny execution when there is security violation.<BR>
+  #  0x00000005      Query user when there is security violation.<BR>
+  # @Prompt Set policy for the image from fixed media.
+  # @ValidRange 0x80000001 | 0x00000000 - 0x00000005 
+  gEfiSecureBootPkgTokenSpaceGuid.PcdFixedMediaImageVerificationPolicy|0x04|UINT32|0x00000003
+
+[PcdsFixedAtBuild, PcdsPatchableInModule, PcdsDynamic, PcdsDynamicEx]
+  ## Image verification policy for OptionRom. Only following values are valid:<BR><BR>
+  #  NOTE: Do NOT use 0x5 and 0x2 since it violates the UEFI specification and has been removed.<BR>
+  #  0x00000000      Always trust the image.<BR>
+  #  0x00000001      Never trust the image.<BR>
+  #  0x00000002      Allow execution when there is security violation.<BR>
+  #  0x00000003      Defer execution when there is security violation.<BR>
+  #  0x00000004      Deny execution when there is security violation.<BR>
+  #  0x00000005      Query user when there is security violation.<BR>
+  # @Prompt Set policy for the image from OptionRom.
+  # @ValidRange 0x80000001 | 0x00000000 - 0x00000005
+  gEfiSecureBootPkgTokenSpaceGuid.PcdOptionRomImageVerificationPolicy|0x04|UINT32|0x00000001
+
+  ## Indicate whether a physical presence user exist.
+  # When it is configured to Dynamic or DynamicEx, it can be set through detection using 
+  # a platform-specific method (e.g. Button pressed) in a actual platform in early boot phase.<BR><BR>
+  # @Prompt A physical presence user status
+  gEfiSecureBootPkgTokenSpaceGuid.PcdUserPhysicalPresence|FALSE|BOOLEAN|0x00010019
+

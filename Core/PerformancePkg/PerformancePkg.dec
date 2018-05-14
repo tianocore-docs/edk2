@@ -1,0 +1,39 @@
+## @file
+# Network Package.
+#
+# This package provides network modules that conform to UEFI 2.4 specification.
+#
+# Copyright (c) 2009 - 2018, Intel Corporation. All rights reserved.<BR>
+# (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP<BR>
+#
+# This program and the accompanying materials are licensed and made available under
+# the terms and conditions of the BSD License which accompanies this distribution.
+# The full text of the license may be found at
+# http://opensource.org/licenses/bsd-license.php
+#
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = PerformancePkg
+  PACKAGE_GUID                   = 142F8F78-CCE8-4295-BD75-E7F4757F866A
+  PACKAGE_VERSION                = 0.1
+
+[Guids]
+  ## Guid for Firmware Performance Data Table (FPDT) implementation.
+  #  Include/Guid/FirmwarePerformance.h
+  gEfiFirmwarePerformanceGuid        = { 0xc095791a, 0x3001, 0x47b2, { 0x80, 0xc9, 0xea, 0xc7, 0x31, 0x9f, 0x2f, 0xa4 }}
+  gFirmwarePerformanceS3PointerGuid  = { 0xdc65adc,  0xa973, 0x4130, { 0x8d, 0xf0, 0x2a, 0xdb, 0xeb, 0x9e, 0x4a, 0x31 }}
+
+  ## Performance protocol guid that also acts as the performance HOB guid and performance variable GUID
+  #  Include/Guid/Performance.h
+  gPerformanceProtocolGuid       = { 0x76B6BDFA, 0x2ACD, 0x4462, { 0x9E, 0x3F, 0xCB, 0x58, 0xC9, 0x69, 0xD9, 0x37 } }
+  gSmmPerformanceProtocolGuid    = { 0xf866226a, 0xeaa5, 0x4f5a, { 0xa9, 0xa,  0x6c, 0xfb, 0xa5, 0x7c, 0x58, 0x8e } }
+  gPerformanceExProtocolGuid     = { 0x1ea81bec, 0xf01a, 0x4d98, { 0xa2, 0x1,  0x4a, 0x61, 0xce, 0x2f, 0xc0, 0x22 } }
+  gSmmPerformanceExProtocolGuid  = { 0x931fc048, 0xc71d, 0x4455, { 0x89, 0x30, 0x47, 0x6,  0x30, 0xe3, 0xe,  0xe5 } }
+
+  ## Include/Guid/ExtendedFirmwarePerformance.h
+  gEdkiiFpdtExtendedFirmwarePerformanceGuid = { 0x3b387bfd, 0x7abc, 0x4cf2, { 0xa0, 0xca, 0xb6, 0xa1, 0x6c, 0x1b, 0x1b, 0x25 } }

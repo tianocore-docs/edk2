@@ -1,0 +1,45 @@
+## @file
+# Network Package.
+#
+# This package provides network modules that conform to UEFI 2.4 specification.
+#
+# Copyright (c) 2009 - 2018, Intel Corporation. All rights reserved.<BR>
+# (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP<BR>
+#
+# This program and the accompanying materials are licensed and made available under
+# the terms and conditions of the BSD License which accompanies this distribution.
+# The full text of the license may be found at
+# http://opensource.org/licenses/bsd-license.php
+#
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = ConsolePkg
+  PACKAGE_GUID                   = 5CE77299-9085-49A7-A3F5-A6D5216DD7CF
+  PACKAGE_VERSION                = 0.1
+
+[Includes]
+  Include
+
+[Guids]
+  ## Include/Guid/TtyTerm.h
+  gEfiTtyTermGuid                = { 0x7d916d80, 0x5bb1, 0x458c, {0xa4, 0x8f, 0xe2, 0x5f, 0xdd, 0x51, 0xef, 0x94 }}
+
+  ## Include/Guid/ConnectConInEvent.h
+  gConnectConInEventGuid             = { 0xdb4e8151, 0x57ed, 0x4bed, { 0x88, 0x33, 0x67, 0x51, 0xb5, 0xd1, 0xa8, 0xd7 }}
+
+  ## Guid specify the device is the console out device.
+  #  Include/Guid/ConsoleOutDevice.h
+  gEfiConsoleOutDeviceGuid       = { 0xD3B36F2C, 0xD551, 0x11D4, { 0x9A, 0x46, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }}
+
+  ## Guid specify the device is the console in device.
+  #  Include/Guid/ConsoleInDevice.h
+  gEfiConsoleInDeviceGuid        = { 0xD3B36F2B, 0xD551, 0x11D4, { 0x9A, 0x46, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }}
+
+  ## Guid specifiy the device is the StdErr device.
+  #  Include/Guid/StandardErrorDevice.h
+  gEfiStandardErrorDeviceGuid    = { 0xD3B36F2D, 0xD551, 0x11D4, { 0x9A, 0x46, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }}

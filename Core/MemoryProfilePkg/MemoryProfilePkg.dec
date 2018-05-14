@@ -1,0 +1,28 @@
+## @file
+# Network Package.
+#
+# This package provides network modules that conform to UEFI 2.4 specification.
+#
+# Copyright (c) 2009 - 2018, Intel Corporation. All rights reserved.<BR>
+# (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP<BR>
+#
+# This program and the accompanying materials are licensed and made available under
+# the terms and conditions of the BSD License which accompanies this distribution.
+# The full text of the license may be found at
+# http://opensource.org/licenses/bsd-license.php
+#
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = MemoryProfilePkg
+  PACKAGE_GUID                   = BCEBA26D-9ABA-4A15-8B7A-D2369E8E75A3
+  PACKAGE_VERSION                = 0.1
+
+[Guids]
+  ## Include/Guid/MemoryProfile.h
+  gEdkiiMemoryProfileGuid              = { 0x821c9a09, 0x541a, 0x40f6, { 0x9f, 0x43, 0xa, 0xd1, 0x93, 0xa1, 0x2c, 0xfe }}
+  gEdkiiSmmMemoryProfileGuid           = { 0xe22bbcca, 0x516a, 0x46a8, { 0x80, 0xe2, 0x67, 0x45, 0xe8, 0x36, 0x93, 0xbd }}

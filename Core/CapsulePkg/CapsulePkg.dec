@@ -1,0 +1,54 @@
+## @file
+# Network Package.
+#
+# This package provides network modules that conform to UEFI 2.4 specification.
+#
+# Copyright (c) 2009 - 2018, Intel Corporation. All rights reserved.<BR>
+# (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP<BR>
+#
+# This program and the accompanying materials are licensed and made available under
+# the terms and conditions of the BSD License which accompanies this distribution.
+# The full text of the license may be found at
+# http://opensource.org/licenses/bsd-license.php
+#
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = CapsulePkg
+  PACKAGE_GUID                   = CEBEF9C6-EE19-46A1-855F-3BB2014E4B44
+  PACKAGE_VERSION                = 0.1
+
+[Includes]
+  Include
+
+[Guids]
+  gCapsulePkgTokenSpaceGuid       = { 0xa7017f3f, 0x3622, 0x4688, { 0x8b, 0x3f, 0x95, 0x88, 0x14, 0x6c, 0xe3, 0x8b }}
+
+  ## Capsule update hob and variable guid
+  #  Include/Guid/CapsuleVendor.h
+  gEfiCapsuleVendorGuid          = { 0x711C703F, 0xC285, 0x4B10, { 0xA3, 0xB0, 0x36, 0xEC, 0xBD, 0x3C, 0x8B, 0xE2 }}
+
+[Protocols]
+  ## Include/Protocol/EsrtManagement.h
+  gEsrtManagementProtocolGuid         = { 0xa340c064, 0x723c, 0x4a9c, { 0xa4, 0xdd, 0xd5, 0xb4, 0x7a, 0x26, 0xfb, 0xb0 }}
+
+[PcdsFixedAtBuild, PcdsPatchableInModule, PcdsDynamic, PcdsDynamicEx]
+  ## Indicates the maximum size of the capsule image with a reset flag that the platform can support.
+  #  The default max size is 100MB (0x6400000) for more than one large capsule images.
+  # @Prompt Max size of populated capsule.
+  gCapsulePkgTokenSpaceGuid.PcdMaxSizePopulateCapsule|0x6400000|UINT32|0x0001001e
+
+  ## Indicates the maximum size of the capsule image without a reset flag that the platform can support.
+  #  The default max size is 10MB (0xa00000) for the casule image without reset flag setting.
+  # @Prompt Max size of non-populated capsule.
+  gCapsulePkgTokenSpaceGuid.PcdMaxSizeNonPopulateCapsule|0xa00000|UINT32|0x0001001f
+
+  ## The PCD is used to specify the stack size when capsule IA32 PEI transfers to long mode in PEI phase.
+  #  The default size is 32K. When changing the value of this PCD, the platform developer should
+  #  make sure the memory size is large enough to meet capsule PEI requirement in capsule update path.
+  # @Prompt Stack size for CapsulePei transfer to long mode.
+  gCapsulePkgTokenSpaceGuid.PcdCapsulePeiLongModeStackSize|0x8000|UINT32|0x0001005D
