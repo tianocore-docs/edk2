@@ -1,0 +1,49 @@
+## @file
+# Network Package.
+#
+# This package provides network modules that conform to UEFI 2.4 specification.
+#
+# Copyright (c) 2009 - 2018, Intel Corporation. All rights reserved.<BR>
+# (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP<BR>
+#
+# This program and the accompanying materials are licensed and made available under
+# the terms and conditions of the BSD License which accompanies this distribution.
+# The full text of the license may be found at
+# http://opensource.org/licenses/bsd-license.php
+#
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = NetworkHttpPkg
+  PACKAGE_GUID                   = 1A8857E1-AC94-4B4D-8F27-392C6FC86016
+  PACKAGE_VERSION                = 0.98
+
+[Includes]
+  Include
+
+[Guids]
+  gEfiNetworkHttpPkgTokenSpaceGuid  = { 0x6c0f20ef, 0x1337, 0x4d4a, { 0x9e, 0xe1, 0xf4, 0x2, 0x3, 0x4f, 0xa6, 0x2b}}
+
+  # Include/Guid/HttpBootConfigHii.h
+  gHttpBootConfigGuid           = { 0x4d20583a, 0x7765, 0x4e7a, { 0x8a, 0x67, 0xdc, 0xde, 0x74, 0xee, 0x3e, 0xc5 }}
+
+  # Include/Guid/HttpTlsCipherList.h
+  gEdkiiHttpTlsCipherListGuid   = { 0x46ddb415, 0x5244, 0x49c7, { 0x93, 0x74, 0xf0, 0xe2, 0x98, 0xe7, 0xd3, 0x86 }}
+
+  # Include/Guid/TlsAuthConfigHii.h
+  gTlsAuthConfigGuid            = { 0xb0eae4f8, 0x9a04, 0x4c6d, { 0xa7, 0x48, 0x79, 0x3d, 0xaa, 0xf, 0x65, 0xdf }}
+  
+  # Include/Guid/TlsAuthentication.h
+  gEfiTlsCaCertificateGuid      = { 0xfd2340D0, 0x3dab, 0x4349, { 0xa6, 0xc7, 0x3b, 0x4f, 0x12, 0xb4, 0x8e, 0xae }}
+
+[PcdsFixedAtBuild, PcdsPatchableInModule]
+  ## Indicates whether HTTP connections (i.e., unsecured) are permitted or not.
+  # TRUE  - HTTP connections are allowed. Both the "https://" and "http://" URI schemes are permitted.
+  # FALSE - HTTP connections are denied. Only the "https://" URI scheme is permitted.
+  # @Prompt Indicates whether HTTP connections are permitted or not.
+  gEfiNetworkHttpPkgTokenSpaceGuid.PcdAllowHttpConnections|FALSE|BOOLEAN|0x00000008
+

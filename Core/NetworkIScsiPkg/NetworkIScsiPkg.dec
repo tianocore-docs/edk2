@@ -1,0 +1,56 @@
+## @file
+# Network Package.
+#
+# This package provides network modules that conform to UEFI 2.4 specification.
+#
+# Copyright (c) 2009 - 2018, Intel Corporation. All rights reserved.<BR>
+# (C) Copyright 2015-2017 Hewlett Packard Enterprise Development LP<BR>
+#
+# This program and the accompanying materials are licensed and made available under
+# the terms and conditions of the BSD License which accompanies this distribution.
+# The full text of the license may be found at
+# http://opensource.org/licenses/bsd-license.php
+#
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = NetworkIScsiPkg
+  PACKAGE_GUID                   = E4008286-BC0B-469E-9F29-0A59BC47030C
+  PACKAGE_VERSION                = 0.98
+
+[Includes]
+  Include
+
+[Guids]
+
+  # Include/Guid/IscsiConfigHii.h
+  gIScsiConfigGuid              = { 0x4b47d616, 0xa8d6, 0x4552, { 0x9d, 0x44, 0xcc, 0xad, 0x2e, 0xf, 0x4c, 0xf9}}
+
+  ## Include/Guid/Ip4IScsiConfigHii.h
+  gIp4IScsiConfigGuid                = { 0x6456ed61, 0x3579, 0x41c9, { 0x8a, 0x26, 0x0a, 0x0b, 0xd6, 0x2b, 0x78, 0xfc }}
+  gIScsiCHAPAuthInfoGuid             = { 0x786ec0ac, 0x65ae, 0x4d1b, { 0xb1, 0x37, 0xd, 0x11, 0xa, 0x48, 0x37, 0x97 }}
+
+[PcdsFixedAtBuild]
+  ## The max attempt number will be created by iSCSI driver.
+  # @Prompt Max attempt number.
+  gEfiNetworkPkgTokenSpaceGuid.PcdMaxIScsiAttemptNumber|0x08|UINT8|0x0000000D
+
+[PcdsFixedAtBuild, PcdsPatchableInModule, PcdsDynamic, PcdsDynamicEx]
+
+  ## Network boot policy to stop UEFI iSCSI if applicable.
+  # 0x00 = Always use UEFI iSCSI and ignore iSCSI HBA.
+  # 0x01 = Stop UEFI iSCSI if iSCSI HBA adapter produces AIP protocol with Network Boot.
+  # 0x02 = Stop UEFI iSCSI if iSCSI HBA adapter supports booting from iSCSI IPv4 targets.
+  # 0x04 = Stop UEFI iSCSI if iSCSI HBA adapter supports booting from iSCSI IPv6 targets.
+  # 0x08 = Stop UEFI iSCSI if iSCSI HBA adapter supports an offload engine for iSCSI boot.
+  # 0x10 = Stop UEFI iSCSI if iSCSI HBA adapter supports multipath I/O for iSCSI boot.
+  # 0x20 = Stop UEFI iSCSI if iSCSI HBA adapter is currently configured to boot from iSCSI IPv4 targets.
+  # 0x40 = Stop UEFI iSCSI if iSCSI HBA adapter is currently configured to boot from iSCSI IPv6 targets.
+  # 0xFF = Always use iSCSI HBA and ignore UEFI iSCSI.
+  # @Prompt Type Value of network boot policy used in iSCSI.
+  gEfiNetworkPkgTokenSpaceGuid.PcdIScsiAIPNetworkBootPolicy|0x08|UINT8|0x10000007
+

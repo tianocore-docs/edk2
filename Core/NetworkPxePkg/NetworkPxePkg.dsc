@@ -15,11 +15,11 @@
 ##
 
 [Defines]
-  PLATFORM_NAME                  = NetworkPkg
-  PLATFORM_GUID                  = 3FD34E9B-E90C-44e1-B510-1F632A509F10
+  PLATFORM_NAME                  = NetworkPxePkg
+  PLATFORM_GUID                  = 2A9DC55A-D06C-49B0-8E86-2927DD1C5CA5
   PLATFORM_VERSION               = 0.98
   DSC_SPECIFICATION              = 0x00010005
-  OUTPUT_DIRECTORY               = Build/NetworkPkg
+  OUTPUT_DIRECTORY               = Build/NetworkPxePkg
   SUPPORTED_ARCHITECTURES        = IA32|IPF|X64|EBC|ARM|AARCH64
   BUILD_TARGETS                  = DEBUG|RELEASE|NOOPT
   SKUID_IDENTIFIER               = DEFAULT
@@ -105,26 +105,10 @@
 ###################################################################################################
 
 [Components]
-  NetworkPkg/Library/DxeDpcLib/DxeDpcLib.inf
-  NetworkPkg/Library/DxeIpIoLib/DxeIpIoLib.inf
-  NetworkPkg/Library/DxeNetLib/DxeNetLib.inf
-  NetworkPkg/Library/DxeUdpIoLib/DxeUdpIoLib.inf
-  NetworkPkg/Library/DxeTcpIoLib/DxeTcpIoLib.inf
 
-  NetworkPkg/Ip6Dxe/Ip6Dxe.inf
-  NetworkPkg/TcpDxe/TcpDxe.inf
-  NetworkPkg/Udp6Dxe/Udp6Dxe.inf
-  NetworkPkg/Dhcp6Dxe/Dhcp6Dxe.inf
-  NetworkPkg/DnsDxe/DnsDxe.inf
-
-  NetworkPkg/ArpDxe/ArpDxe.inf
-  NetworkPkg/Dhcp4Dxe/Dhcp4Dxe.inf
-  NetworkPkg/DpcDxe/DpcDxe.inf
-  NetworkPkg/Ip4Dxe/Ip4Dxe.inf
-  NetworkPkg/MnpDxe/MnpDxe.inf
-  NetworkPkg/SnpDxe/SnpDxe.inf
-  NetworkPkg/Tcp4Dxe/Tcp4Dxe.inf
-  NetworkPkg/Udp4Dxe/Udp4Dxe.inf
+[Components.IA32, Components.X64, Components.IPF]
+  NetworkPxePkg/UefiPxeBcDxe/UefiPxeBcDxe.inf
+  NetworkPxePkg/UefiPxe4BcDxe/UefiPxeBcDxe.inf
 
 [BuildOptions]
   *_*_*_CC_FLAGS = -D DISABLE_NEW_DEPRECATED_INTERFACES
