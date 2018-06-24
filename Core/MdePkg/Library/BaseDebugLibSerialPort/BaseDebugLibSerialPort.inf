@@ -33,6 +33,7 @@
 
 [Packages]
   MdePkg/MdePkg.dec
+  MdeUefiPkg/MdeUefiPkg.dec
 
 [LibraryClasses]
   SerialPortLib
