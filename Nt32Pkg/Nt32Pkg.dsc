@@ -537,6 +537,8 @@
       FileHandleLib|MdePkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
   }
 
+  Nt32Pkg/CrashDxe/CrashTest.inf
+
 ###################################################################################################
 #
 # BuildOptions Section - Define the module specific tool chain flags that should be used as
