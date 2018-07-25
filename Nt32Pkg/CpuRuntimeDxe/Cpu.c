@@ -54,6 +54,21 @@ CPU_ARCH_PROTOCOL_PRIVATE mCpuTemplate = {
 
 #define EFI_CPU_DATA_MAXIMUM_LENGTH 0x100
 
+EFI_CPU_INTERRUPT_HANDLER  mInterruptHandler[0x20];
+
+LONG ApplicationCrashHandler(EXCEPTION_POINTERS *pException){
+  EFI_EXCEPTION_TYPE  Index;
+  EFI_SYSTEM_CONTEXT  SystemContext;
+
+  for (Index = ARRAY_SIZE(mInterruptHandler) - 1; Index >= 0; Index--) {
+    if (mInterruptHandler[Index] != 0) {
+      SystemContext.SystemContextIa32 = NULL;
+      mInterruptHandler[Index] (Index, SystemContext);
+      break;
+    }
+  }
+  return EXCEPTION_EXECUTE_HANDLER;  
+}
 
 
 //
@@ -280,12 +295,12 @@ Returns:
   //
   // Do parameter checking for EFI spec conformance
   //
-  if (InterruptType < 0 || InterruptType > 0xff) {
+  if (InterruptType < 0 || InterruptType >= 0x20) {
     return EFI_UNSUPPORTED;
   }
-  //
-  // Do nothing for Nt32 emulation
-  //
+
+  mInterruptHandler[InterruptType] = InterruptHandler;
+
   return EFI_UNSUPPORTED;
 }
 
@@ -533,6 +548,8 @@ Returns:
   // Retrieve the frequency of the performance counter in Hz.
   //  
   gWinNt->QueryPerformanceFrequency ((LARGE_INTEGER *)&Frequency);
+
+  gWinNt->SetUnhandledExceptionFilter ((LPTOP_LEVEL_EXCEPTION_FILTER)ApplicationCrashHandler);
   
   //
   // Convert frequency in Hz to a clock period in femtoseconds.

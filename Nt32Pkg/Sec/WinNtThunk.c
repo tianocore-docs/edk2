@@ -178,7 +178,8 @@ EFI_WIN_NT_THUNK_PROTOCOL mWinNtThunkTable = {
   HeapAlloc,
   HeapFree,
   QueryPerformanceCounter,
-  QueryPerformanceFrequency
+  QueryPerformanceFrequency,
+  SetUnhandledExceptionFilter,
 };
 
 #pragma warning(default : 4996)

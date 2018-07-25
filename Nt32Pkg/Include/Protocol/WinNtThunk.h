@@ -1121,6 +1121,20 @@ BOOL
 //
 //
 
+typedef
+WINBASEAPI
+LONG
+(WINAPI *WinNtUnhandledExceptionFilter) (
+    _In_ struct _EXCEPTION_POINTERS * ExceptionInfo
+    );
+
+typedef
+WINBASEAPI
+LPTOP_LEVEL_EXCEPTION_FILTER
+(WINAPI *WinNtSetUnhandledExceptionFilter) (
+    _In_opt_ LPTOP_LEVEL_EXCEPTION_FILTER lpTopLevelExceptionFilter
+    );
+
 #define EFI_WIN_NT_THUNK_PROTOCOL_SIGNATURE SIGNATURE_32 ('N', 'T', 'T', 'T')
 
 typedef struct {
@@ -1285,6 +1299,8 @@ typedef struct {
   
   WinNtQueryPerformanceCounter        QueryPerformanceCounter;
   WinNtQueryPerformanceFrequency      QueryPerformanceFrequency;
+
+  WinNtSetUnhandledExceptionFilter    SetUnhandledExceptionFilter;
   
 } EFI_WIN_NT_THUNK_PROTOCOL;
 
