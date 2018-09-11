@@ -54,6 +54,7 @@ from collections import defaultdict
 from Workspace.WorkspaceCommon import OrderedListDict
 
 from Common.caching import cached_property, cached_class_function
+from AutoGen.PcdDataBase import PcdDatabase
 
 ## Regular expression for splitting Dependency Expression string into tokens
 gDepexTokenPattern = re.compile("(\(|\)|\w+| \S+\.inf)")
@@ -283,7 +284,7 @@ class WorkspaceAutoGen(AutoGen):
         self._MakeFileDir   = None
         self._BuildCommand  = None
         self._GuidDict = {}
-
+        self.PcdDatabase = PcdDatabase()
         # there's many relative directory operations, so ...
         os.chdir(self.WorkspaceDir)
 
@@ -686,6 +687,10 @@ class WorkspaceAutoGen(AutoGen):
             for f in AllWorkSpaceMetaFiles:
                 print(f, file=file)
         return True
+
+    def CreatePcdDB(self,PlatformInfo):
+        self.PcdDatabase.generate_pcd_database_data(PlatformInfo)
+        self.PcdDatabase.create_pcd_database()
 
     def _GenPkgLevelHash(self, Pkg):
         if Pkg.PackageName in GlobalData.gPackageHash[Pkg.Arch]:
@@ -1243,7 +1248,6 @@ class PlatformAutoGen(AutoGen):
                     PcdNvStoreDfBuffer[0].MaxDatumSize = str(len(default_skuobj.DefaultValue.split(",")))
 
         return OrgVpdFile
-
     ## Collect dynamic PCDs
     #
     #  Gather dynamic PCDs list from each module and their settings from platform
@@ -3939,7 +3943,10 @@ class ModuleAutoGen(AutoGen):
                                 File = path.join(root, f)
                                 shutil.copy2(File, self.OutputDir)
                     if self.Name == "PcdPeim" or self.Name == "PcdDxe":
-                        CreatePcdDatabaseCode(self, TemplateString(), TemplateString())
+                        PcdDatabase = self.PlatformInfo.PcdDatabase
+                        if not PcdDatabase.pei_db_exist:
+                            PcdDatabase.generate_pcd_database_data(self.PlatformInfo)
+                            PcdDatabase.create_pcd_database()
                     return True
         return False
 
@@ -4010,7 +4017,10 @@ class ModuleAutoGen(AutoGen):
 
         # Need to generate PcdDatabase even PcdDriver is binarymodule
         if self.IsBinaryModule and self.PcdIsDriver != '':
-            CreatePcdDatabaseCode(self, TemplateString(), TemplateString())
+            PcdDatabase = self.PlatformInfo.PcdDatabase
+            if not PcdDatabase.pei_db_exist:
+                PcdDatabase.generate_pcd_database_data(self.PlatformInfo)
+                PcdDatabase.create_pcd_database()
             return
         if self.IsBinaryModule:
             if self.IsLibrary:

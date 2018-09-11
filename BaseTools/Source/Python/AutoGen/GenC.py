@@ -24,7 +24,7 @@ from Common.DataType import *
 from Common.Misc import *
 from Common.StringUtils import StringToArray
 from .StrGather import *
-from .GenPcdDb import CreatePcdDatabaseCode
+from .GenPcdDb import CreatePcdDatabaseCode,gPcdPhaseMap
 from .IdfClassObject import *
 
 ## PCD type string
@@ -1694,7 +1694,18 @@ def CreatePcdCode(Info, AutoGenC, AutoGenH):
             AutoGenC.Append("\n// Definition of PCDs used in libraries\n")
         for Pcd in Info.LibraryPcdList:
             CreateModulePcdCode(Info, AutoGenC, AutoGenC, Pcd)
-    CreatePcdDatabaseCode(Info, AutoGenC, AutoGenH)
+
+    if Info.PcdIsDriver:
+        PcdDatabase = Info.PlatformInfo.Workspace.PcdDatabase
+        PcdDatabase.generate_pcd_database_data(Info.PlatformInfo)
+        AutoGenH.Append(PcdDatabase.PeiDbDebugInfo[0].String)
+        Phase = gPcdPhaseMap[Info.PcdIsDriver]
+        if Phase == 'PEI':
+            AutoGenC.Append(PcdDatabase.PeiDbDebugInfo[1].String)
+
+        if Phase == 'DXE':
+            AutoGenH.Append(PcdDatabase.DxeDbDebugInfo[0].String)
+            AutoGenC.Append(PcdDatabase.DxeDbDebugInfo[1].String)
 
 ## Create code for unicode string definition
 #

@@ -916,32 +916,6 @@ class FfsInfStatement(FfsInfStatementClassObject):
         SectAlignments = []
         Index = 1
         HasGeneratedFlag = False
-        if self.PcdIsDriver == 'PEI_PCD_DRIVER':
-            if self.IsBinaryModule:
-                PcdExDbFileName = os.path.join(GenFdsGlobalVariable.FvDir, "PEIPcdDataBase.raw")
-            else:
-                PcdExDbFileName = os.path.join(self.EfiOutputPath, "PEIPcdDataBase.raw")
-            PcdExDbSecName = os.path.join(self.OutputPath, "PEIPcdDataBaseSec.raw")
-            GenFdsGlobalVariable.GenerateSection(PcdExDbSecName,
-                                                 [PcdExDbFileName],
-                                                 "EFI_SECTION_RAW",
-                                                 IsMakefile = IsMakefile
-                                                 )
-            SectFiles.append(PcdExDbSecName)
-            SectAlignments.append(None)
-        elif self.PcdIsDriver == 'DXE_PCD_DRIVER':
-            if self.IsBinaryModule:
-                PcdExDbFileName = os.path.join(GenFdsGlobalVariable.FvDir, "DXEPcdDataBase.raw")
-            else:
-                PcdExDbFileName = os.path.join(self.EfiOutputPath, "DXEPcdDataBase.raw")
-            PcdExDbSecName = os.path.join(self.OutputPath, "DXEPcdDataBaseSec.raw")
-            GenFdsGlobalVariable.GenerateSection(PcdExDbSecName,
-                                                [PcdExDbFileName],
-                                                "EFI_SECTION_RAW",
-                                                IsMakefile = IsMakefile
-                                                )
-            SectFiles.append(PcdExDbSecName)
-            SectAlignments.append(None)
         for Sect in Rule.SectionList:
             SecIndex = '%d' %Index
             SectList  = []
