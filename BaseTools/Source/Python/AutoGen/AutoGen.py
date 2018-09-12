@@ -1320,7 +1320,7 @@ class PlatformAutoGen(AutoGen):
                     # used by DXE module, it should be stored in DXE PCD database.
                     # The default Phase is DXE
                     #
-                    if M.ModuleType in SUP_MODULE_SET_PEI:
+                    if M.ModuleType in SUP_MODULE_SET_PEI or M.ModuleType == SUP_MODULE_USER_DEFINED:
                         PcdFromModule.Phase = "PEI"
                     if PcdFromModule not in self._DynaPcdList_:
                         self._DynaPcdList_.append(PcdFromModule)
@@ -1362,7 +1362,7 @@ class PlatformAutoGen(AutoGen):
                     # make sure that the "VOID*" kind of datum has MaxDatumSize set
                     if PcdFromModule.DatumType == TAB_VOID and not PcdFromModule.MaxDatumSize:
                         NoDatumTypePcdList.add("%s.%s [%s]" % (PcdFromModule.TokenSpaceGuidCName, PcdFromModule.TokenCName, InfName))
-                    if M.ModuleType in SUP_MODULE_SET_PEI:
+                    if M.ModuleType in SUP_MODULE_SET_PEI or M.ModuleType == SUP_MODULE_USER_DEFINED:
                         PcdFromModule.Phase = "PEI"
                     if PcdFromModule not in self._DynaPcdList_ and PcdFromModule.Type in PCD_DYNAMIC_EX_TYPE_SET:
                         self._DynaPcdList_.append(PcdFromModule)
