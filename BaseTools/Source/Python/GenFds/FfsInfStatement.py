@@ -416,9 +416,10 @@ class FfsInfStatement(FfsInfStatementClassObject):
         # Apply patches to patched output file
         #
         for Pcd, Value in self.PatchPcds:
-            RetVal, RetStr = PatchBinaryFile(Output, int(Pcd.Offset, 0), Pcd.DatumType, Value, Pcd.MaxDatumSize)
-            if RetVal:
-                EdkLogger.error("GenFds", GENFDS_ERROR, RetStr, File=self.InfFileName)
+            for PcdOffset in Pcd.OffsetList:
+                RetVal, RetStr = PatchBinaryFile(Output, int(PcdOffset, 0), Pcd.DatumType, Value, Pcd.MaxDatumSize)
+                if RetVal:
+                    EdkLogger.error("GenFds", GENFDS_ERROR, RetStr, File=self.InfFileName)
 
         #
         # Save the path of the patched output file
@@ -429,6 +430,11 @@ class FfsInfStatement(FfsInfStatementClassObject):
         # Return path to patched output file
         #
         return Output
+
+    def GetFfsAsBuildInfFile(self):
+        if self.IsBinaryModule:
+            return self.InfFileName
+        return os.path.join(self.EfiOutputPath, self.BaseName + ".inf")
 
     ## GenFfs() method
     #

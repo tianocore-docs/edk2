@@ -973,6 +973,7 @@ class InfBuildData(ModuleBuildClassObject):
             if Type == MODEL_PCD_PATCHABLE_IN_MODULE and ValueList[1]:
                 # Patch PCD: TokenSpace.PcdCName|Value|Offset
                 Pcd.Offset = ValueList[1]
+                Pcd.OffsetList.append (ValueList[1])
 
             if (PcdRealName, TokenSpaceGuid) in GlobalData.MixedPcd:
                 for Package in self.Packages:

@@ -60,6 +60,8 @@ class PcdClassObject(object):
         self.validateranges = validateranges
         self.validlists = validlists
         self.expressions = expressions
+        self.Offset = ''
+        self.OffsetList = []
         self.DscDefaultValue = None
         self.DscRawValue = None
         if IsDsc:
