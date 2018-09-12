@@ -16,22 +16,65 @@ from __future__ import absolute_import
 ##
 # Import Modules
 #
+import uuid
 import Common.LongFilePathOs as os
 import subprocess
 from io import BytesIO
 from struct import *
 
-from . import Ffs
-from . import AprioriSection
-from . import FfsFileStatement
+from .Ffs import Ffs
+from .AprioriSection import AprioriSection
+from .FfsFileStatement import FileStatement
+from .FfsInfStatement import FfsInfStatement
 from .GenFdsGlobalVariable import GenFdsGlobalVariable
 from CommonDataClass.FdfClass import FvClassObject
 from Common.Misc import SaveFileOnChange, PackGUID
 from Common.LongFilePathSupport import CopyLongFilePath
 from Common.LongFilePathSupport import OpenLongFilePath as open
 from Common.DataType import *
+from Common.Misc import TemplateString
+from AutoGen.InfSectionParser import InfSectionParser
 
 FV_UI_EXT_ENTY_GUID = 'A67DF1FA-8DE8-4E98-AF09-4BDF2EFFBC7C'
+
+#
+# Template string to generic AsBuilt INF
+# intel user extension todo
+#
+gAsBuiltFvInfString = TemplateString("""
+
+# DO NOT EDIT
+# FILE auto-generated
+
+[Defines]
+  INF_VERSION                = ${module_inf_version}
+  BASE_NAME                  = ${module_name}
+  FILE_GUID                  = ${module_guid}
+  MODULE_TYPE                = ${module_module_type}
+  VERSION_STRING             = ${module_version_string}
+
+[Packages.${module_arch}]${BEGIN}
+  ${package_item}${END}
+
+[Binaries.${module_arch}]${BEGIN}
+  ${binary_item}${END}
+
+[PatchPcd.${module_arch}]${BEGIN}
+  ${patchablepcd_item}${END}
+
+[Protocols.${module_arch}]${BEGIN}
+  ${protocol_item}${END}
+
+[Ppis.${module_arch}]${BEGIN}
+  ${ppi_item}${END}
+
+[Guids.${module_arch}]${BEGIN}
+  ${guid_item}${END}
+
+[PcdEx.${module_arch}]${BEGIN}
+  ${pcd_item}${END}
+
+""")
 
 ## generate FV
 #
@@ -53,6 +96,137 @@ class FV (FvClassObject):
         self.FvForceRebase = None
         self.FvRegionInFD = None
         self.UsedSizeEnable = False
+
+    def MergeUsage (self, SectionDataList, GuidUsageList):
+        UsageList=[]
+        for SectionData in SectionDataList:
+            if SectionData.startswith("##"):
+                UsageList.append(SectionData)
+            elif SectionData.startswith("g"):
+                GuidName = SectionData
+                if "#" in SectionData:
+                    GuidName = SectionData[:SectionData.find("#")].strip()
+                    UsageList.append (SectionData[SectionData.find("#"):].strip())
+                if GuidName not in GuidUsageList.keys():
+                    GuidUsageList[GuidName] = UsageList
+                else:
+                    for Usage in UsageList:
+                        if Usage not in GuidUsageList[GuidName]:
+                            GuidUsageList[GuidName].append (Usage)
+                UsageList=[]
+        return
+
+    def GenerateFvAsBuildInf (self):
+        if not self.FfsList or not len (self.FfsList) > 0:
+            return
+
+        FvFileGuid = self.FvNameGuid
+        if FvFileGuid == None or FvFileGuid == '':
+            FvFileGuid = str(uuid.uuid4())
+
+        FvMapFile = os.path.join(GenFdsGlobalVariable.FvDir, self.UiFvName + '.Fv.map')
+        ModuleOffsetList = {}
+        Lines = open(FvMapFile, 'r')
+        for Line in Lines:
+            if Line.startswith ("(GUID="):
+                LineSplit = Line.strip()[:-1].split()
+                LineGuid   = LineSplit[0].split('=')[1]
+                LineOffset = LineSplit[1].split('=')[1]
+                ModuleOffsetList[LineGuid] = int (LineOffset, 16)
+        Lines.close()
+
+        AsBuiltInfDict = {
+          'module_inf_version'                : "0x00010017",
+          'module_name'                       : self.UiFvName,
+          'module_guid'                       : FvFileGuid,
+          'module_module_type'                : "USER_DEFINED",
+          'module_version_string'             : "1.0",
+          'module_arch'                       : "",
+          'package_item'                      : [],
+          'binary_item'                       : [],
+          'patchablepcd_item'                 : [],
+          'pcd_item'                          : [],
+          'protocol_item'                     : [],
+          'ppi_item'                          : [],
+          'guid_item'                         : []
+        }
+
+        AsBuiltInfDict['binary_item'] = ['FV|%s.Fv'%self.UiFvName]
+
+        FvArch = None
+        PpiList = {}
+        ProtocolList = {}
+        GuidList = {}
+        PcdExList = {}
+        for FfsFile in self.FfsList:
+            if not isinstance(FfsFile, FfsInfStatement):
+                continue
+
+            FileGuid = FfsFile.ModuleGuid.upper()
+            if FileGuid not in ModuleOffsetList:
+                continue
+            FileName = FfsFile.GetFfsAsBuildInfFile()
+            FileArch = FfsFile.GetCurrentArch()
+            if not FvArch:
+                FvArch = FileArch
+            InfObj = InfSectionParser (FileName)
+            SectionDataList = InfObj.GetSectionData ('Packages', FileArch)
+            if len (SectionDataList) > 0:
+                for SectionData in SectionDataList:
+                    if SectionData not in AsBuiltInfDict['package_item']:
+                        AsBuiltInfDict['package_item'].append (SectionData)
+            SectionDataList = InfObj.GetSectionData ('Ppis', FileArch)
+            if len (SectionDataList) > 0:
+                self.MergeUsage(SectionDataList, PpiList)
+            SectionDataList = InfObj.GetSectionData ('Guids', FileArch)
+            if len (SectionDataList) > 0:
+                self.MergeUsage(SectionDataList, GuidList)
+            SectionDataList = InfObj.GetSectionData ('Protocols', FileArch)
+            if len (SectionDataList) > 0:
+                self.MergeUsage(SectionDataList, ProtocolList)
+            SectionDataList = InfObj.GetSectionData ('PatchPcd', FileArch)
+            if len (SectionDataList) > 0:
+                for SectionData in SectionDataList:
+                    if SectionData.startswith ("g"):
+                        OffsetImage = SectionData[SectionData.rfind("|") + 1:]
+                        if "#" in OffsetImage:
+                            OffsetImage = OffsetImage[:OffsetImage.find("#")]
+                        OffsetValue = int (OffsetImage, 16) + ModuleOffsetList[FileGuid]
+                        if OffsetValue > 0x10000000000000000:
+                            OffsetValue = OffsetValue - 0x10000000000000000
+                        SectionData = SectionData[:SectionData.rfind("|") + 1] + ("0x%X"%OffsetValue)
+                    AsBuiltInfDict['patchablepcd_item'].append (SectionData)
+            SectionDataList = InfObj.GetSectionData ('PcdEx', FileArch)
+            if len (SectionDataList) > 0:
+                self.MergeUsage(SectionDataList, PcdExList)
+
+        for Guid in PpiList.keys():
+            for Usage in PpiList[Guid]:
+                AsBuiltInfDict['ppi_item'].append (Usage)
+            AsBuiltInfDict['ppi_item'].append (Guid)
+
+        for Guid in ProtocolList.keys():
+            for Usage in ProtocolList[Guid]:
+                AsBuiltInfDict['protocol_item'].append (Usage)
+            AsBuiltInfDict['protocol_item'].append (Guid)
+
+        for Guid in GuidList.keys():
+            for Usage in GuidList[Guid]:
+                AsBuiltInfDict['guid_item'].append (Usage)
+            AsBuiltInfDict['guid_item'].append (Guid)
+
+        for PcdEx in PcdExList.keys():
+            for Usage in PcdExList[PcdEx]:
+                AsBuiltInfDict['pcd_item'].append (Usage)
+            AsBuiltInfDict['pcd_item'].append (PcdEx)
+
+        if not FvArch:
+            FvArch = "Common"
+        AsBuiltInfDict['module_arch'] = FvArch
+        AsBuiltInf = TemplateString()
+        AsBuiltInf.Append(gAsBuiltFvInfString.Replace(AsBuiltInfDict))
+
+        SaveFileOnChange(os.path.join(GenFdsGlobalVariable.FvDir, 'AsBuild' + self.UiFvName + '.inf'), str(AsBuiltInf), False)
 
     ## AddToBuffer()
     #
@@ -116,7 +290,7 @@ class FV (FvClassObject):
         # Process Modules in FfsList
         for FfsFile in self.FfsList :
             if Flag:
-                if isinstance(FfsFile, FfsFileStatement.FileStatement):
+                if isinstance(FfsFile, FileStatement):
                     continue
             if GenFdsGlobalVariable.EnableGenfdsMultiThread and GenFdsGlobalVariable.ModuleFile and GenFdsGlobalVariable.ModuleFile.Path.find(os.path.normpath(FfsFile.InfFileName)) == -1:
                 continue
@@ -158,6 +332,8 @@ class FV (FvClassObject):
                                     ForceRebase=self.FvForceRebase,
                                     FileSystemGuid=FFSGuid
                                     )
+
+            self.GenerateFvAsBuildInf()
 
             NewFvInfo = None
             if os.path.exists (FvInfoFileName):
