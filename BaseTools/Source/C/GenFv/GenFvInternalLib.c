@@ -812,6 +812,9 @@ Returns:
   UINT32                              DataVirtualAddress;
   EFI_PHYSICAL_ADDRESS                LinkTimeBaseAddress;
 
+  if (FvMapFile == NULL) {
+    return EFI_SUCCESS;
+  }
   //
   // Init local variable
   //
@@ -3317,6 +3320,17 @@ Returns:
   EFI_PHYSICAL_ADDRESS                SubFvBaseAddress;
   EFI_FILE_SECTION_POINTER            CorePe32;
   UINT16                              MachineType;
+  EFI_FIRMWARE_VOLUME_HEADER          *OrigFvHeader;
+  UINT32                              OrigFvLength;
+  EFI_PHYSICAL_ADDRESS                OrigFvBaseAddress;
+  EFI_FFS_FILE_HEADER                 *CurrentFile;
+  
+  //
+  // Initialize FV library, saving previous values
+  //
+  OrigFvHeader = NULL;
+  GetFvHeader (&OrigFvHeader, &OrigFvLength);
+  OrigFvBaseAddress = FvInfo->BaseAddress;
 
   for (Index = 1;; Index++) {
     //
@@ -3354,8 +3368,28 @@ Returns:
     //
     // Rebase on Flash
     //
-    SubFvBaseAddress = FvInfo->BaseAddress + (UINTN) SubFvImageHeader - (UINTN) FfsFile + XipOffset;
-    mFvBaseAddress[mFvBaseAddressNumber ++ ] = SubFvBaseAddress;
+    SubFvBaseAddress = OrigFvBaseAddress + (UINTN) SubFvImageHeader - (UINTN) FfsFile + XipOffset;
+    //mFvBaseAddress[mFvBaseAddressNumber ++ ] = SubFvBaseAddress;
+    FvInfo->BaseAddress = SubFvBaseAddress;
+    InitializeFvLib(SubFvImageHeader, (UINT32) SubFvImageHeader->FvLength);
+    
+    Status = GetNextFile (NULL, &CurrentFile);
+    if (EFI_ERROR (Status)) {
+      Error (NULL, 0, 0003, "error parsing FV image", "FFS file can't be found");
+      continue;
+    }
+    while (CurrentFile) {
+      FfsRebase (FvInfo, "", CurrentFile, (UINTN) CurrentFile - (UINTN) SubFvImageHeader, NULL);
+      Status = GetNextFile (CurrentFile, &CurrentFile);
+      if (EFI_ERROR (Status)) {
+        break;
+      }
+    }
+  }
+
+  FvInfo->BaseAddress = OrigFvBaseAddress;
+  if (OrigFvHeader != NULL) {
+    InitializeFvLib(OrigFvHeader, OrigFvLength);
   }
 
   return EFI_SUCCESS;
