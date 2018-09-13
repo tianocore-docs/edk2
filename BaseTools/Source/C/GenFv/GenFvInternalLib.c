@@ -767,6 +767,7 @@ WriteMapFile (
   IN OUT FILE                  *FvMapFile,
   IN     CHAR8                 *FileName,
   IN     EFI_FFS_FILE_HEADER   *FfsFile,
+  IN     EFI_PHYSICAL_ADDRESS  FvBaseAddress,
   IN     EFI_PHYSICAL_ADDRESS  ImageBaseAddress,
   IN     PE_COFF_LOADER_IMAGE_CONTEXT *pImageContext
   )
@@ -900,7 +901,7 @@ Returns:
   //
   // module information output
   //
-  if (ImageBaseAddress == 0) {
+  if (FvBaseAddress == 0) {
     fprintf (FvMapFile, "%s (dummy) (", KeyWord);
     fprintf (FvMapFile, "BaseAddress=%010llx, ", (unsigned long long) ImageBaseAddress);
   } else {
@@ -931,6 +932,7 @@ Returns:
       DataVirtualAddress = SectionHeader->VirtualAddress;
     }
   }
+  fprintf (FvMapFile, " BaseAddressOffset=0x%010llx", (unsigned long long) (ImageBaseAddress - FvBaseAddress));
   fprintf (FvMapFile, " .textbaseaddress=0x%010llx", (unsigned long long) (ImageBaseAddress + TextVirtualAddress));
   fprintf (FvMapFile, " .databaseaddress=0x%010llx", (unsigned long long) (ImageBaseAddress + DataVirtualAddress));
   fprintf (FvMapFile, ")\n\n");
@@ -1668,12 +1670,12 @@ Returns:
     if (Status == EFI_NOT_FOUND) {
       Status = GetSectionByType (PeiCoreFile, EFI_SECTION_TE, 1, &Pe32Section);
     }
-  
+
     if (EFI_ERROR (Status)) {
       Error (NULL, 0, 3000, "Invalid", "could not find either a PE32 or a TE section in PEI core file.");
       return EFI_ABORTED;
     }
-  
+
     SecHeaderSize = GetSectionHeaderLength(Pe32Section.CommonHeader);
     Status = GetPe32Info (
               (VOID *) ((UINTN) Pe32Section.Pe32Section + SecHeaderSize),
@@ -1681,7 +1683,7 @@ Returns:
               &BaseOfCode,
               &MachineType
               );
-  
+
     if (EFI_ERROR (Status)) {
       Error (NULL, 0, 3000, "Invalid", "could not get the PE32 entry point for the PEI core.");
       return EFI_ABORTED;
@@ -1756,7 +1758,7 @@ Returns:
       // Get the location to update
       //
       Ia32ResetAddressPtr  = (UINT32 *) ((UINTN) FvImage->Eof - IA32_PEI_CORE_ENTRY_OFFSET);
-  
+
       //
       // Write lower 32 bits of physical address for Pei Core entry
       //
@@ -3294,7 +3296,8 @@ EFI_STATUS
 GetChildFvFromFfs (
   IN      FV_INFO               *FvInfo,
   IN      EFI_FFS_FILE_HEADER   *FfsFile,
-  IN      UINTN                 XipOffset
+  IN      UINTN                 XipOffset,
+  IN      FILE                  *FvMapFile
   )
 /*++
 
@@ -3324,13 +3327,19 @@ Returns:
   UINT32                              OrigFvLength;
   EFI_PHYSICAL_ADDRESS                OrigFvBaseAddress;
   EFI_FFS_FILE_HEADER                 *CurrentFile;
-  
+  CHAR8                               FileGuidName [MAX_LINE_LEN];
+
   //
   // Initialize FV library, saving previous values
   //
   OrigFvHeader = NULL;
   GetFvHeader (&OrigFvHeader, &OrigFvLength);
   OrigFvBaseAddress = FvInfo->BaseAddress;
+
+  //
+  // Print FileGuid to string buffer.
+  //
+  PrintGuidToBuffer (&FfsFile->Name, (UINT8 *)FileGuidName, MAX_LINE_LEN, TRUE);
 
   for (Index = 1;; Index++) {
     //
@@ -3371,8 +3380,9 @@ Returns:
     SubFvBaseAddress = OrigFvBaseAddress + (UINTN) SubFvImageHeader - (UINTN) FfsFile + XipOffset;
     //mFvBaseAddress[mFvBaseAddressNumber ++ ] = SubFvBaseAddress;
     FvInfo->BaseAddress = SubFvBaseAddress;
+    fprintf (FvMapFile, "(GUID=%s BaseAddressOffset=0x%010llx)\n\n", FileGuidName, (unsigned long long) (SubFvBaseAddress - OrigFvBaseAddress));
     InitializeFvLib(SubFvImageHeader, (UINT32) SubFvImageHeader->FvLength);
-    
+
     Status = GetNextFile (NULL, &CurrentFile);
     if (EFI_ERROR (Status)) {
       Error (NULL, 0, 0003, "error parsing FV image", "FFS file can't be found");
@@ -3448,6 +3458,7 @@ Returns:
   CHAR8                                 *PdbPointer;
   UINT32                                FfsHeaderSize;
   UINT32                                CurSecHdrSize;
+  BOOLEAN                               IsRebase;
 
   Index              = 0;
   MemoryImagePointer = NULL;
@@ -3457,19 +3468,20 @@ Returns:
   Cptr               = NULL;
   PeFile             = NULL;
   PeFileBuffer       = NULL;
+  IsRebase           = TRUE;
 
   //
   // Don't need to relocate image when BaseAddress is zero and no ForceRebase Flag specified.
   //
   if ((FvInfo->BaseAddress == 0) && (FvInfo->ForceRebase == -1)) {
-    return EFI_SUCCESS;
+    IsRebase = FALSE;
   }
 
   //
   // If ForceRebase Flag specified to FALSE, will always not take rebase action.
   //
   if (FvInfo->ForceRebase == 0) {
-    return EFI_SUCCESS;
+    IsRebase = FALSE;
   }
 
 
@@ -3490,7 +3502,7 @@ Returns:
       //
       // Rebase the inside FvImage.
       //
-      GetChildFvFromFfs (FvInfo, FfsFile, XipOffset);
+      GetChildFvFromFfs (FvInfo, FfsFile, XipOffset, FvMapFile);
 
       //
       // Search PE/TE section in FV sectin.
@@ -3659,6 +3671,23 @@ Returns:
     }
 
     //
+    // Default use FileName as map file path
+    //
+    if (PdbPointer == NULL) {
+      PdbPointer = FileName;
+    }
+    //
+    // Get this module function address from ModulePeMapFile and add them into FvMap file
+    //
+    WriteMapFile (FvMapFile, PdbPointer, FfsFile, FvInfo->BaseAddress, NewPe32BaseAddress, &OrigImageContext);
+
+    //
+    // Rebase is not required.
+    //
+    if (IsRebase == FALSE) {
+      continue;
+    }
+    //
     // Relocation doesn't exist
     //
     if (ImageContext.RelocationsStripped) {
@@ -3748,19 +3777,6 @@ Returns:
                                                 );
       FfsFile->State = SavedState;
     }
-
-    //
-    // Get this module function address from ModulePeMapFile and add them into FvMap file
-    //
-
-    //
-    // Default use FileName as map file path
-    //
-    if (PdbPointer == NULL) {
-      PdbPointer = FileName;
-    }
-
-    WriteMapFile (FvMapFile, PdbPointer, FfsFile, NewPe32BaseAddress, &OrigImageContext);
   }
 
   if (FfsFile->Type != EFI_FV_FILETYPE_SECURITY_CORE &&
@@ -3894,6 +3910,32 @@ Returns:
         ImageContext.RelocationsStripped = FALSE;
       }
     }
+
+    //
+    // Default use FileName as map file path
+    //
+    if (PdbPointer == NULL) {
+      PdbPointer = FileName;
+    }
+
+    //
+    // Get this module function address from ModulePeMapFile and add them into FvMap file
+    //
+    WriteMapFile (
+      FvMapFile,
+      PdbPointer,
+      FfsFile,
+      FvInfo->BaseAddress,
+      NewPe32BaseAddress,
+      &OrigImageContext
+      );
+
+    //
+    // Rebase is not required.
+    //
+    if (IsRebase == FALSE) {
+      continue;
+    }
     //
     // Relocation doesn't exist
     //
@@ -3981,24 +4023,6 @@ Returns:
                                                 );
       FfsFile->State = SavedState;
     }
-    //
-    // Get this module function address from ModulePeMapFile and add them into FvMap file
-    //
-
-    //
-    // Default use FileName as map file path
-    //
-    if (PdbPointer == NULL) {
-      PdbPointer = FileName;
-    }
-
-    WriteMapFile (
-      FvMapFile,
-      PdbPointer,
-      FfsFile,
-      NewPe32BaseAddress,
-      &OrigImageContext
-      );
   }
 
   return EFI_SUCCESS;
