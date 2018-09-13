@@ -397,10 +397,40 @@ LocateExPcdBinary (
 {
   EFI_STATUS            Status;
   VOID                  *PcdDb;
+  UINTN                 Instance;
+  EFI_PEI_FV_HANDLE     VolumeHandle;
 
   PcdDb       = NULL;
 
   ASSERT (FileHandle != NULL);
+
+  Instance    = 0;
+  while (TRUE) {
+    //
+    // Traverse all firmware volume instances
+    //
+    Status = PeiServicesFfsFindNextVolume (Instance, &VolumeHandle);
+    //
+    // Error should not happen
+    //
+    ASSERT_EFI_ERROR (Status);
+
+    //
+    // Find PcdDb file from the beginning in this firmware volume.
+    //
+    FileHandle = NULL;
+    Status = PeiServicesFfsFindFileByName (&gPcdDataBaseSignatureGuid, VolumeHandle, &FileHandle);
+    if (!EFI_ERROR (Status)) {
+      //
+      // Find PcdPeim FileHandle in this volume
+      //
+      break;
+    }
+    //
+    // We cannot find PcdPeim in this firmware volume, then search the next volume.
+    //
+    Instance++;
+  }
 
   Status = PeiServicesFfsFindSectionData (EFI_SECTION_RAW, FileHandle, &PcdDb);
   ASSERT_EFI_ERROR (Status);

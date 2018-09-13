@@ -742,7 +742,8 @@ LocateExPcdBinary (
   // Search the External Pcd database from one section of current FFS,
   // and read it to memory
   //
-  Status = GetSectionFromFfs (
+  Status = GetSectionFromFv (
+             &gPcdDataBaseSignatureGuid,
              EFI_SECTION_RAW,
              0,
              (VOID **) &mDxePcdDbBinary,

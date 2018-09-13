@@ -292,7 +292,7 @@ EndOfPeiSignalPpiNotifyCallback (
     // Find PcdDb file from the beginning in this firmware volume.
     //
     FileHandle = NULL;
-    Status = PeiServicesFfsFindFileByName (&gEfiCallerIdGuid, VolumeHandle, &FileHandle);
+    Status = PeiServicesFfsFindFileByName (&gPcdDataBaseSignatureGuid, VolumeHandle, &FileHandle);
     if (!EFI_ERROR (Status)) {
       //
       // Find PcdPeim FileHandle in this volume
@@ -527,7 +527,7 @@ PeiPcdSetSku (
       // Find PcdDb file from the beginning in this firmware volume.
       //
       FileHandle = NULL;
-      Status = PeiServicesFfsFindFileByName (&gEfiCallerIdGuid, VolumeHandle, &FileHandle);
+      Status = PeiServicesFfsFindFileByName (&gPcdDataBaseSignatureGuid, VolumeHandle, &FileHandle);
       if (!EFI_ERROR (Status)) {
         //
         // Find PcdPeim FileHandle in this volume
