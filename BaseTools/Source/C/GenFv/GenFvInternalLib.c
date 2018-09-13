@@ -2452,6 +2452,37 @@ Returns:
 }
 
 EFI_STATUS
+RebaseFvImage (
+  IN CHAR8                *FvFileImage,
+  IN UINTN                FvFileSize,
+  IN CHAR8                *OutFvFileName
+  )
+{
+  EFI_STATUS                          Status;
+  EFI_FFS_FILE_HEADER                 *CurrentFile;
+
+  if (((mFvDataInfo.BaseAddress > 0) && (mFvDataInfo.ForceRebase == -1)) || (mFvDataInfo.ForceRebase == 1)) {
+
+    InitializeFvLib(FvFileImage, FvFileSize);
+
+    Status = GetNextFile (NULL, &CurrentFile);
+    if (EFI_ERROR (Status)) {
+      Error (NULL, 0, 0003, "error parsing FV image", "FFS file can't be found");
+      return EFI_NOT_FOUND;
+    }
+    while (CurrentFile) {
+      FfsRebase (&mFvDataInfo, "", CurrentFile, (UINTN) CurrentFile - (UINTN) FvFileImage, NULL);
+      Status = GetNextFile (CurrentFile, &CurrentFile);
+      if (EFI_ERROR (Status)) {
+        break;
+      }
+    }
+  }
+
+  return PutFileImage (OutFvFileName, FvFileImage, FvFileSize);
+}
+
+EFI_STATUS
 GenerateFvImage (
   IN CHAR8                *InfFileImage,
   IN UINTN                InfFileSize,
@@ -3380,7 +3411,9 @@ Returns:
     SubFvBaseAddress = OrigFvBaseAddress + (UINTN) SubFvImageHeader - (UINTN) FfsFile + XipOffset;
     //mFvBaseAddress[mFvBaseAddressNumber ++ ] = SubFvBaseAddress;
     FvInfo->BaseAddress = SubFvBaseAddress;
-    fprintf (FvMapFile, "(GUID=%s BaseAddressOffset=0x%010llx)\n\n", FileGuidName, (unsigned long long) (SubFvBaseAddress - OrigFvBaseAddress));
+    if (FvMapFile != NULL) {
+      fprintf (FvMapFile, "(GUID=%s BaseAddressOffset=0x%010llx)\n\n", FileGuidName, (unsigned long long) (SubFvBaseAddress - OrigFvBaseAddress));
+    }
     InitializeFvLib(SubFvImageHeader, (UINT32) SubFvImageHeader->FvLength);
 
     Status = GetNextFile (NULL, &CurrentFile);

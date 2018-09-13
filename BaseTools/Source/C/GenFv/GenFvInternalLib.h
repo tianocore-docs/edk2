@@ -385,6 +385,14 @@ Returns:
 ;
 
 EFI_STATUS
+RebaseFvImage (
+  IN CHAR8                *FvFileImage,
+  IN UINTN                FvFileSize,
+  IN CHAR8                *OutFvFileName
+  )
+;
+
+EFI_STATUS
 GenerateFvImage (
   IN CHAR8                *InfFileImage,
   IN UINTN                InfFileSize,

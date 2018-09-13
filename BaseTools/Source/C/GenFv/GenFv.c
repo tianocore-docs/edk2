@@ -101,6 +101,7 @@ Returns:
   fprintf (stdout, "  -i FileName, --inputfile FileName\n\
                         File is the input FV.inf or Cap.inf to specify\n\
                         how to construct FvImage or CapImage.\n");
+  fprintf (stdout, "  --FvImage FvImageName File is the input FvImage to be rebased.\n");
   fprintf (stdout, "  -b BlockSize, --blocksize BlockSize\n\
                         BlockSize is one HEX or DEC format value\n\
                         BlockSize is required by Fv Image.\n");
@@ -197,8 +198,10 @@ Returns:
   EFI_CAPSULE_HEADER    *CapsuleHeader;
   UINT64                LogLevel, TempNumber;
   UINT32                Index;
+  BOOLEAN               IsFvImageRebase;
 
   InfFileName   = NULL;
+  IsFvImageRebase = FALSE;
   AddrFileName  = NULL;
   InfFileImage  = NULL;
   OutFileName   = NULL;
@@ -258,6 +261,18 @@ Returns:
         Error (NULL, 0, 1003, "Invalid option value", "Input file can't be null");
         return STATUS_ERROR;
       }
+      argc -= 2;
+      argv += 2;
+      continue;
+    }
+
+    if (stricmp (argv[0], "--FvImage") == 0) {
+      InfFileName = argv[1];
+      if (InfFileName == NULL) {
+        Error (NULL, 0, 1003, "Invalid option value", "Input file can't be null");
+        return STATUS_ERROR;
+      }
+      IsFvImageRebase = TRUE;
       argc -= 2;
       argv += 2;
       continue;
@@ -572,7 +587,7 @@ Returns:
     Error (NULL, 0, 1001, "Missing option", "Input Capsule Image");
     return STATUS_ERROR;
   }
-  VerboseMsg ("the input FvInf or CapInf file name is %s", InfFileName);
+  VerboseMsg ("the input file name is %s", InfFileName);
 
   if (!DumpCapsule && OutFileName == NULL) {
     Error (NULL, 0, 1001, "Missing option", "Output File");
@@ -640,6 +655,23 @@ Returns:
               InfFileSize,
               OutFileName
               );
+  } else if (IsFvImageRebase) {
+    //
+    // Will take rebase action at below situation:
+    // 1. ForceRebase Flag specified to TRUE;
+    // 2. ForceRebase Flag not specified, BaseAddress greater than zero.
+    //
+    if (((mFvDataInfo.BaseAddress > 0) && (mFvDataInfo.ForceRebase == -1)) || (mFvDataInfo.ForceRebase == 1)) {
+      VerboseMsg ("FvImage Rebase Address is 0x%llX", (unsigned long long) mFvDataInfo.BaseAddress);
+    }
+    //
+    // Call the GenerateFvImage to generate Fv Image
+    //
+    Status = RebaseFvImage (
+              InfFileImage,
+              InfFileSize,
+              OutFileName
+              );
   } else {
     VerboseMsg ("Create Fv image and its map file");
     //
@@ -671,7 +703,7 @@ Returns:
   //
   //  update boot driver address and runtime driver address in address file
   //
-  if (Status == EFI_SUCCESS && AddrFileName != NULL && mFvBaseAddressNumber > 0) {
+  if (IsFvImageRebase == FALSE && Status == EFI_SUCCESS && AddrFileName != NULL && mFvBaseAddressNumber > 0) {
     FpFile = fopen (LongFilePath (AddrFileName), "w");
     if (FpFile == NULL) {
       Error (NULL, 0, 0001, "Error opening file", AddrFileName);
@@ -690,7 +722,7 @@ Returns:
     fclose (FpFile);
   }
 
-  if (Status == EFI_SUCCESS) {
+  if (IsFvImageRebase == FALSE && Status == EFI_SUCCESS) {
     DebugMsg (NULL, 0, 9, "The Total Fv Size", "%s = 0x%x", EFI_FV_TOTAL_SIZE_STRING, (unsigned) mFvTotalSize);
     DebugMsg (NULL, 0, 9, "The used Fv Size", "%s = 0x%x", EFI_FV_TAKEN_SIZE_STRING, (unsigned) mFvTakenSize);
     DebugMsg (NULL, 0, 9, "The space Fv size", "%s = 0x%x", EFI_FV_SPACE_SIZE_STRING, (unsigned) (mFvTotalSize - mFvTakenSize));
