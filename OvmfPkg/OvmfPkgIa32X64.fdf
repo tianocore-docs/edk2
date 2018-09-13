@@ -170,6 +170,10 @@ INF  OvmfPkg/Tcg/Tcg2Config/Tcg2ConfigPei.inf
 INF  SecurityPkg/Tcg/Tcg2Pei/Tcg2Pei.inf
 !endif
 
+FILE FREEFORM = 3c7d193c-682c-4c14-a68f-552dea4f437e {
+  SECTION RAW = $(OUTPUT_DIRECTORY)/$(TARGET)_$(TOOL_CHAIN_TAG)/FV/PEIPcdDataBase.raw
+}
+
 ################################################################################
 
 [FV.DXEFV]
@@ -200,6 +204,10 @@ APRIORI DXE {
 !if $(SMM_REQUIRE) == FALSE
   INF  OvmfPkg/QemuFlashFvbServicesRuntimeDxe/FvbServicesRuntimeDxe.inf
 !endif
+}
+
+FILE FREEFORM = 3c7d193c-682c-4c14-a68f-552dea4f437e {
+  SECTION RAW = $(OUTPUT_DIRECTORY)/$(TARGET)_$(TOOL_CHAIN_TAG)/FV/DXEPcdDataBase.raw
 }
 
 #
