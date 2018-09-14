@@ -103,10 +103,5 @@
 
 [LibraryClasses]
   PcdLib
-  TimerLib
   DebugLib
   BaseMemoryLib
-
-[Pcd]
-  gEfiMdePkgTokenSpaceGuid.PcdSpinLockTimeout  ## SOMETIMES_CONSUMES
-

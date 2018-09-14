@@ -19,7 +19,6 @@
 #include <Library/SynchronizationLib.h>
 #include <Library/BaseLib.h>
 #include <Library/DebugLib.h>
-#include <Library/TimerLib.h>
 #include <Library/PcdLib.h>
 
 /**
