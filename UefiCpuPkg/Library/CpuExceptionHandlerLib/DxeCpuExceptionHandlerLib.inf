@@ -58,7 +58,6 @@
 
 [LibraryClasses]
   BaseLib
-  SerialPortLib
   PrintLib
   SynchronizationLib
   LocalApicLib

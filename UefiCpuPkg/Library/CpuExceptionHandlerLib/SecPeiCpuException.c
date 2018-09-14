@@ -31,10 +31,6 @@ CommonExceptionHandler (
   )
 {
   //
-  // Initialize the serial port before dumping.
-  //
-  SerialPortInitialize ();
-  //
   // Display ExceptionType, CPU information and Image information
   //
   DumpImageAndCpuContent (ExceptionType, SystemContext);

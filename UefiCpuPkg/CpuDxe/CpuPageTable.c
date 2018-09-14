@@ -23,7 +23,6 @@
 #include <Library/DebugLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/PeCoffGetEntryPointLib.h>
-#include <Library/SerialPortLib.h>
 #include <Library/SynchronizationLib.h>
 #include <Library/PrintLib.h>
 #include <Protocol/MpService.h>
@@ -1280,10 +1279,6 @@ PageFaultExceptionHandler (
     }
   }
 
-  //
-  // Initialize the serial port before dumping.
-  //
-  SerialPortInitialize ();
   //
   // Display ExceptionType, CPU information and Image information
   //

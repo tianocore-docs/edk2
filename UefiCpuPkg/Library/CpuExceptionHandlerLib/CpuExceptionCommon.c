@@ -74,37 +74,6 @@ GetExceptionNameStr (
 }
 
 /**
-  Prints a message to the serial port.
-
-  @param  Format      Format string for the message to print.
-  @param  ...         Variable argument list whose contents are accessed
-                      based on the format string specified by Format.
-
-**/
-VOID
-EFIAPI
-InternalPrintMessage (
-  IN  CONST CHAR8  *Format,
-  ...
-  )
-{
-  CHAR8    Buffer[MAX_DEBUG_MESSAGE_LENGTH];
-  VA_LIST  Marker;
-
-  //
-  // Convert the message to an ASCII String
-  //
-  VA_START (Marker, Format);
-  AsciiVSPrint (Buffer, sizeof (Buffer), Format, Marker);
-  VA_END (Marker);
-
-  //
-  // Send the print string to a Serial Port
-  //
-  SerialPortWrite ((UINT8 *)Buffer, AsciiStrLen (Buffer));
-}
-
-/**
   Find and display image base address and return image base and its entry point.
 
   @param CurrentEip      Current instruction pointer.
@@ -122,7 +91,7 @@ DumpModuleImageInfo (
 
   Pe32Data = PeCoffSearchImageBase (CurrentEip);
   if (Pe32Data == 0) {
-    InternalPrintMessage ("!!!! Can't find image information. !!!!\n");
+    DEBUG ((DEBUG_ERROR, "!!!! Can't find image information. !!!!\n"));
   } else {
     //
     // Find Image Base entry point
@@ -131,18 +100,19 @@ DumpModuleImageInfo (
     if (EFI_ERROR (Status)) {
       EntryPoint = NULL;
     }
-    InternalPrintMessage ("!!!! Find image based on IP(0x%x) ", CurrentEip);
+    DEBUG ((DEBUG_ERROR, "!!!! Find image based on IP(0x%x) ", CurrentEip));
     PdbPointer = PeCoffLoaderGetPdbPointer ((VOID *) Pe32Data);
     if (PdbPointer != NULL) {
-      InternalPrintMessage ("%a", PdbPointer);
+      DEBUG ((DEBUG_ERROR, "%a", PdbPointer));
     } else {
-      InternalPrintMessage ("(No PDB) " );
+      DEBUG ((DEBUG_ERROR, "(No PDB) "));
     }
-    InternalPrintMessage (
+    DEBUG ((
+      DEBUG_ERROR,
       " (ImageBase=%016lp, EntryPoint=%016p) !!!!\n",
       (VOID *) Pe32Data,
       EntryPoint
-      );
+      ));
   }
 }
 

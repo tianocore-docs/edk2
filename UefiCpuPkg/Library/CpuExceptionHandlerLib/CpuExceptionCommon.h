@@ -18,7 +18,7 @@
 #include <Ppi/VectorHandoffInfo.h>
 #include <Protocol/Cpu.h>
 #include <Library/BaseLib.h>
-#include <Library/SerialPortLib.h>
+#include <Library/DebugLib.h>
 #include <Library/PrintLib.h>
 #include <Library/LocalApicLib.h>
 #include <Library/PeCoffGetEntryPointLib.h>

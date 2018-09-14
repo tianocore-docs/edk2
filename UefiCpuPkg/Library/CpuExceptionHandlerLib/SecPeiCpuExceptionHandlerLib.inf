@@ -52,7 +52,7 @@
 
 [LibraryClasses]
   BaseLib
-  SerialPortLib
   PrintLib
   LocalApicLib
   PeCoffGetEntryPointLib
+  DebugLib

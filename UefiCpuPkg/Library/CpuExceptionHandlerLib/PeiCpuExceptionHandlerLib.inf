@@ -53,10 +53,10 @@
 
 [LibraryClasses]
   BaseLib
-  SerialPortLib
   PrintLib
   LocalApicLib
   PeCoffGetEntryPointLib
   HobLib
   MemoryAllocationLib
   SynchronizationLib
+  DebugLib
