@@ -18,6 +18,7 @@
 #include <PiPei.h>
 
 #include <Register/Cpuid.h>
+#include <Register/Amd/Cpuid.h>
 #include <Register/Msr.h>
 #include <Register/LocalApic.h>
 #include <Register/Microcode.h>

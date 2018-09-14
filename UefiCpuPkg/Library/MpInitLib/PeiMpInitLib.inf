@@ -56,6 +56,7 @@
   UefiCpuLib
   SynchronizationLib
   PeiServicesLib
+  TimerLib
 
 [Pcd]
   gUefiCpuPkgTokenSpaceGuid.PcdCpuMaxLogicalProcessorNumber        ## CONSUMES
@@ -65,6 +66,7 @@
   gUefiCpuPkgTokenSpaceGuid.PcdCpuMicrocodePatchRegionSize         ## CONSUMES
   gUefiCpuPkgTokenSpaceGuid.PcdCpuApLoopMode                       ## CONSUMES
   gUefiCpuPkgTokenSpaceGuid.PcdCpuApTargetCstate                   ## SOMETIMES_CONSUMES
+  gUefiCpuPkgTokenSpaceGuid.PcdCpuInitIpiDelayInMicroSeconds       ## CONSUMES
 
 [Guids]
   gEdkiiS3SmmInitDoneGuid

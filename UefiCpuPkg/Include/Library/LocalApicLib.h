@@ -192,7 +192,7 @@ SendInitIpiAllExcludingSelf (
   );
 
 /**
-  Send an INIT-Start-up-Start-up IPI sequence to a specified target processor.
+  Send a Start-up IPI to a specified target processor.
 
   This function returns after the IPI has been accepted by the target processor.
 
@@ -205,13 +205,13 @@ SendInitIpiAllExcludingSelf (
 **/
 VOID
 EFIAPI
-SendInitSipiSipi (
+SendStartupIpi (
   IN UINT32          ApicId,
   IN UINT32          StartupRoutine
   );
 
 /**
-  Send an INIT-Start-up-Start-up IPI sequence to all processors excluding self.
+  Send a Start-up IPI to all processors excluding self.
 
   This function returns after the IPI has been accepted by the target processors.
 
@@ -223,7 +223,7 @@ SendInitSipiSipi (
 **/
 VOID
 EFIAPI
-SendInitSipiSipiAllExcludingSelf (
+SendStartupIpiAllExcludingSelf (
   IN UINT32          StartupRoutine
   );
 

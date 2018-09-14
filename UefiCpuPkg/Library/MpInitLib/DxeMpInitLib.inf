@@ -57,6 +57,7 @@
   UefiBootServicesTableLib
   DebugAgentLib
   SynchronizationLib
+  TimerLib
 
 [Protocols]
   gEfiTimerArchProtocolGuid                     ## SOMETIMES_CONSUMES
@@ -74,4 +75,5 @@
   gUefiCpuPkgTokenSpaceGuid.PcdCpuApLoopMode                       ## CONSUMES
   gUefiCpuPkgTokenSpaceGuid.PcdCpuApTargetCstate                   ## SOMETIMES_CONSUMES
   gEfiMdeModulePkgTokenSpaceGuid.PcdCpuStackGuard                  ## CONSUMES
+  gUefiCpuPkgTokenSpaceGuid.PcdCpuInitIpiDelayInMicroSeconds       ## CONSUMES
 

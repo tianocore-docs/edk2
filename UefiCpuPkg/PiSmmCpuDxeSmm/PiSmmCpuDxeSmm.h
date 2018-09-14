@@ -59,6 +59,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <CpuHotPlugData.h>
 
 #include <Register/Cpuid.h>
+#include <Register/Amd/Cpuid.h>
 #include <Register/Msr.h>
 
 #include "CpuService.h"

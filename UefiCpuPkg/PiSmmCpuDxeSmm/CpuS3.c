@@ -453,6 +453,28 @@ PrepareApStartupVector (
 }
 
 /**
+  Determine if the standard CPU signature is "AuthenticAMD".
+
+  @retval TRUE  The CPU signature matches.
+  @retval FALSE The CPU signature does not match.
+
+**/
+BOOLEAN
+StandardSignatureIsAuthenticAMD (
+  VOID
+  )
+{
+  UINT32  RegEbx;
+  UINT32  RegEcx;
+  UINT32  RegEdx;
+
+  AsmCpuid (CPUID_SIGNATURE, NULL, &RegEbx, &RegEcx, &RegEdx);
+  return (RegEbx == CPUID_SIGNATURE_AUTHENTIC_AMD_EBX &&
+          RegEcx == CPUID_SIGNATURE_AUTHENTIC_AMD_ECX &&
+          RegEdx == CPUID_SIGNATURE_AUTHENTIC_AMD_EDX);
+}
+
+/**
   The function is invoked before SMBASE relocation in S3 path to restores CPU status.
 
   The function is invoked before SMBASE relocation in S3 path. It does first time microcode load
@@ -483,7 +505,13 @@ InitializeCpuBeforeRebase (
   //
   // Send INIT IPI - SIPI to all APs
   //
-  SendInitSipiSipiAllExcludingSelf ((UINT32)mAcpiCpuData.StartupVector);
+  SendInitIpiAllExcludingSelf ();
+  MicroSecondDelay (PcdGet32(PcdCpuInitIpiDelayInMicroSeconds));
+  SendStartupIpiAllExcludingSelf ((UINT32)mAcpiCpuData.StartupVector);
+  if (!StandardSignatureIsAuthenticAMD ()) {
+    MicroSecondDelay (200);
+    SendStartupIpiAllExcludingSelf ((UINT32)mAcpiCpuData.StartupVector);
+  }
 
   while (mNumberToFinish > 0) {
     CpuPause ();

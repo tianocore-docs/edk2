@@ -25,7 +25,6 @@
 #include <Library/DebugLib.h>
 #include <Library/LocalApicLib.h>
 #include <Library/IoLib.h>
-#include <Library/TimerLib.h>
 #include <Library/PcdLib.h>
 
 //
@@ -40,7 +39,7 @@
 
 **/
 BOOLEAN
-StandardSignatureIsAuthenticAMD (
+LocalApicStandardSignatureIsAuthenticAMD (
   VOID
   )
 {
@@ -524,7 +523,7 @@ SendInitIpiAllExcludingSelf (
 }
 
 /**
-  Send an INIT-Start-up-Start-up IPI sequence to a specified target processor.
+  Send a Start-up IPI to a specified target processor.
 
   This function returns after the IPI has been accepted by the target processor.
 
@@ -537,31 +536,25 @@ SendInitIpiAllExcludingSelf (
 **/
 VOID
 EFIAPI
-SendInitSipiSipi (
+SendStartupIpi (
   IN UINT32          ApicId,
   IN UINT32          StartupRoutine
   )
 {
   LOCAL_APIC_ICR_LOW IcrLow;
 
-  ASSERT (StartupRoutine < 0x100000);
-  ASSERT ((StartupRoutine & 0xfff) == 0);
+  ASSERT (StartupRoutine < SIZE_1MB);
+  ASSERT ((StartupRoutine & (SIZE_4KB - 1)) == 0);
 
-  SendInitIpi (ApicId);
-  MicroSecondDelay (PcdGet32(PcdCpuInitIpiDelayInMicroSeconds));
   IcrLow.Uint32 = 0;
   IcrLow.Bits.Vector = (StartupRoutine >> 12);
   IcrLow.Bits.DeliveryMode = LOCAL_APIC_DELIVERY_MODE_STARTUP;
   IcrLow.Bits.Level = 1;
   SendIpi (IcrLow.Uint32, ApicId);
-  if (!StandardSignatureIsAuthenticAMD ()) {
-    MicroSecondDelay (200);
-    SendIpi (IcrLow.Uint32, ApicId);
-  }
 }
 
 /**
-  Send an INIT-Start-up-Start-up IPI sequence to all processors excluding self.
+  Send a Start-up IPI to all processors excluding self.
 
   This function returns after the IPI has been accepted by the target processors.
 
@@ -573,27 +566,21 @@ SendInitSipiSipi (
 **/
 VOID
 EFIAPI
-SendInitSipiSipiAllExcludingSelf (
+SendStartupIpiAllExcludingSelf (
   IN UINT32          StartupRoutine
   )
 {
   LOCAL_APIC_ICR_LOW IcrLow;
 
-  ASSERT (StartupRoutine < 0x100000);
-  ASSERT ((StartupRoutine & 0xfff) == 0);
+  ASSERT (StartupRoutine < SIZE_1MB);
+  ASSERT ((StartupRoutine & (SIZE_4KB - 1)) == 0);
 
-  SendInitIpiAllExcludingSelf ();
-  MicroSecondDelay (PcdGet32(PcdCpuInitIpiDelayInMicroSeconds));
   IcrLow.Uint32 = 0;
   IcrLow.Bits.Vector = (StartupRoutine >> 12);
   IcrLow.Bits.DeliveryMode = LOCAL_APIC_DELIVERY_MODE_STARTUP;
   IcrLow.Bits.Level = 1;
   IcrLow.Bits.DestinationShorthand = LOCAL_APIC_DESTINATION_SHORTHAND_ALL_EXCLUDING_SELF;
   SendIpi (IcrLow.Uint32, 0);
-  if (!StandardSignatureIsAuthenticAMD ()) {
-    MicroSecondDelay (200);
-    SendIpi (IcrLow.Uint32, 0);
-  }
 }
 
 /**
@@ -1112,7 +1099,7 @@ GetProcessorLocationByApicId (
     //
     // Check for topology extensions on AMD processor
     //
-    if (StandardSignatureIsAuthenticAMD()) {
+    if (LocalApicStandardSignatureIsAuthenticAMD ()) {
       if (MaxExtendedCpuIdIndex >= CPUID_AMD_PROCESSOR_TOPOLOGY) {
         AsmCpuid (CPUID_EXTENDED_CPU_SIG, NULL, NULL, &AmdExtendedCpuSigEcx.Uint32, NULL);
         if (AmdExtendedCpuSigEcx.Bits.TopologyExtensions != 0) {

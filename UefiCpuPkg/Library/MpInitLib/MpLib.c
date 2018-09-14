@@ -961,6 +961,28 @@ FreeResetVector (
 }
 
 /**
+  Determine if the standard CPU signature is "AuthenticAMD".
+
+  @retval TRUE  The CPU signature matches.
+  @retval FALSE The CPU signature does not match.
+
+**/
+BOOLEAN
+StandardSignatureIsAuthenticAMD (
+  VOID
+  )
+{
+  UINT32  RegEbx;
+  UINT32  RegEcx;
+  UINT32  RegEdx;
+
+  AsmCpuid (CPUID_SIGNATURE, NULL, &RegEbx, &RegEcx, &RegEdx);
+  return (RegEbx == CPUID_SIGNATURE_AUTHENTIC_AMD_EBX &&
+          RegEcx == CPUID_SIGNATURE_AUTHENTIC_AMD_ECX &&
+          RegEdx == CPUID_SIGNATURE_AUTHENTIC_AMD_EDX);
+}
+
+/**
   This function will be called by BSP to wakeup AP.
 
   @param[in] CpuMpData          Pointer to CPU MP Data
@@ -1033,7 +1055,13 @@ WakeUpAP (
       //
       // Wakeup all APs
       //
-      SendInitSipiSipiAllExcludingSelf ((UINT32) ExchangeInfo->BufferStart);
+      SendInitIpiAllExcludingSelf ();
+      MicroSecondDelay (PcdGet32(PcdCpuInitIpiDelayInMicroSeconds));
+      SendStartupIpiAllExcludingSelf ((UINT32) ExchangeInfo->BufferStart);
+      if (!StandardSignatureIsAuthenticAMD ()) {
+        MicroSecondDelay (200);
+        SendStartupIpiAllExcludingSelf ((UINT32) ExchangeInfo->BufferStart);
+      }
     }
     if (CpuMpData->InitFlag == ApInitConfig) {
       //
@@ -1078,10 +1106,19 @@ WakeUpAP (
     *(UINT32 *) CpuData->StartupApSignal = WAKEUP_AP_SIGNAL;
     if (ResetVectorRequired) {
       CpuInfoInHob = (CPU_INFO_IN_HOB *) (UINTN) CpuMpData->CpuInfoInHob;
-      SendInitSipiSipi (
+      SendInitIpi (CpuInfoInHob[ProcessorNumber].ApicId);
+      MicroSecondDelay (PcdGet32(PcdCpuInitIpiDelayInMicroSeconds));
+      SendStartupIpi (
         CpuInfoInHob[ProcessorNumber].ApicId,
         (UINT32) ExchangeInfo->BufferStart
         );
+      if (!StandardSignatureIsAuthenticAMD ()) {
+        MicroSecondDelay (200);
+        SendStartupIpi (
+          CpuInfoInHob[ProcessorNumber].ApicId,
+          (UINT32) ExchangeInfo->BufferStart
+          );
+      }
     }
     //
     // Wait specified AP waken up

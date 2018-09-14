@@ -40,10 +40,8 @@
 [LibraryClasses]
   BaseLib
   DebugLib
-  TimerLib
   IoLib
   PcdLib
 
 [Pcd]
-  gUefiCpuPkgTokenSpaceGuid.PcdCpuInitIpiDelayInMicroSeconds  ## SOMETIMES_CONSUMES
   gUefiCpuPkgTokenSpaceGuid.PcdCpuLocalApicBaseAddress        ## SOMETIMES_CONSUMES
