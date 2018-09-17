@@ -3689,12 +3689,14 @@ Returns:
         //
         // Check if section-alignment and file-alignment match or not
         //
-        if ((ImgHdr->Pe32.OptionalHeader.SectionAlignment != ImgHdr->Pe32.OptionalHeader.FileAlignment)) {
-          //
-          // Xip module has the same section alignment and file alignment.
-          //
-          Error (NULL, 0, 3000, "Invalid", "PE image Section-Alignment and File-Alignment do not match : %s.", FileName);
-          return EFI_ABORTED;
+        if (IsRebase) {
+          if ((ImgHdr->Pe32.OptionalHeader.SectionAlignment != ImgHdr->Pe32.OptionalHeader.FileAlignment)) {
+            //
+            // Xip module has the same section alignment and file alignment.
+            //
+            Error (NULL, 0, 3000, "Invalid", "PE image Section-Alignment and File-Alignment do not match : %s.", FileName);
+            return EFI_ABORTED;
+          }
         }
         NewPe32BaseAddress = XipBase + (UINTN) CurrentPe32Section.Pe32Section + CurSecHdrSize - (UINTN)FfsFile;
         break;
