@@ -433,7 +433,7 @@ class FfsInfStatement(FfsInfStatementClassObject):
 
     def GetFfsAsBuildInfFile(self):
         if self.IsBinaryModule:
-            return self.InfFileName
+            return mws.join( GenFdsGlobalVariable.WorkSpaceDir, self.InfFileName);
         return os.path.join(self.EfiOutputPath, self.BaseName + ".inf")
 
     ## GenFfs() method
