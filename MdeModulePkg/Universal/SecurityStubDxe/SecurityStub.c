@@ -16,6 +16,7 @@
 #include <Uefi.h>
 #include <Protocol/Security.h>
 #include <Protocol/Security2.h>
+#include <Protocol/SecurityManagement.h>
 #include <Library/DebugLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiDriverEntryPoint.h>
@@ -173,6 +174,11 @@ EFI_SECURITY2_ARCH_PROTOCOL mSecurity2Stub = {
   Security2StubAuthenticate
 };
 
+EDKII_SECURITY_MANAGEMENT_PROTOCOL mSecurityManagement = {
+  RegisterSecurityHandler,
+  RegisterSecurity2Handler
+};
+
 /**
   Installs Security2 and Security Architectural Protocol.
 
@@ -206,6 +212,8 @@ SecurityStubInitialize (
                   &mSecurity2Stub,
                   &gEfiSecurityArchProtocolGuid,
                   &mSecurityStub,
+                  &gEdkiiSecurityManagementProtocolGuid,
+                  &mSecurityManagement,
                   NULL
                   );
   ASSERT_EFI_ERROR (Status);
