@@ -1,0 +1,47 @@
+## @file
+# Instance of TimerLib based on SMM Stall2 and Timestamp protocols.
+#
+#  Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
+#
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution. The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php.
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = SmmTimerLibStall2Timestamp
+  MODULE_UNI_FILE                = SmmTimerLibStall2Timestamp.uni
+  FILE_GUID                      = 99EFF170-E86B-465D-8B7A-2719A88C62B7
+  MODULE_TYPE                    = DXE_SMM_DRIVER
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = TimerLib|SMM_CORE DXE_SMM_DRIVER
+
+#
+#  VALID_ARCHITECTURES           = IA32 X64
+#
+
+[Sources]
+  SmmTimerLib.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  SmmServicesTableLib
+  BaseLib
+  DebugLib
+
+[Protocols]
+  gEdkiiSmmStall2ProtocolGuid       ## CONSUMES
+  gEdkiiSmmTimestampProtocolGuid    ## CONSUMES
+
+[Depex.common.DXE_SMM_DRIVER]
+  gEdkiiSmmStall2ProtocolGuid and gEdkiiSmmTimestampProtocolGuid
+

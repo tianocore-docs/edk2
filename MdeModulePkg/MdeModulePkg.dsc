@@ -402,6 +402,8 @@
   MdeModulePkg/Universal/Variable/Pei/VariablePei.inf
   MdeModulePkg/Universal/WatchdogTimerDxe/WatchdogTimer.inf
   MdeModulePkg/Universal/TimestampDxe/TimestampDxe.inf
+  MdeModulePkg/Universal/TimestampPei/TimestampPei.inf
+  MdeModulePkg/Universal/TimestampSmm/TimestampSmm.inf
   MdeModulePkg/Universal/FaultTolerantWriteDxe/FaultTolerantWriteDxe.inf
 
   MdeModulePkg/Universal/Acpi/AcpiPlatformDxe/AcpiPlatformDxe.inf
@@ -444,6 +446,10 @@
   MdeModulePkg/Library/FmpAuthenticationLibNull/FmpAuthenticationLibNull.inf
   MdeModulePkg/Library/DxeCapsuleLibFmp/DxeCapsuleLib.inf
   MdeModulePkg/Library/DxeCapsuleLibFmp/DxeRuntimeCapsuleLib.inf
+
+  MdeModulePkg/Library/PeiTimerLibStall2Timestamp/PeiTimerLibStall2Timestamp.inf
+  MdeModulePkg/Library/DxeTimerLibStall2Timestamp/DxeTimerLibStall2Timestamp.inf
+  MdeModulePkg/Library/SmmTimerLibStall2Timestamp/SmmTimerLibStall2Timestamp.inf
 
 [Components.IA32, Components.X64, Components.IPF, Components.AARCH64]
   MdeModulePkg/Universal/Network/UefiPxeBcDxe/UefiPxeBcDxe.inf

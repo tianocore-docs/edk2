@@ -1,7 +1,7 @@
 /** @file
-  Implementation of Timestamp and Stall2 protocols using UEFI APIs.
+  Implementation of SMM Timestamp and Stall2 protocols.
 
-Copyright (c) 2013 - 2018, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
 This program and the accompanying materials
 are licensed and made available under the terms and conditions of the BSD License
 which accompanies this distribution.  The full text of the license may be found at
@@ -12,14 +12,14 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 **/
 
-#include <Uefi.h>
+#include <PiSmm.h>
 #include <Library/DebugLib.h>
 #include <Library/UefiDriverEntryPoint.h>
-#include <Library/UefiBootServicesTableLib.h>
+#include <Library/SmmServicesTableLib.h>
 #include <Library/TimerLib.h>
 #include <Library/BaseMemoryLib.h>
-#include <Protocol/Timestamp.h>
-#include <Protocol/Stall2.h>
+#include <Protocol/SmmTimestamp.h>
+#include <Protocol/SmmStall2.h>
 
 //
 // The StartValue in TimerLib
@@ -55,7 +55,7 @@ EFI_TIMESTAMP_PROPERTIES mTimestampProperties = {
 **/
 UINT64
 EFIAPI
-TimestampDriverGetTimestamp (
+TimestampSmmGetTimestamp (
   VOID
   )
 {
@@ -90,7 +90,7 @@ TimestampDriverGetTimestamp (
 **/
 EFI_STATUS
 EFIAPI
-TimestampDriverGetProperties(
+TimestampSmmGetProperties(
   OUT   EFI_TIMESTAMP_PROPERTIES       *Properties
   )
 {
@@ -107,11 +107,11 @@ TimestampDriverGetProperties(
 }
 
 //
-// The Timestamp Protocol instance produced by this driver
+// The SMM Timestamp Protocol instance produced by this driver
 //
-EFI_TIMESTAMP_PROTOCOL  mTimestamp = {
-  TimestampDriverGetTimestamp,
-  TimestampDriverGetProperties
+EDKII_SMM_TIMESTAMP_PROTOCOL  mSmmTimestamp = {
+  TimestampSmmGetTimestamp,
+  TimestampSmmGetProperties
 };
 
 /**
@@ -125,7 +125,7 @@ EFI_TIMESTAMP_PROTOCOL  mTimestamp = {
 **/
 EFI_STATUS
 EFIAPI
-Stall2 (
+SmmStall2 (
   IN UINTN                      Nanoseconds
   )
 {
@@ -135,24 +135,24 @@ Stall2 (
 }
 
 //
-// The Stall2 Protocol instance produced by this driver
+// The SMM Stall2 Protocol instance produced by this driver
 //
-EDKII_STALL2_PROTOCOL  mStall2 = {
-  Stall2
+EDKII_SMM_STALL2_PROTOCOL  mSmmStall2 = {
+  SmmStall2
 };
 
 /**
-  Entry point of the Timestamp driver.
+  Entry point of the Timestamp SMM driver.
 
   @param  ImageHandle   The image handle of this driver.
   @param  SystemTable   The pointer of EFI_SYSTEM_TABLE.
 
-  @retval EFI_SUCCESS   Timestamp and Stall2 protocols successfully installed.
+  @retval EFI_SUCCESS   SMM Timestamp and Stall2 protocols successfully installed.
 
 **/
 EFI_STATUS
 EFIAPI
-TimestampDriverInitialize (
+TimestampSmmInitialize (
   IN EFI_HANDLE        ImageHandle,
   IN EFI_SYSTEM_TABLE  *SystemTable
   )
@@ -186,17 +186,25 @@ TimestampDriverInitialize (
     ));
 
   //
-  // Install the Timestamp and Stall2 protocols onto a new handle
+  // Install the SMM Timestamp Protocol onto a new handle
   //
-  Status = gBS->InstallMultipleProtocolInterfaces (
-                  &TimestampHandle,
-                  &gEfiTimestampProtocolGuid,
-                  &mTimestamp,
-                  &gEdkiiStall2ProtocolGuid,
-                  &mStall2,
-                  NULL
-                  );
+  Status = gSmst->SmmInstallProtocolInterface (
+                    &TimestampHandle,
+                    &gEdkiiSmmTimestampProtocolGuid,
+                    EFI_NATIVE_INTERFACE,
+                    &mSmmTimestamp
+                    );
+  ASSERT_EFI_ERROR (Status);
 
+  //
+  // Install the SMM Stall2 Protocol
+  //
+  Status = gSmst->SmmInstallProtocolInterface (
+                    &TimestampHandle,
+                    &gEdkiiSmmStall2ProtocolGuid,
+                    EFI_NATIVE_INTERFACE,
+                    &mSmmStall2
+                    );
   ASSERT_EFI_ERROR (Status);
 
   return EFI_SUCCESS;

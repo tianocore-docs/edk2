@@ -1,0 +1,47 @@
+## @file
+# Instance of TimerLib based on Stall2 and Timestamp PPIs.
+#
+#  Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
+#
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution. The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php.
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = PeiTimerLibStall2Timestamp
+  MODULE_UNI_FILE                = PeiTimerLibStall2Timestamp.uni
+  FILE_GUID                      = CA4E215D-79DB-451F-A341-DA7A3C6729D0
+  MODULE_TYPE                    = PEIM
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = TimerLib|PEI_CORE PEIM
+
+#
+#  VALID_ARCHITECTURES           = IA32 X64
+#
+
+[Sources]
+  PeiTimerLib.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  PeiServicesLib
+  BaseLib
+  DebugLib
+
+[Ppis]
+  gEdkiiPeiStall2PpiGuid        ## CONSUMES
+  gEdkiiPeiTimestampPpiGuid     ## CONSUMES
+
+[Depex.common.PEIM]
+  gEdkiiPeiStall2PpiGuid and gEdkiiPeiTimestampPpiGuid
+

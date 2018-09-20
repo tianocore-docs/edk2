@@ -1,9 +1,9 @@
 // /** @file
-// Generic Timestamp driver producing Timestamp Protocol using UEFI APIs.
+// Generic Timestamp driver producing Timestamp and Stall2 protocols using UEFI APIs.
 //
-// A generic Timestamp driver producing Timestamp Protocol using UEFI APIs.
+// A generic Timestamp driver producing Timestamp and Stall2 protocols using UEFI APIs.
 //
-// Copyright (c) 2013 - 2014, Intel Corporation. All rights reserved.<BR>
+// Copyright (c) 2013 - 2018, Intel Corporation. All rights reserved.<BR>
 //
 // This program and the accompanying materials
 // are licensed and made available under the terms and conditions of the BSD License
@@ -15,7 +15,7 @@
 // **/
 
 
-#string STR_MODULE_ABSTRACT             #language en-US "Generic Timestamp driver producing Timestamp Protocol using UEFI APIs."
+#string STR_MODULE_ABSTRACT             #language en-US "Generic Timestamp driver producing Timestamp and Stall2 protocols using UEFI APIs"
 
-#string STR_MODULE_DESCRIPTION          #language en-US "A generic Timestamp driver producing Timestamp Protocol using UEFI APIs."
+#string STR_MODULE_DESCRIPTION          #language en-US "A generic Timestamp driver producing Timestamp and Stall2 protocols using UEFI APIs."
 

@@ -1,7 +1,7 @@
 ## @file
-# Generic Timestamp driver producing Timestamp and Stall2 protocols using UEFI APIs.
+# Generic Timestamp PEIM producing Timestamp and Stall2 PPIs.
 #
-# Copyright (c) 2013 - 2018, Intel Corporation. All rights reserved.<BR>
+# Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
 #
 #  This program and the accompanying materials
 #  are licensed and made available under the terms and conditions of the BSD License
@@ -15,17 +15,17 @@
 
 [Defines]
   INF_VERSION                    = 0x00010005
-  BASE_NAME                      = TimestampDxe
-  MODULE_UNI_FILE                = TimestampDxe.uni
-  FILE_GUID                      = C10194E7-DEB2-4AF4-9EEE-BFFDE4D7D4C7
-  MODULE_TYPE                    = DXE_DRIVER
+  BASE_NAME                      = TimestampPei
+  MODULE_UNI_FILE                = TimestampPei.uni
+  FILE_GUID                      = E6022F13-F524-4E5F-9891-500D2E628605
+  MODULE_TYPE                    = PEIM
   VERSION_STRING                 = 1.0
-  ENTRY_POINT                    = TimestampDriverInitialize
+  ENTRY_POINT                    = TimestampPeiInitialize
 
 #
 # The following information is for reference only and not required by the build tools.
 #
-#  VALID_ARCHITECTURES           = IA32 X64 IPF EBC
+#  VALID_ARCHITECTURES           = IA32 X64
 #
 
 [Packages]
@@ -33,18 +33,19 @@
   MdeModulePkg/MdeModulePkg.dec
 
 [Sources]
-  TimestampDxe.c
+  TimestampPei.c
 
 [LibraryClasses]
-  UefiBootServicesTableLib
-  UefiDriverEntryPoint
+  PeimEntryPoint
   TimerLib
   BaseMemoryLib
+  MemoryAllocationLib
   DebugLib
+  PeiServicesLib
 
-[Protocols]
-  gEfiTimestampProtocolGuid             ## PRODUCES
-  gEdkiiStall2ProtocolGuid              ## PRODUCES
+[Ppis]
+  gEdkiiPeiTimestampPpiGuid     ## PRODUCES
+  gEdkiiPeiStall2PpiGuid        ## PRODUCES
 
 [depex]
   TRUE
