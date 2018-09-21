@@ -26,7 +26,7 @@
 #
 import os
 from io import BytesIO
-from Common.DataType import *
+import Common.DataType  as DT
 from Common.Misc import SaveFileOnChange
 from .GenPcdDb import NewCreatePcdDatabasePhaseSpecificAutoGen
 
@@ -55,7 +55,7 @@ class PcdDatabase(object):
         return os.path.join(self.OutputPath,r"DXEPcdDataBase.raw")
 
     def generate_pcd_database_data(self,Info):
-        self.OutputPath = os.path.join(Info.BuildDir, TAB_FV_DIRECTORY)
+        self.OutputPath = os.path.join(Info.BuildDir, DT.TAB_FV_DIRECTORY)
 
         PeiAdditionalAutoGenH, PeiAdditionalAutoGenC, PcdDbBuffer = NewCreatePcdDatabasePhaseSpecificAutoGen (Info, 'PEI')
         self.PeiDbDebugInfo = (PeiAdditionalAutoGenH, PeiAdditionalAutoGenC)
@@ -75,6 +75,16 @@ class PcdDatabase(object):
             DxeDbFile.write(self.DxeDbBuffer)
             SaveFileOnChange(self.DxeDbFilePath, DxeDbFile.getvalue(), True)
 
+    def DumpPcdInfo(self,Info):
+        self.OutputPath = os.path.join(Info.BuildDir, DT.TAB_FV_DIRECTORY)
+        with open(os.path.join(self.OutputPath,"PcdInfo.txt"),"w") as fd:
+            for PcdObj in Info.DynamicPcdList:
+                PcdFullName = ".".join((PcdObj.TokenSpaceGuidCName,PcdObj.TokenCName))
+                DefaultSkuObj = PcdObj.SkuInfoList['DEFAULT']
+                if PcdObj.Type == DT.TAB_PCDS_DYNAMIC_EX_HII:
+                    fd.write( "%s | %s | %s | %s | %s | %s |%s | %s\n" % (PcdFullName, str(DefaultSkuObj.HiiDefaultValue),PcdObj.Phase,PcdObj.Type,DefaultSkuObj.VariableGuid,DefaultSkuObj.VariableName,str(DefaultSkuObj.VariableOffset),str(DefaultSkuObj.VariableAttribute) ))
+                else:
+                    fd.write( "%s | %s | %s | %s \n" % (PcdFullName,str(PcdObj.DefaultValue),PcdObj.Phase,PcdObj.Type ))
     def get_peipcddb_debug_info(self):
         return self.PeiDbDebugInfo
 

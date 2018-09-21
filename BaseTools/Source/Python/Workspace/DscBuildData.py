@@ -163,10 +163,10 @@ class DscBuildData(PlatformBuildClassObject):
         MODEL_PCD_FIXED_AT_BUILD        :   TAB_PCDS_FIXED_AT_BUILD,
         MODEL_PCD_PATCHABLE_IN_MODULE   :   TAB_PCDS_PATCHABLE_IN_MODULE,
         MODEL_PCD_FEATURE_FLAG          :   TAB_PCDS_FEATURE_FLAG,
-        MODEL_PCD_DYNAMIC               :   TAB_PCDS_DYNAMIC,
-        MODEL_PCD_DYNAMIC_DEFAULT       :   TAB_PCDS_DYNAMIC,
-        MODEL_PCD_DYNAMIC_HII           :   TAB_PCDS_DYNAMIC_HII,
-        MODEL_PCD_DYNAMIC_VPD           :   TAB_PCDS_DYNAMIC_VPD,
+        MODEL_PCD_DYNAMIC               :   TAB_PCDS_DYNAMIC_EX,
+        MODEL_PCD_DYNAMIC_DEFAULT       :   TAB_PCDS_DYNAMIC_EX,
+        MODEL_PCD_DYNAMIC_HII           :   TAB_PCDS_DYNAMIC_EX_HII,
+        MODEL_PCD_DYNAMIC_VPD           :   TAB_PCDS_DYNAMIC_EX_VPD,
         MODEL_PCD_DYNAMIC_EX            :   TAB_PCDS_DYNAMIC_EX,
         MODEL_PCD_DYNAMIC_EX_DEFAULT    :   TAB_PCDS_DYNAMIC_EX,
         MODEL_PCD_DYNAMIC_EX_HII        :   TAB_PCDS_DYNAMIC_EX_HII,
@@ -222,6 +222,7 @@ class DscBuildData(PlatformBuildClassObject):
         self.WorkspaceDir = os.getenv("WORKSPACE") if os.getenv("WORKSPACE") else ""
         self.DefaultStores = None
         self.SkuIdMgr = SkuClass(self.SkuName, self.SkuIds)
+
     @property
     def OutputPath(self):
         if os.getenv("WORKSPACE"):
@@ -1353,6 +1354,7 @@ class DscBuildData(PlatformBuildClassObject):
         # handle pcd value override
         StrPcdSet = DscBuildData.GetStructurePcdInfo(S_PcdSet)
         S_pcd_set = OrderedDict()
+
         for str_pcd in StrPcdSet:
             str_pcd_obj = Pcds.get((str_pcd[1], str_pcd[0]), None)
             str_pcd_dec = self._DecPcds.get((str_pcd[1], str_pcd[0]), None)
@@ -1391,6 +1393,7 @@ class DscBuildData(PlatformBuildClassObject):
                         else:
                             str_pcd_obj_str.DefaultFromDSC = {skuname:{defaultstore: str_pcd_obj.SkuInfoList[skuname].DefaultStoreDict.get(defaultstore, str_pcd_obj.SkuInfoList[skuname].DefaultValue) for defaultstore in DefaultStores} for skuname in str_pcd_obj.SkuInfoList}
                     S_pcd_set[Pcd] = str_pcd_obj_str
+
         if S_pcd_set:
             GlobalData.gStructurePcd[self.Arch] = S_pcd_set
         for stru_pcd in S_pcd_set.values():
@@ -1485,6 +1488,7 @@ class DscBuildData(PlatformBuildClassObject):
 
         map(self.FilterSkuSettings, [Pcds[pcdkey] for pcdkey in Pcds if Pcds[pcdkey].Type in DynamicPcdType])
         return Pcds
+
 
     ## Retrieve non-dynamic PCD settings
     #

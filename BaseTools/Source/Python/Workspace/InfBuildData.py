@@ -19,7 +19,8 @@ from Common.Misc import *
 from types import *
 from .MetaFileParser import *
 from collections import OrderedDict
-
+from CommonDataClass.CommonClass import SkuInfoClass
+import Common.DataType as DT
 from Workspace.BuildClassObject import ModuleBuildClassObject, LibraryClassObject, PcdClassObject
 ## Module build information from INF file
 #
@@ -32,10 +33,10 @@ class InfBuildData(ModuleBuildClassObject):
         MODEL_PCD_FIXED_AT_BUILD        :   TAB_PCDS_FIXED_AT_BUILD,
         MODEL_PCD_PATCHABLE_IN_MODULE   :   TAB_PCDS_PATCHABLE_IN_MODULE,
         MODEL_PCD_FEATURE_FLAG          :   TAB_PCDS_FEATURE_FLAG,
-        MODEL_PCD_DYNAMIC               :   TAB_PCDS_DYNAMIC,
-        MODEL_PCD_DYNAMIC_DEFAULT       :   TAB_PCDS_DYNAMIC,
-        MODEL_PCD_DYNAMIC_HII           :   TAB_PCDS_DYNAMIC_HII,
-        MODEL_PCD_DYNAMIC_VPD           :   TAB_PCDS_DYNAMIC_VPD,
+        MODEL_PCD_DYNAMIC               :   TAB_PCDS_DYNAMIC_EX,
+        MODEL_PCD_DYNAMIC_DEFAULT       :   TAB_PCDS_DYNAMIC_EX,
+        MODEL_PCD_DYNAMIC_HII           :   TAB_PCDS_DYNAMIC_EX_HII,
+        MODEL_PCD_DYNAMIC_VPD           :   TAB_PCDS_DYNAMIC_EX_VPD,
         MODEL_PCD_DYNAMIC_EX            :   TAB_PCDS_DYNAMIC_EX,
         MODEL_PCD_DYNAMIC_EX_DEFAULT    :   TAB_PCDS_DYNAMIC_EX,
         MODEL_PCD_DYNAMIC_EX_HII        :   TAB_PCDS_DYNAMIC_EX_HII,
@@ -958,18 +959,33 @@ class InfBuildData(ModuleBuildClassObject):
                 continue
             ValueList = AnalyzePcdData(Setting)
             DefaultValue = ValueList[0]
+            if "|" in Setting:
+                PcdAttr = Setting.split("|")
+                if len(PcdAttr) == 3:
+                    (DefaultValue,Phase,PcdType) = PcdAttr
+                    SkuInfo = SkuInfoClass(DT.TAB_DEFAULT, 0, DefaultValue = DefaultValue)
+                    if PcdType == TAB_PCDS_DYNAMIC_EX_VPD:
+                        SkuInfo.VpdOffset = "*"
+                elif len(PcdAttr) == 7:
+                    (DefaultValue,Phase,PcdType,VarGuid,VarName,VarOffset,VarAttr) = PcdAttr
+                    SkuInfo = SkuInfoClass(DT.TAB_DEFAULT,0, VarName, VarGuid, VarOffset, DefaultValue,VariableAttribute=VarAttr)
+            SkuInfo = SkuInfoClass(DT.TAB_DEFAULT, 0, DefaultValue = DefaultValue)
+            Phase = "DXE"
+            PcdType = ""
             Pcd = PcdClassObject(
                     PcdCName,
                     TokenSpaceGuid,
-                    '',
+                    PcdType,
                     '',
                     DefaultValue,
                     '',
                     '',
-                    {},
+                    {DT.TAB_DEFAULT : SkuInfo},
                     False,
                     self.Guids[TokenSpaceGuid]
                     )
+            Pcd.Phase = Phase
+
             if Type == MODEL_PCD_PATCHABLE_IN_MODULE and ValueList[1]:
                 # Patch PCD: TokenSpace.PcdCName|Value|Offset
                 Pcd.Offset = ValueList[1]

@@ -641,12 +641,11 @@ class WorkspaceAutoGen(AutoGen):
         #
         PcdTokenNumber = 'PcdTokenNumber: '
         if Pa.PcdTokenNumber:
-            if Pa.DynamicPcdList:
-                for Pcd in Pa.DynamicPcdList:
-                    PcdTokenNumber += os.linesep
-                    PcdTokenNumber += str((Pcd.TokenCName, Pcd.TokenSpaceGuidCName))
-                    PcdTokenNumber += ' : '
-                    PcdTokenNumber += str(Pa.PcdTokenNumber[Pcd.TokenCName, Pcd.TokenSpaceGuidCName])
+            for Pcd in Pa.DynamicPcdList:
+                PcdTokenNumber += os.linesep
+                PcdTokenNumber += str((Pcd.TokenCName, Pcd.TokenSpaceGuidCName))
+                PcdTokenNumber += ' : '
+                PcdTokenNumber += str(Pa.PcdTokenNumber[Pcd.TokenCName, Pcd.TokenSpaceGuidCName])
         SaveFileOnChange(os.path.join(self.BuildDir, 'PcdTokenNumber'), PcdTokenNumber, False)
 
         #
@@ -691,6 +690,7 @@ class WorkspaceAutoGen(AutoGen):
     def CreatePcdDB(self,PlatformInfo):
         self.PcdDatabase.generate_pcd_database_data(PlatformInfo)
         self.PcdDatabase.create_pcd_database()
+        self.PcdDatabase.DumpPcdInfo(PlatformInfo)
 
     def _GenPkgLevelHash(self, Pkg):
         if Pkg.PackageName in GlobalData.gPackageHash[Pkg.Arch]:

@@ -816,6 +816,7 @@ def GetHelpTextList(HelpTextClassList):
     return List
 
 def StringToArray(String):
+    String = String.strip()
     if isinstance(String, unicode):
         if len(unicode) == 0:
             return "{0x00,0x00}"

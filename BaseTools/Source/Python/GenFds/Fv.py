@@ -33,9 +33,11 @@ from Common.LongFilePathSupport import CopyLongFilePath
 from Common.LongFilePathSupport import OpenLongFilePath as open
 from Common.DataType import *
 from Common.Misc import TemplateString
+import Common.DataType as DT
 from AutoGen.InfSectionParser import InfSectionParser
-
+import re
 FV_UI_EXT_ENTY_GUID = 'A67DF1FA-8DE8-4E98-AF09-4BDF2EFFBC7C'
+PcdPattern = re.compile(r'[_a-zA-Z][0-9A-Za-z_]*\.[_a-zA-Z][0-9A-Za-z_]*$')
 
 #
 # Template string to generic AsBuilt INF
@@ -117,9 +119,17 @@ class FV (FvClassObject):
         return
 
     def GenerateFvAsBuildInf (self):
-        if not self.FfsList or not len (self.FfsList) > 0:
-            return
-
+        def GetPcdItem(item):
+            DyPcdInfoFile = os.path.join(GenFdsGlobalVariable.FvDir,"PcdInfo.txt")
+            if os.path.exists(DyPcdInfoFile):
+                PcdList = []
+                with open(DyPcdInfoFile,"r") as fd:
+                    PcdList = fd.readlines()
+                PcdDict = {item.split("|")[0].strip():item.strip() for item in PcdList}
+                for pcd in PcdPattern.findall(item):
+                    if pcd in PcdDict:
+                        item = item.replace(pcd,PcdDict[pcd])
+            return item
         FvFileGuid = self.FvNameGuid
         if FvFileGuid == None or FvFileGuid == '':
             FvFileGuid = str(uuid.uuid4())
@@ -194,11 +204,11 @@ class FV (FvClassObject):
                         OffsetValue = int (OffsetImage, 16) + ModuleOffsetList[FileGuid]
                         if OffsetValue > 0x10000000000000000:
                             OffsetValue = OffsetValue - 0x10000000000000000
-                        SectionData = SectionData[:SectionData.rfind("|") + 1] + ("0x%X"%OffsetValue)
+                        SectionData = "#" + SectionData[:SectionData.rfind("|") + 1] + ("0x%X"%OffsetValue)
                     AsBuiltInfDict['patchablepcd_item'].append (SectionData)
             SectionDataList = InfObj.GetSectionData ('PcdEx', FileArch)
             if len (SectionDataList) > 0:
-                self.MergeUsage(SectionDataList, PcdExList)
+                self.MergeUsage(map(GetPcdItem, SectionDataList), PcdExList)
 
         for Guid in PpiList.keys():
             for Usage in PpiList[Guid]:

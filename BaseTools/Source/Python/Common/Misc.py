@@ -48,6 +48,7 @@ addressPatternGeneral = re.compile("^Address[' ']+Publics by Value[' ']+Rva\+Bas
 valuePatternGcc = re.compile('^([\w_\.]+) +([\da-fA-Fx]+) +([\da-fA-Fx]+)$')
 pcdPatternGcc = re.compile('^([\da-fA-Fx]+) +([\da-fA-Fx]+)')
 secReGeneral = re.compile('^([\da-fA-F]+):([\da-fA-F]+) +([\da-fA-F]+)[Hh]? +([.\w\$]+) +(\w+)', re.UNICODE)
+ValueRe = re.compile(r'^\s*L?\".*\|.*\"')
 
 ## Dictionary used to store file time stamp for quick re-access
 gFileTimeStampCache = {}    # {file path : file time stamp}
@@ -1534,7 +1535,6 @@ def AnalyzeDscPcd(Setting, PcdType, DataType=''):
 def AnalyzePcdData(Setting):
     ValueList = ['', '', '']
 
-    ValueRe = re.compile(r'^\s*L?\".*\|.*\"')
     PtrValue = ValueRe.findall(Setting)
 
     ValueUpdateFlag = False
