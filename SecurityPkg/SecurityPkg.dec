@@ -82,6 +82,10 @@
   #
   TcgStorageOpalLib|Include/Library/TcgStorageOpalLib.h
 
+[Protocols]
+  ## Include/Protocol/Tcg2PhysicalPresenceProtocol.h
+  gEdkiiTcg2PhysicalPresenceProtocolGuid = { 0xe2e791e0, 0xe408, 0x4219, { 0xb2, 0x71, 0x68, 0x1d, 0xfd, 0xaa, 0x97, 0x2f } }
+
 [Guids]
   ## Security package token space guid.
   # Include/Guid/SecurityPkgTokenSpace.h
