@@ -1,0 +1,103 @@
+## @file
+#  FDF file of NetworkPkg.
+#
+# Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
+#
+# This program and the accompanying materials are licensed and made available under
+# the terms and conditions of the BSD License which accompanies this distribution.
+# The full text of the license may be found at
+# http://opensource.org/licenses/bsd-license.php
+#
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+DEFINE FLASH_BLOCK_SIZE                                             = 0x00010000
+
+[FV.FvUefiNetworkUncompact]
+BlockSize          = $(FLASH_BLOCK_SIZE)
+FvAlignment        = 16
+ERASE_POLARITY     = 1
+MEMORY_MAPPED      = TRUE
+STICKY_WRITE       = TRUE
+LOCK_CAP           = TRUE
+LOCK_STATUS        = TRUE
+WRITE_DISABLED_CAP = TRUE
+WRITE_ENABLED_CAP  = TRUE
+WRITE_STATUS       = TRUE
+WRITE_LOCK_CAP     = TRUE
+WRITE_LOCK_STATUS  = TRUE
+READ_DISABLED_CAP  = TRUE
+READ_ENABLED_CAP   = TRUE
+READ_STATUS        = TRUE
+READ_LOCK_CAP      = TRUE
+READ_LOCK_STATUS   = TRUE
+FvNameGuid         = 299DAD7D-40E6-4B9C-A967-EFBE66256238
+
+INF  MdeModulePkg/Universal/Network/SnpDxe/SnpDxe.inf
+INF  MdeModulePkg/Universal/Network/DpcDxe/DpcDxe.inf
+INF  MdeModulePkg/Universal/Network/VlanConfigDxe/VlanConfigDxe.inf
+INF  MdeModulePkg/Universal/Network/MnpDxe/MnpDxe.inf
+INF  MdeModulePkg/Universal/Network/ArpDxe/ArpDxe.inf
+INF  MdeModulePkg/Universal/Network/Ip4Dxe/Ip4Dxe.inf
+INF  MdeModulePkg/Universal/Network/Udp4Dxe/Udp4Dxe.inf
+INF  MdeModulePkg/Universal/Network/Dhcp4Dxe/Dhcp4Dxe.inf
+INF  MdeModulePkg/Universal/Network/Mtftp4Dxe/Mtftp4Dxe.inf
+INF  NetworkPkg/Ip6Dxe/Ip6Dxe.inf
+INF  NetworkPkg/Dhcp6Dxe/Dhcp6Dxe.inf
+INF  NetworkPkg/IpSecDxe/IpSecDxe.inf
+INF  NetworkPkg/Udp6Dxe/Udp6Dxe.inf
+INF  NetworkPkg/Mtftp6Dxe/Mtftp6Dxe.inf
+INF  NetworkPkg/DnsDxe/DnsDxe.inf
+INF  NetworkPkg/TcpDxe/TcpDxe.inf
+INF  NetworkPkg/TlsDxe/TlsDxe.inf
+INF  NetworkPkg/TlsAuthConfigDxe/TlsAuthConfigDxe.inf
+INF  NetworkPkg/HttpDxe/HttpDxe.inf
+INF  NetworkPkg/HttpUtilitiesDxe/HttpUtilitiesDxe.inf
+INF  NetworkPkg/HttpBootDxe/HttpBootDxe.inf
+INF  NetworkPkg/UefiPxeBcDxe/UefiPxeBcDxe.inf
+INF  NetworkPkg/IScsiDxe/IScsiDxe.inf
+
+[FV.FvUefiNetwork]
+BlockSize          = $(FLASH_BLOCK_SIZE)
+FvAlignment        = 16
+ERASE_POLARITY     = 1
+MEMORY_MAPPED      = TRUE
+STICKY_WRITE       = TRUE
+LOCK_CAP           = TRUE
+LOCK_STATUS        = TRUE
+WRITE_DISABLED_CAP = TRUE
+WRITE_ENABLED_CAP  = TRUE
+WRITE_STATUS       = TRUE
+WRITE_LOCK_CAP     = TRUE
+WRITE_LOCK_STATUS  = TRUE
+READ_DISABLED_CAP  = TRUE
+READ_ENABLED_CAP   = TRUE
+READ_STATUS        = TRUE
+READ_LOCK_CAP      = TRUE
+READ_LOCK_STATUS   = TRUE
+FvNameGuid         = F081E51E-6BE9-4E81-903B-619CDCDF0BF5
+
+FILE FV_IMAGE = 25F661AA-74A9-48D3-9C22-39A055E8FC2A {
+       SECTION GUIDED EE4E5898-3914-4259-9D6E-DC7BD79403CF PROCESSING_REQUIRED = TRUE {
+         SECTION FV_IMAGE = FvUefiNetworkUncompact
+       }
+     }
+
+[Rule.Common.DXE_DRIVER]
+  FILE DRIVER = $(NAMED_GUID) {
+    DXE_DEPEX DXE_DEPEX Optional       $(INF_OUTPUT)/$(MODULE_NAME).depex
+    PE32      PE32                     $(INF_OUTPUT)/$(MODULE_NAME).efi
+    UI        STRING="$(MODULE_NAME)" Optional
+    VERSION   STRING="$(INF_VERSION)" Optional BUILD_NUM=$(BUILD_NUMBER)
+  }
+  
+[Rule.Common.UEFI_DRIVER]
+  FILE DRIVER = $(NAMED_GUID) {
+    DXE_DEPEX DXE_DEPEX Optional       $(INF_OUTPUT)/$(MODULE_NAME).depex
+    PE32      PE32                     $(INF_OUTPUT)/$(MODULE_NAME).efi
+    UI        STRING="$(MODULE_NAME)" Optional
+    VERSION   STRING="$(INF_VERSION)" Optional BUILD_NUM=$(BUILD_NUMBER)
+  }
