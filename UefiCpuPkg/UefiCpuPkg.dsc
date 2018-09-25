@@ -108,6 +108,7 @@
   UefiCpuPkg/Library/SecPeiDxeTimerLibUefiCpu/SecPeiDxeTimerLibUefiCpu.inf
   UefiCpuPkg/Application/Cpuid/Cpuid.inf
   UefiCpuPkg/CpuFeaturesSmm/CpuFeaturesSmm.inf
+  UefiCpuPkg/CpuPlatformHookSmm/CpuPlatformHookSmm.inf
 
 [Components.IA32, Components.X64]
   UefiCpuPkg/CpuDxe/CpuDxe.inf

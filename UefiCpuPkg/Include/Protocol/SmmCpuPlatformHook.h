@@ -1,7 +1,7 @@
 /** @file
-  Public include file for the SMM CPU Platform Hook Library.
+  Public include file for the SMM CPU Platform Hook Protocol.
 
-  Copyright (c) 2010 - 2015, Intel Corporation. All rights reserved.<BR>
+  Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
   This program and the accompanying materials
   are licensed and made available under the terms and conditions of the BSD License
   which accompanies this distribution.  The full text of the license may be found at
@@ -12,10 +12,23 @@
 
 **/
 
-#ifndef __SMM_CPU_PLATFORM_HOOK_LIB_H__
-#define __SMM_CPU_PLATFORM_HOOK_LIB_H__
+#ifndef __SMM_CPU_PLATFORM_HOOK_H__
+#define __SMM_CPU_PLATFORM_HOOK_H__
 
-#include <Protocol/SmmCpuPlatformHook.h>
+#define EDKII_SMM_CPU_PLATFORM_HOOK_PROTOCOL_GUID \
+  { \
+    0xa851a7c3, 0xe670, 0x47c4, { 0xbb, 0x76, 0x4b, 0x3d, 0xa9, 0xc6, 0x8e, 0x56 } \
+  }
+
+///
+/// SMM Page Size Type
+///
+typedef enum {
+    SmmPageSize4K,
+    SmmPageSize2M,
+    SmmPageSize1G,
+    MaxSmmPageSizeType
+} SMM_PAGE_SIZE_TYPE;
 
 /**
   Checks if platform produces a valid SMI.
@@ -29,9 +42,9 @@
   @retval FALSE             There is no valid SMI
 
 **/
+typedef
 BOOLEAN
-EFIAPI
-PlatformValidSmi (
+(EFIAPI *SMM_CPU_PLATFORM_HOOK_PLATFORM_VALID_SMI) (//PlatformValidSmi (
   VOID
   );
 
@@ -44,9 +57,9 @@ PlatformValidSmi (
   @retval FALSE             The platform top level SMI status cannot be cleared.
 
 **/
+typedef
 BOOLEAN
-EFIAPI
-ClearTopLevelSmiStatus (
+(EFIAPI *SMM_CPU_PLATFORM_HOOK_CLEAR_TOP_LEVEL_SMI_STATUS) (//ClearTopLevelSmiStatus (
   VOID
   );
 
@@ -69,9 +82,9 @@ ClearTopLevelSmiStatus (
                             BSP or AP due to hardware error.
 
 **/
+typedef
 EFI_STATUS
-EFIAPI
-PlatformSmmBspElection (
+(EFIAPI *SMM_CPU_PLATFORM_HOOK_PLATFORM_SMM_BSP_ELECTION) (//PlatformSmmBspElection (
   OUT BOOLEAN     *IsBsp
   );
 
@@ -89,13 +102,23 @@ PlatformSmmBspElection (
   @retval EFI_UNSUPPORTED  The platform does not support getting page table attribute for the address.
 
 **/
+typedef
 EFI_STATUS
-EFIAPI
-GetPlatformPageTableAttribute (
+(EFIAPI *SMM_CPU_PLATFORM_HOOK_GET_PLATFORM_PAGE_TABLE_ATTRIBUTE) (//GetPlatformPageTableAttribute (
   IN  UINT64                Address,
   OUT SMM_PAGE_SIZE_TYPE    *PageSize,
   OUT UINTN                 *NumOfPages,
   OUT UINTN                 *PageAttribute
   );
 
+typedef struct {
+  SMM_CPU_PLATFORM_HOOK_PLATFORM_VALID_SMI                PlatformValidSmi;
+  SMM_CPU_PLATFORM_HOOK_CLEAR_TOP_LEVEL_SMI_STATUS        ClearTopLevelSmiStatus;
+  SMM_CPU_PLATFORM_HOOK_PLATFORM_SMM_BSP_ELECTION         PlatformSmmBspElection;
+  SMM_CPU_PLATFORM_HOOK_GET_PLATFORM_PAGE_TABLE_ATTRIBUTE GetPlatformPageTableAttribute;
+} EDKII_SMM_CPU_PLATFORM_HOOK_PROTOCOL;
+
+extern EFI_GUID gEdkiiSmmCpuPlatformHookProtocolGuid;
+
 #endif
+
