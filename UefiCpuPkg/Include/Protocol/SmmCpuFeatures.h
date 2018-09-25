@@ -1,7 +1,7 @@
 /** @file
-Library that provides CPU specific functions to support the PiSmmCpuDxeSmm module.
+Protocol that provides CPU specific functions to support the PiSmmCpuDxeSmm module.
 
-Copyright (c) 2015, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2015 - 2018, Intel Corporation. All rights reserved.<BR>
 This program and the accompanying materials
 are licensed and made available under the terms and conditions of the BSD License
 which accompanies this distribution.  The full text of the license may be found at
@@ -12,14 +12,50 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 **/
 
-#ifndef __SMM_FEATURES_LIB_H__
-#define __SMM_FEATURES_LIB_H__
+#ifndef __SMM_FEATURES_PROTOCOL_H__
+#define __SMM_FEATURES_PROTOCOL_H__
 
 #include <Protocol/MpService.h>
 #include <Protocol/SmmCpu.h>
-#include <Protocol/SmmCpuFeatures.h>
 #include <Register/SmramSaveStateMap.h>
 #include <CpuHotPlugData.h>
+
+#define EDKII_SMM_CPU_FEATURES_PROTOCOL_GUID \
+  { \
+    0x42fd0f67, 0xeffc, 0x4fb1, { 0x8e, 0x87, 0x92, 0xdf, 0x2f, 0x23, 0x30, 0x9f } \
+  }
+
+///
+/// Enumeration of SMM registers that are accessed using the library functions
+/// SmmCpuFeaturesIsSmmRegisterSupported (), SmmCpuFeaturesGetSmmRegister (),
+/// and SmmCpuFeaturesSetSmmRegister ().
+///
+typedef enum {
+  ///
+  /// Read-write register to provides access to MSR_SMM_FEATURE_CONTROL if the
+  /// CPU supports this MSR.
+  ///
+  SmmRegFeatureControl,
+  ///
+  /// Read-only register that returns a non-zero value if the CPU is able to
+  /// respond to SMIs.
+  ///
+  SmmRegSmmEnable,
+  ///
+  /// Read-only register that returns a non-zero value if the CPU is able to
+  /// respond to SMIs, but is busy with other actions that are causing a delay
+  /// in responding to an SMI.  This register abstracts access to MSR_SMM_DELAYED
+  /// if the CPU supports this MSR.
+  ///
+  SmmRegSmmDelayed,
+  ///
+  /// Read-only register that returns a non-zero value if the CPU is able to
+  /// respond to SMIs, but is busy with other actions that are blocking its
+  /// ability to respond to an SMI.  This register abstracts access to
+  /// MSR_SMM_BLOCKED if the CPU supports this MSR.
+  ///
+  SmmRegSmmBlocked
+} SMM_REG_NAME;
 
 /**
   Called during the very first SMI into System Management Mode to initialize
@@ -45,9 +81,9 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
   @param[in] CpuHotPlugData  Pointer to the CPU_HOT_PLUG_DATA structure that
                              contains the ApidId and SmBase arrays.
 **/
+typedef
 VOID
-EFIAPI
-SmmCpuFeaturesInitializeProcessor (
+(EFIAPI *SMM_CPU_FEATURES_INITIALIZE_PROCESSOR) (// SmmCpuFeaturesInitializeProcessor (
   IN UINTN                      CpuIndex,
   IN BOOLEAN                    IsMonarch,
   IN EFI_PROCESSOR_INFORMATION  *ProcessorInfo,
@@ -85,9 +121,9 @@ SmmCpuFeaturesInitializeProcessor (
   @retval > 0  The original instruction pointer value from the SMRAM save state
                before it was replaced.
 **/
+typedef
 UINT64
-EFIAPI
-SmmCpuFeaturesHookReturnFromSmm (
+(EFIAPI *SMM_CPU_FEATURES_HOOK_RETURN_FROM_SMM) (//SmmCpuFeaturesHookReturnFromSmm (
   IN UINTN                 CpuIndex,
   IN SMRAM_SAVE_STATE_MAP  *CpuState,
   IN UINT64                NewInstructionPointer32,
@@ -101,9 +137,9 @@ SmmCpuFeaturesHookReturnFromSmm (
   first SMI and called SmmCpuFeaturesInitializeProcessor() relocating SMBASE
   into a buffer in SMRAM and called SmmCpuFeaturesHookReturnFromSmm().
 **/
+typedef
 VOID
-EFIAPI
-SmmCpuFeaturesSmmRelocationComplete (
+(EFIAPI *SMM_CPU_FEATURES_SMM_RELOCATION_COMPLETE) (//SmmCpuFeaturesSmmRelocationComplete (
   VOID
   );
 
@@ -117,9 +153,9 @@ SmmCpuFeaturesSmmRelocationComplete (
                The caller is required to allocate enough SMRAM for each CPU to
                support the size of the custom SMI handler.
 **/
+typedef
 UINTN
-EFIAPI
-SmmCpuFeaturesGetSmiHandlerSize (
+(EFIAPI *SMM_CPU_FEATURES_GET_SMI_HANDLER_SIZE) (//SmmCpuFeaturesGetSmiHandlerSize (
   VOID
   );
 
@@ -148,9 +184,9 @@ SmmCpuFeaturesGetSmiHandlerSize (
   @param[in] Cr3        The base address of the page tables to use when an SMI
                         is processed by the CPU specified by CpuIndex.
 **/
+typedef
 VOID
-EFIAPI
-SmmCpuFeaturesInstallSmiHandler (
+(EFIAPI *SMM_CPU_FEATURES_INSTALL_SMI_HANDLER) (//SmmCpuFeaturesInstallSmiHandler (
   IN UINTN   CpuIndex,
   IN UINT32  SmBase,
   IN VOID    *SmiStack,
@@ -170,9 +206,9 @@ SmmCpuFeaturesInstallSmiHandler (
   @retval FALSE  MTRR registers do not need to be configured to set SMRAM
                  cache-ability.
 **/
+typedef
 BOOLEAN
-EFIAPI
-SmmCpuFeaturesNeedConfigureMtrrs (
+(EFIAPI *SMM_CPU_FEATURES_NEED_CONFIGURE_MTRRS) (//SmmCpuFeaturesNeedConfigureMtrrs (
   VOID
   );
 
@@ -180,9 +216,9 @@ SmmCpuFeaturesNeedConfigureMtrrs (
   Disable SMRR register if SMRR is supported and SmmCpuFeaturesNeedConfigureMtrrs()
   returns TRUE.
 **/
+typedef
 VOID
-EFIAPI
-SmmCpuFeaturesDisableSmrr (
+(EFIAPI *SMM_CPU_FEATURES_DISABLE_SMRR) (//SmmCpuFeaturesDisableSmrr (
   VOID
   );
 
@@ -190,9 +226,9 @@ SmmCpuFeaturesDisableSmrr (
   Enable SMRR register if SMRR is supported and SmmCpuFeaturesNeedConfigureMtrrs()
   returns TRUE.
 **/
+typedef
 VOID
-EFIAPI
-SmmCpuFeaturesReenableSmrr (
+(EFIAPI *SMM_CPU_FEATURES_REENABLE_SMRR) (//SmmCpuFeaturesReenableSmrr (
   VOID
   );
 
@@ -203,9 +239,9 @@ SmmCpuFeaturesReenableSmrr (
                        must be between 0 and the NumberOfCpus field in the
                        System Management System Table (SMST).
 **/
+typedef
 VOID
-EFIAPI
-SmmCpuFeaturesRendezvousEntry (
+(EFIAPI *SMM_CPU_FEATURES_RENDEZVOUS_ENTRY) (//SmmCpuFeaturesRendezvousEntry (
   IN UINTN  CpuIndex
   );
 
@@ -216,9 +252,9 @@ SmmCpuFeaturesRendezvousEntry (
                        be between 0 and the NumberOfCpus field in the System
                        Management System Table (SMST).
 **/
+typedef
 VOID
-EFIAPI
-SmmCpuFeaturesRendezvousExit (
+(EFIAPI *SMM_CPU_FEATURES_RENDEZVOUS_EXIT) (//SmmCpuFeaturesRendezvousExit (
   IN UINTN  CpuIndex
   );
 
@@ -235,9 +271,9 @@ SmmCpuFeaturesRendezvousExit (
   @retval FALSE  The SMM register specified by RegName is not supported by the
                  CPU specified by CpuIndex.
 **/
+typedef
 BOOLEAN
-EFIAPI
-SmmCpuFeaturesIsSmmRegisterSupported (
+(EFIAPI *SMM_CPU_FEATURES_IS_SMM_REGISTER_SUPPORTED) (//SmmCpuFeaturesIsSmmRegisterSupported (
   IN UINTN         CpuIndex,
   IN SMM_REG_NAME  RegName
   );
@@ -254,9 +290,9 @@ SmmCpuFeaturesIsSmmRegisterSupported (
   @return  The value of the SMM register specified by RegName from the CPU
            specified by CpuIndex.
 **/
+typedef
 UINT64
-EFIAPI
-SmmCpuFeaturesGetSmmRegister (
+(EFIAPI *SMM_CPU_FEATURES_GET_SMM_REGISTER) (//SmmCpuFeaturesGetSmmRegister (
   IN UINTN         CpuIndex,
   IN SMM_REG_NAME  RegName
   );
@@ -272,9 +308,9 @@ SmmCpuFeaturesGetSmmRegister (
                        registers are read-only.
   @param[in] Value     The value to write to the SMM register.
 **/
+typedef
 VOID
-EFIAPI
-SmmCpuFeaturesSetSmmRegister (
+(EFIAPI *SMM_CPU_FEATURES_SET_SMM_REGISTER) (//SmmCpuFeaturesSetSmmRegister (
   IN UINTN         CpuIndex,
   IN SMM_REG_NAME  RegName,
   IN UINT64        Value
@@ -298,9 +334,9 @@ SmmCpuFeaturesSetSmmRegister (
   @retval EFI_UNSUPPORTED       This function does not support reading Register.
 
 **/
+typedef
 EFI_STATUS
-EFIAPI
-SmmCpuFeaturesReadSaveStateRegister (
+(EFIAPI *SMM_CPU_FEATURES_READ_SAVE_STATE_REGISTER) (//SmmCpuFeaturesReadSaveStateRegister (
   IN  UINTN                        CpuIndex,
   IN  EFI_SMM_SAVE_STATE_REGISTER  Register,
   IN  UINTN                        Width,
@@ -323,9 +359,9 @@ SmmCpuFeaturesReadSaveStateRegister (
   @retval EFI_INVALID_PARAMTER  Buffer is NULL.
   @retval EFI_UNSUPPORTED       This function does not support writing Register.
 **/
+typedef
 EFI_STATUS
-EFIAPI
-SmmCpuFeaturesWriteSaveStateRegister (
+(EFIAPI *SMM_CPU_FEATURES_WRITE_SAVE_STATE_REGISTER) (//SmmCpuFeaturesWriteSaveStateRegister (
   IN UINTN                        CpuIndex,
   IN EFI_SMM_SAVE_STATE_REGISTER  Register,
   IN UINTN                        Width,
@@ -336,9 +372,9 @@ SmmCpuFeaturesWriteSaveStateRegister (
   This function is hook point called after the gEfiSmmReadyToLockProtocolGuid
   notification is completely processed.
 **/
+typedef
 VOID
-EFIAPI
-SmmCpuFeaturesCompleteSmmReadyToLock (
+(EFIAPI *SMM_CPU_FEATURES_COMPLETE_SMM_READY_TO_LOCK) (//SmmCpuFeaturesCompleteSmmReadyToLock (
   VOID
   );
 
@@ -361,10 +397,33 @@ SmmCpuFeaturesCompleteSmmReadyToLock (
                     Or there is no preference on where the page tables are allocated in SMRAM.
 
 **/
+typedef
 VOID *
-EFIAPI
-SmmCpuFeaturesAllocatePageTableMemory (
+(EFIAPI *SMM_CPU_FEATURES_ALLOCATE_PAGE_TABLE_MEMORY) (//SmmCpuFeaturesAllocatePageTableMemory (
   IN UINTN           Pages
   );
 
+typedef struct {
+  SMM_CPU_FEATURES_INITIALIZE_PROCESSOR       InitializeProcessor;
+  SMM_CPU_FEATURES_HOOK_RETURN_FROM_SMM       HookReturnFromSmm;
+  SMM_CPU_FEATURES_SMM_RELOCATION_COMPLETE    SmmRelocationComplete;
+  SMM_CPU_FEATURES_GET_SMI_HANDLER_SIZE       GetSmiHandlerSize;
+  SMM_CPU_FEATURES_INSTALL_SMI_HANDLER        InstallSmiHandler;
+  SMM_CPU_FEATURES_NEED_CONFIGURE_MTRRS       NeedConfigureMtrrs;
+  SMM_CPU_FEATURES_DISABLE_SMRR               DisableSmrr;
+  SMM_CPU_FEATURES_REENABLE_SMRR              ReenableSmrr;
+  SMM_CPU_FEATURES_RENDEZVOUS_ENTRY           RendezvousEntry;
+  SMM_CPU_FEATURES_RENDEZVOUS_EXIT            RendezvousExit;
+  SMM_CPU_FEATURES_IS_SMM_REGISTER_SUPPORTED  IsSmmRegisterSupported;
+  SMM_CPU_FEATURES_GET_SMM_REGISTER           GetSmmRegister;
+  SMM_CPU_FEATURES_SET_SMM_REGISTER           SetSmmRegister;
+  SMM_CPU_FEATURES_READ_SAVE_STATE_REGISTER   ReadSaveStateRegister;
+  SMM_CPU_FEATURES_WRITE_SAVE_STATE_REGISTER  WriteSaveStateRegister;
+  SMM_CPU_FEATURES_COMPLETE_SMM_READY_TO_LOCK CompleteSmmReadyToLock;
+  SMM_CPU_FEATURES_ALLOCATE_PAGE_TABLE_MEMORY AllocatePageTableMemory;
+} EDKII_SMM_CPU_FEATURES_PROTOCOL;
+
+extern EFI_GUID gEdkiiSmmCpuFeaturesProtocolGuid;
+
 #endif
+
