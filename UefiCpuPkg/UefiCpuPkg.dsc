@@ -142,12 +142,10 @@
   UefiCpuPkg/PiSmmCommunication/PiSmmCommunicationPei.inf
   UefiCpuPkg/PiSmmCommunication/PiSmmCommunicationSmm.inf
   UefiCpuPkg/SecCore/SecCore.inf
-  UefiCpuPkg/PiSmmCpuDxeSmm/PiSmmCpuDxeSmm.inf
   UefiCpuPkg/PiSmmCpuDxeSmm/PiSmmCpuDxeSmm.inf {
-    <Defines>
-      FILE_GUID = D1D74FE9-7A4E-41D3-A0B3-67F13AD34D94
     <LibraryClasses>
-      SmmCpuFeaturesLib|UefiCpuPkg/Library/SmmCpuFeaturesLib/SmmCpuFeaturesLibStm.inf
+      SmmCpuFeaturesLib|UefiCpuPkg/Library/SmmCpuFeaturesLibSmmCpuFeaturesProtocol/SmmCpuFeaturesLib.inf
+      SmmCpuPlatformHookLib|UefiCpuPkg/Library/SmmCpuPlatformHookLibSmmCpuPlatformHookProtocol/SmmCpuPlatformHookLib.inf
   }
   UefiCpuPkg/Universal/Acpi/S3Resume2Pei/S3Resume2Pei.inf
 

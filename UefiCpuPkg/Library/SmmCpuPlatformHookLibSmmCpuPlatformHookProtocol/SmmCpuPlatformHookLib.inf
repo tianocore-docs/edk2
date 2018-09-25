@@ -1,0 +1,50 @@
+## @file
+#  SMM CPU Platform Hook NULL library instance.
+#
+#  Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+################################################################################
+#
+# Defines Section - statements that will be processed to create a Makefile.
+#
+################################################################################
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = SmmCpuPlatformHookLibSmmCpuPlatformHookProtocol
+  FILE_GUID                      = 4D363230-5CE7-4F63-A76D-38C3E6CBB066
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = SmmCpuPlatformHookLib
+  CONSTRUCTOR                    = SmmCpuPlatformHookLibConstructor
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64
+#
+
+[Sources]
+  SmmCpuPlatformHookLib.c
+
+[LibraryClasses]
+  DebugLib
+  SmmServicesTableLib
+
+[Protocols]
+  gEdkiiSmmCpuPlatformHookProtocolGuid
+
+[Packages]
+  MdePkg/MdePkg.dec
+  UefiCpuPkg/UefiCpuPkg.dec
+
+[Depex]
+  gEdkiiSmmCpuPlatformHookProtocolGuid
