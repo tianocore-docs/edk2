@@ -964,7 +964,7 @@ def NewCreatePcdDatabasePhaseSpecificAutoGen(Platform, Phase):
             final_data = ()
             for item in PcdDbBuffer:
                 final_data += unpack("B", item)
-            PcdDBData[(skuname, skuid)] = (PcdDbBuffer, final_data)
+            PcdDBData[(skuname, str(skuid))] = (PcdDbBuffer, final_data)
             PcdDriverAutoGenData[(skuname, skuid)] = (AdditionalAutoGenH, AdditionalAutoGenC)
             VarCheckTableData[(skuname, skuid)] = VarCheckTab
         if Platform.Platform.VarCheckFlag:
