@@ -231,7 +231,16 @@ class Region(RegionClassObject):
                     if len(RegionData.BinFileList) != 1:
                         EdkLogger.error('GenFds', GENFDS_ERROR, 'INF in FD region can only contain one binary: %s' % RegionData)
                     File = RegionData.BinFileList[0]
-                    RegionData = RegionData.PatchEfiFile(File.Path, File.Type)
+                    if File.Type == "FV":
+                        RebasedFv = os.path.join(GenFdsGlobalVariable.FvDir,os.path.basename(File.Path).split(".")[0]+ "_REBASED.Fv")
+                        Cmd = Cmd = ["GenFv"]
+                        Cmd += ("-r", '0x%X' % (int(BaseAddress, 16) + self.Offset))
+                        Cmd += ("--FvImage",File.Path)
+                        Cmd += ("-o", RebasedFv)
+                        GenFdsGlobalVariable.CallExternalTool(Cmd, "Failed to generate FV")
+                        RegionData = RebasedFv
+                    else:
+                        RegionData = RegionData.PatchEfiFile(File.Path, File.Type)
                 else:
                     RegionData = GenFdsGlobalVariable.MacroExtend(RegionData, MacroDict)
                     if RegionData[1] != ':' :
