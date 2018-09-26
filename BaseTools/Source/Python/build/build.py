@@ -2427,126 +2427,126 @@ def Main():
     ReturnCode = 0
     MyBuild = None
     BuildError = True
-#     try:
-    if len(Target) == 0:
-        Target = "all"
-    elif len(Target) >= 2:
-        EdkLogger.error("build", OPTION_NOT_SUPPORTED, "More than one targets are not supported.",
-                        ExtraData="Please select one of: %s" % (' '.join(gSupportedTarget)))
-    else:
-        Target = Target[0].lower()
+    try:
+        if len(Target) == 0:
+            Target = "all"
+        elif len(Target) >= 2:
+            EdkLogger.error("build", OPTION_NOT_SUPPORTED, "More than one targets are not supported.",
+                            ExtraData="Please select one of: %s" % (' '.join(gSupportedTarget)))
+        else:
+            Target = Target[0].lower()
 
-    if Target not in gSupportedTarget:
-        EdkLogger.error("build", OPTION_NOT_SUPPORTED, "Not supported target [%s]." % Target,
-                        ExtraData="Please select one of: %s" % (' '.join(gSupportedTarget)))
+        if Target not in gSupportedTarget:
+            EdkLogger.error("build", OPTION_NOT_SUPPORTED, "Not supported target [%s]." % Target,
+                            ExtraData="Please select one of: %s" % (' '.join(gSupportedTarget)))
 
-    #
-    # Check environment variable: EDK_TOOLS_PATH, WORKSPACE, PATH
-    #
-    CheckEnvVariable()
-    GlobalData.gCommandLineDefines.update(ParseDefines(Option.Macros))
+        #
+        # Check environment variable: EDK_TOOLS_PATH, WORKSPACE, PATH
+        #
+        CheckEnvVariable()
+        GlobalData.gCommandLineDefines.update(ParseDefines(Option.Macros))
 
-    Workspace = os.getenv("WORKSPACE")
-    #
-    # Get files real name in workspace dir
-    #
-    GlobalData.gAllFiles = Utils.DirCache(Workspace)
+        Workspace = os.getenv("WORKSPACE")
+        #
+        # Get files real name in workspace dir
+        #
+        GlobalData.gAllFiles = Utils.DirCache(Workspace)
 
-    WorkingDirectory = os.getcwd()
-    if not Option.ModuleFile:
-        FileList = glob.glob(os.path.normpath(os.path.join(WorkingDirectory, '*.inf')))
-        FileNum = len(FileList)
-        if FileNum >= 2:
-            EdkLogger.error("build", OPTION_NOT_SUPPORTED, "There are %d INF files in %s." % (FileNum, WorkingDirectory),
-                            ExtraData="Please use '-m <INF_FILE_PATH>' switch to choose one.")
-        elif FileNum == 1:
-            Option.ModuleFile = NormFile(FileList[0], Workspace)
+        WorkingDirectory = os.getcwd()
+        if not Option.ModuleFile:
+            FileList = glob.glob(os.path.normpath(os.path.join(WorkingDirectory, '*.inf')))
+            FileNum = len(FileList)
+            if FileNum >= 2:
+                EdkLogger.error("build", OPTION_NOT_SUPPORTED, "There are %d INF files in %s." % (FileNum, WorkingDirectory),
+                                ExtraData="Please use '-m <INF_FILE_PATH>' switch to choose one.")
+            elif FileNum == 1:
+                Option.ModuleFile = NormFile(FileList[0], Workspace)
 
-    if Option.ModuleFile:
-        if os.path.isabs (Option.ModuleFile):
-            if os.path.normcase (os.path.normpath(Option.ModuleFile)).find (Workspace) == 0:
-                Option.ModuleFile = NormFile(os.path.normpath(Option.ModuleFile), Workspace)
-        Option.ModuleFile = PathClass(Option.ModuleFile, Workspace)
-        ErrorCode, ErrorInfo = Option.ModuleFile.Validate(".inf", False)
-        if ErrorCode != 0:
-            EdkLogger.error("build", ErrorCode, ExtraData=ErrorInfo)
+        if Option.ModuleFile:
+            if os.path.isabs (Option.ModuleFile):
+                if os.path.normcase (os.path.normpath(Option.ModuleFile)).find (Workspace) == 0:
+                    Option.ModuleFile = NormFile(os.path.normpath(Option.ModuleFile), Workspace)
+            Option.ModuleFile = PathClass(Option.ModuleFile, Workspace)
+            ErrorCode, ErrorInfo = Option.ModuleFile.Validate(".inf", False)
+            if ErrorCode != 0:
+                EdkLogger.error("build", ErrorCode, ExtraData=ErrorInfo)
 
-    if Option.PlatformFile is not None:
-        if os.path.isabs (Option.PlatformFile):
-            if os.path.normcase (os.path.normpath(Option.PlatformFile)).find (Workspace) == 0:
-                Option.PlatformFile = NormFile(os.path.normpath(Option.PlatformFile), Workspace)
-        Option.PlatformFile = PathClass(Option.PlatformFile, Workspace)
+        if Option.PlatformFile is not None:
+            if os.path.isabs (Option.PlatformFile):
+                if os.path.normcase (os.path.normpath(Option.PlatformFile)).find (Workspace) == 0:
+                    Option.PlatformFile = NormFile(os.path.normpath(Option.PlatformFile), Workspace)
+            Option.PlatformFile = PathClass(Option.PlatformFile, Workspace)
 
-    if Option.FdfFile is not None:
-        if os.path.isabs (Option.FdfFile):
-            if os.path.normcase (os.path.normpath(Option.FdfFile)).find (Workspace) == 0:
-                Option.FdfFile = NormFile(os.path.normpath(Option.FdfFile), Workspace)
-        Option.FdfFile = PathClass(Option.FdfFile, Workspace)
-        ErrorCode, ErrorInfo = Option.FdfFile.Validate(".fdf", False)
-        if ErrorCode != 0:
-            EdkLogger.error("build", ErrorCode, ExtraData=ErrorInfo)
+        if Option.FdfFile is not None:
+            if os.path.isabs (Option.FdfFile):
+                if os.path.normcase (os.path.normpath(Option.FdfFile)).find (Workspace) == 0:
+                    Option.FdfFile = NormFile(os.path.normpath(Option.FdfFile), Workspace)
+            Option.FdfFile = PathClass(Option.FdfFile, Workspace)
+            ErrorCode, ErrorInfo = Option.FdfFile.Validate(".fdf", False)
+            if ErrorCode != 0:
+                EdkLogger.error("build", ErrorCode, ExtraData=ErrorInfo)
 
-    if Option.Flag is not None and Option.Flag not in ['-c', '-s']:
-        EdkLogger.error("build", OPTION_VALUE_INVALID, "UNI flag must be one of -c or -s")
+        if Option.Flag is not None and Option.Flag not in ['-c', '-s']:
+            EdkLogger.error("build", OPTION_VALUE_INVALID, "UNI flag must be one of -c or -s")
 
-    MyBuild = Build(Target, Workspace, Option)
-    GlobalData.gCommandLineDefines['ARCH'] = ' '.join(MyBuild.ArchList)
-    if not (MyBuild.LaunchPrebuildFlag and os.path.exists(MyBuild.PlatformBuildPath)):
-        MyBuild.Launch()
-    # Drop temp tables to avoid database locked.
-    for TmpTableName in TmpTableDict:
-        SqlCommand = """drop table IF EXISTS %s""" % TmpTableName
-        TmpTableDict[TmpTableName].execute(SqlCommand)
-    #MyBuild.DumpBuildData()
-    #
-    # All job done, no error found and no exception raised
-    #
-    BuildError = False
-#     except FatalError as X:
-#         if MyBuild is not None:
-#             # for multi-thread build exits safely
-#             MyBuild.Relinquish()
-#         if Option is not None and Option.debug is not None:
-#             EdkLogger.quiet("(Python %s on %s) " % (platform.python_version(), sys.platform) + traceback.format_exc())
-#         ReturnCode = X.args[0]
-#     except Warning as X:
-#         # error from Fdf parser
-#         if MyBuild is not None:
-#             # for multi-thread build exits safely
-#             MyBuild.Relinquish()
-#         if Option is not None and Option.debug is not None:
-#             EdkLogger.quiet("(Python %s on %s) " % (platform.python_version(), sys.platform) + traceback.format_exc())
-#         else:
-#             EdkLogger.error(X.ToolName, FORMAT_INVALID, File=X.FileName, Line=X.LineNumber, ExtraData=X.Message, RaiseError=False)
-#         ReturnCode = FORMAT_INVALID
-#     except KeyboardInterrupt:
-#         ReturnCode = ABORT_ERROR
-#         if Option is not None and Option.debug is not None:
-#             EdkLogger.quiet("(Python %s on %s) " % (platform.python_version(), sys.platform) + traceback.format_exc())
-#     except:
-#         if MyBuild is not None:
-#             # for multi-thread build exits safely
-#             MyBuild.Relinquish()
-# 
-#         # try to get the meta-file from the object causing exception
-#         Tb = sys.exc_info()[-1]
-#         MetaFile = GlobalData.gProcessingFile
-#         while Tb is not None:
-#             if 'self' in Tb.tb_frame.f_locals and hasattr(Tb.tb_frame.f_locals['self'], 'MetaFile'):
-#                 MetaFile = Tb.tb_frame.f_locals['self'].MetaFile
-#             Tb = Tb.tb_next
-#         EdkLogger.error(
-#                     "\nbuild",
-#                     CODE_ERROR,
-#                     "Unknown fatal error when processing [%s]" % MetaFile,
-#                     ExtraData="\n(Please send email to edk2-devel@lists.01.org for help, attaching following call stack trace!)\n",
-#                     RaiseError=False
-#                     )
-#         EdkLogger.quiet("(Python %s on %s) " % (platform.python_version(), sys.platform) + traceback.format_exc())
-#         ReturnCode = CODE_ERROR
-#     finally:
-#         Utils.Progressor.Abort()
-#         Utils.ClearDuplicatedInf()
+        MyBuild = Build(Target, Workspace, Option)
+        GlobalData.gCommandLineDefines['ARCH'] = ' '.join(MyBuild.ArchList)
+        if not (MyBuild.LaunchPrebuildFlag and os.path.exists(MyBuild.PlatformBuildPath)):
+            MyBuild.Launch()
+        # Drop temp tables to avoid database locked.
+        for TmpTableName in TmpTableDict:
+            SqlCommand = """drop table IF EXISTS %s""" % TmpTableName
+            TmpTableDict[TmpTableName].execute(SqlCommand)
+        #MyBuild.DumpBuildData()
+        #
+        # All job done, no error found and no exception raised
+        #
+        BuildError = False
+    except FatalError as X:
+        if MyBuild is not None:
+            # for multi-thread build exits safely
+            MyBuild.Relinquish()
+        if Option is not None and Option.debug is not None:
+            EdkLogger.quiet("(Python %s on %s) " % (platform.python_version(), sys.platform) + traceback.format_exc())
+        ReturnCode = X.args[0]
+    except Warning as X:
+        # error from Fdf parser
+        if MyBuild is not None:
+            # for multi-thread build exits safely
+            MyBuild.Relinquish()
+        if Option is not None and Option.debug is not None:
+            EdkLogger.quiet("(Python %s on %s) " % (platform.python_version(), sys.platform) + traceback.format_exc())
+        else:
+            EdkLogger.error(X.ToolName, FORMAT_INVALID, File=X.FileName, Line=X.LineNumber, ExtraData=X.Message, RaiseError=False)
+        ReturnCode = FORMAT_INVALID
+    except KeyboardInterrupt:
+        ReturnCode = ABORT_ERROR
+        if Option is not None and Option.debug is not None:
+            EdkLogger.quiet("(Python %s on %s) " % (platform.python_version(), sys.platform) + traceback.format_exc())
+    except:
+        if MyBuild is not None:
+            # for multi-thread build exits safely
+            MyBuild.Relinquish()
+
+        # try to get the meta-file from the object causing exception
+        Tb = sys.exc_info()[-1]
+        MetaFile = GlobalData.gProcessingFile
+        while Tb is not None:
+            if 'self' in Tb.tb_frame.f_locals and hasattr(Tb.tb_frame.f_locals['self'], 'MetaFile'):
+                MetaFile = Tb.tb_frame.f_locals['self'].MetaFile
+            Tb = Tb.tb_next
+        EdkLogger.error(
+                    "\nbuild",
+                    CODE_ERROR,
+                    "Unknown fatal error when processing [%s]" % MetaFile,
+                    ExtraData="\n(Please send email to edk2-devel@lists.01.org for help, attaching following call stack trace!)\n",
+                    RaiseError=False
+                    )
+        EdkLogger.quiet("(Python %s on %s) " % (platform.python_version(), sys.platform) + traceback.format_exc())
+        ReturnCode = CODE_ERROR
+    finally:
+        Utils.Progressor.Abort()
+        Utils.ClearDuplicatedInf()
 
     if ReturnCode == 0:
         try:
