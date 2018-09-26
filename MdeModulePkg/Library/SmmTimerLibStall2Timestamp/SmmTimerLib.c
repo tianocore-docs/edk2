@@ -44,7 +44,7 @@ GetSmmStall2Protocol (
   }
 
   Status = gSmst->SmmLocateProtocol (
-                    &gEdkiiStall2ProtocolGuid,
+                    &gEdkiiSmmStall2ProtocolGuid,
                     NULL,
                     (VOID **) &mSmmStall2Protocol
                     );
@@ -72,7 +72,7 @@ GetSmmTimestampProtocol (
   }
 
   Status = gSmst->SmmLocateProtocol (
-                    &gEfiTimestampProtocolGuid,
+                    &gEdkiiSmmTimestampProtocolGuid,
                     NULL,
                     (VOID **) &mSmmTimestampProtocol
                     );

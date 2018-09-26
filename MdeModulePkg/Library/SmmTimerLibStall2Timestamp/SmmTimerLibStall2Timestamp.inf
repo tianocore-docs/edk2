@@ -43,5 +43,5 @@
   gEdkiiSmmTimestampProtocolGuid    ## CONSUMES
 
 [Depex.common.DXE_SMM_DRIVER]
-  gEdkiiSmmStall2ProtocolGuid and gEdkiiSmmTimestampProtocolGuid
+  gEdkiiSmmStall2ProtocolGuid AND gEdkiiSmmTimestampProtocolGuid
 

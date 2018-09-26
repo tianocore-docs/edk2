@@ -43,5 +43,5 @@
   gEdkiiPeiTimestampPpiGuid     ## CONSUMES
 
 [Depex.common.PEIM]
-  gEdkiiPeiStall2PpiGuid and gEdkiiPeiTimestampPpiGuid
+  gEdkiiPeiStall2PpiGuid AND gEdkiiPeiTimestampPpiGuid
 

@@ -20,6 +20,7 @@
   FILE_GUID                      = 2859452A-4435-4954-BD46-6ABFBC02D28F
   MODULE_TYPE                    = DXE_SMM_DRIVER
   VERSION_STRING                 = 1.0
+  PI_SPECIFICATION_VERSION       = 0x0001000A
   ENTRY_POINT                    = TimestampSmmInitialize
 
 #

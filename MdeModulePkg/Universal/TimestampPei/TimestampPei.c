@@ -168,6 +168,8 @@ TimestampPeiInitialize (
   Instance = AllocatePool (sizeof (*Instance));
   ASSERT (Instance != NULL);
 
+  Instance->Signature = PEI_TIMESTAMP_INSTANCE_SIGNATURE;
+
   //
   // Get the start value, end value and frequency in Timerlib
   //
