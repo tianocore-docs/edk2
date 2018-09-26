@@ -2336,7 +2336,7 @@ BmRegisterBootManagerMenu (
 
   if (DevicePath == NULL) {
     Data = NULL;
-    Status = GetSectionFromFv (
+    Status = GetSectionFromAnyFv (
                PcdGetPtr (PcdBootManagerMenuFile),
                EFI_SECTION_PE32,
                0,
@@ -2354,7 +2354,7 @@ BmRegisterBootManagerMenu (
     //
     // Get BootManagerMenu application's description from EFI User Interface Section.
     //
-    Status = GetSectionFromFv (
+    Status = GetSectionFromAnyFv (
                PcdGetPtr (PcdBootManagerMenuFile),
                EFI_SECTION_USER_INTERFACE,
                0,
