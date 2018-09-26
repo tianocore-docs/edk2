@@ -959,6 +959,7 @@ class InfBuildData(ModuleBuildClassObject):
                 continue
             ValueList = AnalyzePcdData(Setting)
             DefaultValue = ValueList[0]
+            SkuInfoList = {}
             if "|" in Setting:
                 PcdAttr = Setting.split("|")
                 if len(PcdAttr) == 3:
@@ -966,6 +967,7 @@ class InfBuildData(ModuleBuildClassObject):
                     SkuInfo = SkuInfoClass(DT.TAB_DEFAULT, 0, DefaultValue = DefaultValue)
                     if PcdType == TAB_PCDS_DYNAMIC_EX_VPD:
                         SkuInfo.VpdOffset = "*"
+                    SkuInfoList = {DT.TAB_DEFAULT : SkuInfo}
                 elif len(PcdAttr) == 7:
                     (DefaultValue,Phase,PcdType,VarGuid,VarName,VarOffset,VarAttr) = PcdAttr
                     SkuInfo = SkuInfoClass(DT.TAB_DEFAULT,0, VarName, VarGuid, VarOffset, DefaultValue,VariableAttribute=VarAttr)
@@ -980,7 +982,7 @@ class InfBuildData(ModuleBuildClassObject):
                     DefaultValue,
                     '',
                     '',
-                    {DT.TAB_DEFAULT : SkuInfo},
+                    SkuInfoList,
                     False,
                     self.Guids[TokenSpaceGuid]
                     )
