@@ -1,0 +1,45 @@
+## @file
+#  Provides security service of image authentication status check
+#
+#  Authentication Status Library module supports UEFI2.3.1
+#
+# Copyright (c) 2012 - 2018, Intel Corporation. All rights reserved.<BR>
+# This program and the accompanying materials
+# are licensed and made available under the terms and conditions of the BSD License
+# which accompanies this distribution. The full text of the license may be found at
+# http://opensource.org/licenses/bsd-license.php
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = DxeImageAuthenticationStatus
+  MODULE_UNI_FILE                = DxeImageAuthenticationStatus.uni
+  FILE_GUID                      = 443D1518-94CE-41ac-846F-7CD6C0D7BC9D
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  CONSTRUCTOR                    = DxeImageAuthenticationStatusConstructor
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64 EBC
+#
+
+[Sources]
+  DxeImageAuthenticationStatus.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+
+[Protocols]
+  gEdkiiSecurityManagementProtocolGuid            ## CONSUMES
+
+[Depex]
+  gEdkiiSecurityManagementProtocolGuid
