@@ -86,6 +86,9 @@
   ## Include/Protocol/Tcg2PhysicalPresenceProtocol.h
   gEdkiiTcg2PhysicalPresenceProtocolGuid = { 0xe2e791e0, 0xe408, 0x4219, { 0xb2, 0x71, 0x68, 0x1d, 0xfd, 0xaa, 0x97, 0x2f } }
 
+  ## Include/Protocol/UserPhysicalPresence.h
+  gEdkiiUserPhysicalPresenceProtocolGuid = { 0x712954f3, 0x26c, 0x4057, { 0x90, 0xdb, 0x70, 0x98, 0xed, 0xff, 0x3c, 0x47 } }
+
 [Guids]
   ## Security package token space guid.
   # Include/Guid/SecurityPkgTokenSpace.h
