@@ -1,5 +1,5 @@
 // /** @file
-// CryptRuntimeDxe Localized Strings and Content
+// PEI Cryptographic Library Instance based on EDKII Crypt PPI.
 //
 // Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
 //
@@ -13,8 +13,8 @@
 //
 // **/
 
-#string STR_PROPERTIES_MODULE_NAME
-#language en-US
-"CryptRuntimeDxe module"
 
+#string STR_MODULE_ABSTRACT             #language en-US "Cryptographic Library Instance based on EDKII Crypt PPI"
+
+#string STR_MODULE_DESCRIPTION          #language en-US "PEI Cryptographic Library Instance based on EDKII Crypto PPI."
 

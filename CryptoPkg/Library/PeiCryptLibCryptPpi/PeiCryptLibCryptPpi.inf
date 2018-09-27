@@ -1,0 +1,44 @@
+## @file
+#  Cryptographic Library Instance in PEI phase, based on EDKII Crypt PPI.
+#
+#  Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = PeiCryptLibCryptPpi
+  MODULE_UNI_FILE                = PeiCryptLibCryptPpi.uni
+  FILE_GUID                      = 47F43018-D33B-43F0-878C-87CE092C3B58
+  MODULE_TYPE                    = PEIM
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = BaseCryptLib|PEI_CORE PEIM
+
+#
+#  VALID_ARCHITECTURES           = IA32 X64
+#
+
+[Sources]
+  PeiCryptLibWrapper.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  CryptoPkg/CryptoPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  DebugLib
+  PeiServicesLib
+
+[Ppis]
+  gEdkiiPeiCryptPpiGuid           ## CONSUMES
+
+[Depex]
+  gEdkiiPeiCryptPpiGuid

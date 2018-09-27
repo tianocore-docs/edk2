@@ -1,8 +1,8 @@
 ## @file
-#  EDKII Cryptograhpic Runtime Driver.
+#  EDKII Cryptographic DXE Driver.
 #
-#  This driver installs EDKII Runtime Crypt protocol to provide basic
-#  cryptographic services in Runtime.
+#  This driver installs EDKII Cryptographic Protocol to provide basic cryptographic
+#  services in DXE.
 #
 #  Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
 #  This program and the accompanying materials
@@ -17,13 +17,13 @@
 
 [Defines]
   INF_VERSION                    = 0x00010005
-  BASE_NAME                      = CryptRuntimeDxe
-  MODULE_UNI_FILE                = CryptRuntimeDxe.uni
-  FILE_GUID                      = 858031F3-96A2-406E-ABCC-ED264A3A31D6
-  MODULE_TYPE                    = DXE_RUNTIME_DRIVER
+  BASE_NAME                      = CryptDxe
+  MODULE_UNI_FILE                = CryptDxe.uni
+  FILE_GUID                      = 6A10E6A6-05B4-4FAF-A4E9-FBE1D39EA03D
+  MODULE_TYPE                    = DXE_DRIVER
   VERSION_STRING                 = 1.0
 
-  ENTRY_POINT                    = CryptRuntimeDriverInitialize
+  ENTRY_POINT                    = CryptDriverInitialize
 
 #
 # The following information is for reference only and not required by the build tools.
@@ -32,7 +32,7 @@
 #
 
 [Sources]
-  CryptRuntimeDxe.c
+  CryptDxe.c
 
 [Packages]
   MdePkg/MdePkg.dec
@@ -42,15 +42,15 @@
   UefiDriverEntryPoint
   UefiBootServicesTableLib
   DebugLib
-  UefiRuntimeLib
   BaseCryptLib
+  OpensslLib
 
 [Protocols]
-  gEdkiiRuntimeCryptProtocolGuid            ## PRODUCES
+  gEdkiiCryptProtocolGuid            ## PRODUCES
 
 [Depex]
   TRUE
 
 [UserExtensions.TianoCore."ExtraFiles"]
-  CryptRuntimeDxeExtra.uni
+  CryptDxeExtra.uni
 

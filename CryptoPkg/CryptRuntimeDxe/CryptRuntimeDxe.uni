@@ -1,9 +1,11 @@
 // /** @file
-// This driver installs runtime Crypt protocol to provide SHA256 and RSA service.
+// EDKII Cryptographic Runtime Driver
+//
+// This driver installs EDKII Runtime Crypt Protocol to provide basic cryptographic service.
 //
 // This driver installs runtime Crypt protocol to provide SHA256 and RSA service.
 //
-// Copyright (c) 2010 - 2018, Intel Corporation. All rights reserved.<BR>
+// Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
 //
 // This program and the accompanying materials
 // are licensed and made available under the terms and conditions of the BSD License
@@ -16,7 +18,7 @@
 // **/
 
 
-#string STR_MODULE_ABSTRACT             #language en-US "Installs runtime Crypt protocol to provide SHA256 and RSA service"
+#string STR_MODULE_ABSTRACT             #language en-US "Installs Runtime Crypt protocol to provide basic cryptographic service"
 
-#string STR_MODULE_DESCRIPTION          #language en-US "This driver installs runtime Crypt protocol to provide SHA256 and RSA service."
+#string STR_MODULE_DESCRIPTION          #language en-US "This driver installs EDKII Runtime Crypt protocol to provide basic cryptographic service."
 

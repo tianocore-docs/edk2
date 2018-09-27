@@ -1,5 +1,7 @@
 // /** @file
-// CryptRuntimeDxe Localized Strings and Content
+// EDKII Cryptographic DXE Driver
+//
+// This driver installs EDKII Crypt Protocol to provide basic cryptographic service.
 //
 // Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
 //
@@ -13,8 +15,8 @@
 //
 // **/
 
-#string STR_PROPERTIES_MODULE_NAME
-#language en-US
-"CryptRuntimeDxe module"
 
+#string STR_MODULE_ABSTRACT             #language en-US "EDKII Cryptographic DXE Module"
+
+#string STR_MODULE_DESCRIPTION          #language en-US "This driver installs EDKII Crypt Protocol to provide basic cryptographic service."
 

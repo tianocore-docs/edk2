@@ -40,11 +40,15 @@
   DebugLib|MdePkg/Library/BaseDebugLibNull/BaseDebugLibNull.inf
   DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
   PrintLib|MdePkg/Library/BasePrintLib/BasePrintLib.inf
+  IoLib|MdePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsic.inf
   UefiLib|MdePkg/Library/UefiLib/UefiLib.inf
   DevicePathLib|MdePkg/Library/UefiDevicePathLib/UefiDevicePathLib.inf
+  PeiServicesTablePointerLib|MdePkg/Library/PeiServicesTablePointerLib/PeiServicesTablePointerLib.inf
+  PeiServicesLib|MdePkg/Library/PeiServicesLib/PeiServicesLib.inf
   UefiBootServicesTableLib|MdePkg/Library/UefiBootServicesTableLib/UefiBootServicesTableLib.inf
   UefiRuntimeServicesTableLib|MdePkg/Library/UefiRuntimeServicesTableLib/UefiRuntimeServicesTableLib.inf
   UefiRuntimeLib|MdePkg/Library/UefiRuntimeLib/UefiRuntimeLib.inf
+  PeimEntryPoint|MdePkg/Library/PeimEntryPoint/PeimEntryPoint.inf
   UefiDriverEntryPoint|MdePkg/Library/UefiDriverEntryPoint/UefiDriverEntryPoint.inf
   UefiApplicationEntryPoint|MdePkg/Library/UefiApplicationEntryPoint/UefiApplicationEntryPoint.inf
 
@@ -67,25 +71,30 @@
   ArmSoftFloatLib|ArmPkg/Library/ArmSoftFloatLib/ArmSoftFloatLib.inf
 
 [LibraryClasses.common.PEIM]
+  HobLib|MdePkg/Library/PeiHobLib/PeiHobLib.inf
+  MemoryAllocationLib|MdePkg/Library/PeiMemoryAllocationLib/PeiMemoryAllocationLib.inf
   BaseCryptLib|CryptoPkg/Library/BaseCryptLib/PeiCryptLib.inf
+  ## BaseCryptLib|CryptoPkg/Library/PeiCryptLibCryptPpi/PeiCryptLibCryptPpi.inf
 
 [LibraryClasses.common.DXE_DRIVER]
   BaseCryptLib|CryptoPkg/Library/BaseCryptLib/BaseCryptLib.inf
+  ## BaseCryptLib|CryptoPkg/Library/DxeCryptLibCryptProtocol/DxeCryptLibCryptProtocol.inf
 
 [LibraryClasses.common.DXE_RUNTIME_DRIVER]
   BaseCryptLib|CryptoPkg/Library/BaseCryptLib/RuntimeCryptLib.inf
 
 [LibraryClasses.common.DXE_SMM_DRIVER]
+  SmmServicesTableLib|MdePkg/Library/SmmServicesTableLib/SmmServicesTableLib.inf
   BaseCryptLib|CryptoPkg/Library/BaseCryptLib/SmmCryptLib.inf
-
-[LibraryClasses.common.DXE_SAL_DRIVER]
-  BaseCryptLib|CryptoPkg/Library/BaseCryptLibRuntimeCryptProtocol/BaseCryptLibRuntimeCryptProtocol.inf
+  ## BaseCryptLib|CryptoPkg/Library/SmmCryptLibCryptProtocol/SmmCryptLibCryptProtocol.inf
 
 [LibraryClasses.common.UEFI_DRIVER]
   BaseCryptLib|CryptoPkg/Library/BaseCryptLib/BaseCryptLib.inf
+  ## BaseCryptLib|CryptoPkg/Library/DxeCryptLibCryptProtocol/DxeCryptLibCryptProtocol.inf
 
 [LibraryClasses.common.UEFI_APPLICATION]
   BaseCryptLib|CryptoPkg/Library/BaseCryptLib/BaseCryptLib.inf
+  ## BaseCryptLib|CryptoPkg/Library/DxeCryptLibCryptProtocol/DxeCryptLibCryptProtocol.inf
 
 ################################################################################
 #
@@ -125,13 +134,40 @@
   CryptoPkg/Library/BaseCryptLib/RuntimeCryptLib.inf
   CryptoPkg/Library/TlsLib/TlsLib.inf
 
-  CryptoPkg/CryptRuntimeDxe/CryptRuntimeDxe.inf
+  ## PeiCrypLib based on EDKII PEI Crypt PPI
+  CryptoPkg/Library/PeiCryptLibCryptPpi/PeiCryptLibCryptPpi.inf
+  ## DxeCryptLib based on EDKII Crypt Protocol
+  CryptoPkg/Library/DxeCryptLibCryptProtocol/DxeCryptLibCryptProtocol.inf
+  ## RuntimeCryptLib based on EDKII Runtime Crypt Protocol
+  CryptoPkg/Library/RuntimeCryptLibCryptProtocol/RuntimeCryptLibCryptProtocol.inf
+
+  ## EDKII Crypt PEIM - EDKII_PEI_CRYPT_PPI
+  CryptoPkg/CryptPei/CryptPei.inf {
+    <LibraryClasses>
+      BaseCryptLib|CryptoPkg/Library/BaseCryptLib/PeiCryptLib.inf
+  }
+  ## EDKII Crypt DXE - EDKII_CRYPT_PROTOCOL
+  CryptoPkg/CryptDxe/CryptDxe.inf {
+    <LibraryClasses>
+       BaseCryptLib|CryptoPkg/Library/BaseCryptLib/BaseCryptLib.inf
+  }
+  ## EDKI Runtime Crypt Driver - EDKII_RUNTIME_CRYPT_PROTOCOL
+  CryptoPkg/CryptRuntimeDxe/CryptRuntimeDxe.inf {
+    <LibraryClasses>
+      BaseCryptLib|CryptoPkg/Library/BaseCryptLib/RuntimeCryptLib.inf
+  }
 
 [Components.IA32, Components.X64]
   CryptoPkg/Library/BaseCryptLib/SmmCryptLib.inf
 
-[Components.IPF]
-  CryptoPkg/Library/BaseCryptLibRuntimeCryptProtocol/BaseCryptLibRuntimeCryptProtocol.inf
+  ## SmmCryptLib based on EDKII SMM Crypt Protocol
+  CryptoPkg/Library/SmmCryptLibCryptProtocol/SmmCryptLibCryptProtocol.inf
+
+  ## EDKII SMM Crypt - EDKII_SMM_CRYPT_PROTOCOL
+  CryptoPkg/CryptSmm/CryptSmm.inf {
+    <LibraryClasses>
+      BaseCryptLib|CryptoPkg/Library/BaseCryptLib/SmmCryptLib.inf
+  }
 
 [BuildOptions]
   *_*_*_CC_FLAGS = -D DISABLE_NEW_DEPRECATED_INTERFACES

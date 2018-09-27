@@ -1,8 +1,7 @@
 ## @file
-#  EDKII Cryptograhpic Runtime Driver.
+#  EDKII Cryptographic PEI Module.
 #
-#  This driver installs EDKII Runtime Crypt protocol to provide basic
-#  cryptographic services in Runtime.
+#  Produces the EDKII Cryptographic PPI.
 #
 #  Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
 #  This program and the accompanying materials
@@ -17,13 +16,13 @@
 
 [Defines]
   INF_VERSION                    = 0x00010005
-  BASE_NAME                      = CryptRuntimeDxe
-  MODULE_UNI_FILE                = CryptRuntimeDxe.uni
-  FILE_GUID                      = 858031F3-96A2-406E-ABCC-ED264A3A31D6
-  MODULE_TYPE                    = DXE_RUNTIME_DRIVER
+  BASE_NAME                      = CryptPei
+  MODULE_UNI_FILE                = CryptPei.uni
+  FILE_GUID                      = 6934B881-363A-421F-9A7F-7269754C56DD
+  MODULE_TYPE                    = PEIM
   VERSION_STRING                 = 1.0
 
-  ENTRY_POINT                    = CryptRuntimeDriverInitialize
+  ENTRY_POINT                    = CryptPeimInitialize
 
 #
 # The following information is for reference only and not required by the build tools.
@@ -32,25 +31,25 @@
 #
 
 [Sources]
-  CryptRuntimeDxe.c
+  CryptPei.c
 
 [Packages]
   MdePkg/MdePkg.dec
   CryptoPkg/CryptoPkg.dec
 
 [LibraryClasses]
-  UefiDriverEntryPoint
-  UefiBootServicesTableLib
   DebugLib
-  UefiRuntimeLib
+  PeiServicesLib
+  PeimEntryPoint
   BaseCryptLib
+  OpensslLib
 
-[Protocols]
-  gEdkiiRuntimeCryptProtocolGuid            ## PRODUCES
+[Ppis]
+  gEdkiiPeiCryptPpiGuid            ## PRODUCES
 
 [Depex]
   TRUE
 
 [UserExtensions.TianoCore."ExtraFiles"]
-  CryptRuntimeDxeExtra.uni
+  CryptPeiExtra.uni
 

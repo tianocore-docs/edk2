@@ -1,6 +1,8 @@
 /** @file
-  The EDKII Runtime Cryptographic protocol.
-  Only limited crypto primitives are provided for runtime authenticated variable service.
+  This file declares EDKII SMM Cryptographic Protocol.
+
+  This protocol provides basic cryptograhpic services (including Hash, HMAC,
+  RSA, DH, PKCS7, etc.) for SMM environment.
 
   Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
   This program and the accompanying materials
@@ -13,23 +15,21 @@
 
 **/
 
-#ifndef __EDKII_RUNTIME_CRYPT_PROTOCOL_H__
-#define __EDKII_RUNTIME_CRYPT_PROTOCOL_H__
+#ifndef __EDKII_SMM_CRYPT_PROTOCOL_H__
+#define __EDKII_SMM_CRYPT_PROTOCOL_H__
 
 #include <Protocol/Crypt.h>
 
-///
-/// Runtime Cryptographic Protocol GUID.
-///
-#define EFI_RUNTIME_CRYPT_PROTOCOL_GUID \
-  { 0xe1475e0c, 0x1746, 0x4802, { 0x86, 0x2e, 0x1, 0x1c, 0x2c, 0x2d, 0x9d, 0x86 } };
+// {47F43018-D33B-43F0-878C-87CE092C3B58}
+#define EDKII_SMM_CRYPT_PROTOCOL_GUID \
+  { 0x47f43018, 0xd33b, 0x43f0, { 0x87, 0x8c, 0x87, 0xce, 0x9, 0x2c, 0x3b, 0x58 } };
 
-typedef struct _EDKII_RUNTIME_CRYPT_PROTOCOL EDKII_RUNTIME_CRYPT_PROTOCOL;
+typedef struct _EDKII_SMM_CRYPT_PROTOCOL EDKII_SMM_CRYPT_PROTOCOL;
 
 ///
-/// Runtime Cryptographic Services.
+/// SMM Cryptographic Services.
 ///
-struct _EDKII_RUNTIME_CRYPT_PROTOCOL {
+struct _EDKII_SMM_CRYPT_PROTOCOL {
   //
   // MD5 Hash
   //
@@ -115,6 +115,6 @@ struct _EDKII_RUNTIME_CRYPT_PROTOCOL {
   EDKII_CRYPT_RANDOM_BYTES                        RandomBytes;
 };
 
-extern EFI_GUID gEdkiiRuntimeCryptProtocolGuid;
+extern EFI_GUID gEdkiiSmmCryptProtocolGuid;
 
-#endif // __EDKII_RUNTIME_CRYPT_PROTOCOL_H__
+#endif // __EDKII_SMM_CRYPT_PROTOCOL_H__

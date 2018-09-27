@@ -1,5 +1,7 @@
 // /** @file
-// CryptRuntimeDxe Localized Strings and Content
+// Cryptographic Library Instance based on EDKII Runtime Crypt Protocol.
+//
+// This instance will be only used by the Authenticated Variable driver.
 //
 // Copyright (c) 2018, Intel Corporation. All rights reserved.<BR>
 //
@@ -13,8 +15,8 @@
 //
 // **/
 
-#string STR_PROPERTIES_MODULE_NAME
-#language en-US
-"CryptRuntimeDxe module"
 
+#string STR_MODULE_ABSTRACT             #language en-US "Cryptographic Library Instance based on Runtime Crypt Protocol"
+
+#string STR_MODULE_DESCRIPTION          #language en-US "This instance will be only used by the Authenticated Variable driver."
 
