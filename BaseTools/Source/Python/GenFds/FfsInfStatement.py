@@ -152,8 +152,8 @@ class FfsInfStatement(FfsInfStatementClassObject):
     #   @param  self        The object pointer
     #   @param  Dict        dictionary contains macro and value pair
     #
-    def __InfParse__(self, Dict = {}):
-
+    def __InfParse__(self, Dict = None, FvAsBuild = False):
+        Dict = {} if Dict is None else Dict
         GenFdsGlobalVariable.VerboseLogger( " Begine parsing INf file : %s" %self.InfFileName)
 
         self.InfFileName = self.InfFileName.replace('$(WORKSPACE)', '')
@@ -168,8 +168,10 @@ class FfsInfStatement(FfsInfStatementClassObject):
                 InfPath = GenFdsGlobalVariable.ReplaceWorkspaceMacro(InfPath)
                 if not os.path.exists(InfPath):
                     EdkLogger.error("GenFds", GENFDS_ERROR, "Non-existant Module %s !" % (self.InfFileName))
-
-        self.CurrentArch = self.GetCurrentArch()
+        if FvAsBuild:
+            self.CurrentArch = TAB_ARCH_COMMON
+        else:
+            self.CurrentArch = self.GetCurrentArch()
         #
         # Get the InfClass object
         #
@@ -233,136 +235,129 @@ class FfsInfStatement(FfsInfStatementClassObject):
 
         if Inf._Defs is not None and len(Inf._Defs) > 0:
             self.OptRomDefs.update(Inf._Defs)
+        if not FvAsBuild:
+            self.PatchPcds = []
+            InfPcds = Inf.Pcds
+            Platform = GenFdsGlobalVariable.WorkSpace.BuildObject[GenFdsGlobalVariable.ActivePlatform, self.CurrentArch, GenFdsGlobalVariable.TargetName, GenFdsGlobalVariable.ToolChainTag]
+            FdfPcdDict = GenFdsGlobalVariable.FdfParser.Profile.PcdDict
+            PlatformPcds = Platform.Pcds
 
-        self.PatchPcds = []
-        InfPcds = Inf.Pcds
-        Platform = GenFdsGlobalVariable.WorkSpace.BuildObject[GenFdsGlobalVariable.ActivePlatform, self.CurrentArch, GenFdsGlobalVariable.TargetName, GenFdsGlobalVariable.ToolChainTag]
-        FdfPcdDict = GenFdsGlobalVariable.FdfParser.Profile.PcdDict
-        PlatformPcds = Platform.Pcds
-
-        # Workaround here: both build and GenFds tool convert the workspace path to lower case
-        # But INF file path in FDF and DSC file may have real case characters.
-        # Try to convert the path to lower case to see if PCDs value are override by DSC.
-        DscModules = {}
-        for DscModule in Platform.Modules:
-            DscModules[str(DscModule).lower()] = Platform.Modules[DscModule]
-        for PcdKey in InfPcds:
-            Pcd = InfPcds[PcdKey]
-            if not hasattr(Pcd, 'Offset'):
-                continue
-            if Pcd.Type != TAB_PCDS_PATCHABLE_IN_MODULE:
-                continue
-            # Override Patchable PCD value by the value from DSC
-            PatchPcd = None
-            if InfLowerPath in DscModules and PcdKey in DscModules[InfLowerPath].Pcds:
-                PatchPcd = DscModules[InfLowerPath].Pcds[PcdKey]
-            elif PcdKey in Platform.Pcds:
-                PatchPcd = Platform.Pcds[PcdKey]
-            DscOverride = False
-            if PatchPcd and Pcd.Type == PatchPcd.Type:
-                DefaultValue = PatchPcd.DefaultValue
-                DscOverride = True
-
-            # Override Patchable PCD value by the value from FDF
-            FdfOverride = False
-            if PcdKey in FdfPcdDict:
-                DefaultValue = FdfPcdDict[PcdKey]
-                FdfOverride = True
-
-            # Override Patchable PCD value by the value from Build Option
-            BuildOptionOverride = False
-            if GlobalData.BuildOptionPcd:
-                for pcd in GlobalData.BuildOptionPcd:
-                    if PcdKey == (pcd[1], pcd[0]):
-                        if pcd[2]:
-                            continue
-                        DefaultValue = pcd[3]
-                        BuildOptionOverride = True
-                        break
-
-            if not DscOverride and not FdfOverride and not BuildOptionOverride:
-                continue
-
-            # Support Flexible PCD format
-            if DefaultValue:
-                try:
-                    DefaultValue = ValueExpressionEx(DefaultValue, Pcd.DatumType, Platform._GuidDict)(True)
-                except BadExpression:
-                    EdkLogger.error("GenFds", GENFDS_ERROR, 'PCD [%s.%s] Value "%s"' %(Pcd.TokenSpaceGuidCName, Pcd.TokenCName, DefaultValue), File=self.InfFileName)
-
-            if Pcd.InfDefaultValue:
-                try:
-                    Pcd.InfDefaultValue = ValueExpressionEx(Pcd.InfDefaultValue, Pcd.DatumType, Platform._GuidDict)(True)
-                except BadExpression:
-                    EdkLogger.error("GenFds", GENFDS_ERROR, 'PCD [%s.%s] Value "%s"' %(Pcd.TokenSpaceGuidCName, Pcd.TokenCName, Pcd.DefaultValue), File=self.InfFileName)
-
-            # Check value, if value are equal, no need to patch
-            if Pcd.DatumType == TAB_VOID:
-                if Pcd.InfDefaultValue == DefaultValue or not DefaultValue:
+            # Workaround here: both build and GenFds tool convert the workspace path to lower case
+            # But INF file path in FDF and DSC file may have real case characters.
+            # Try to convert the path to lower case to see if PCDs value are override by DSC.
+            DscModules = {}
+            for DscModule in Platform.Modules:
+                DscModules[str(DscModule).lower()] = Platform.Modules[DscModule]
+            for PcdKey in InfPcds:
+                Pcd = InfPcds[PcdKey]
+                if not hasattr(Pcd, 'Offset'):
                     continue
-                # Get the string size from FDF or DSC
-                if DefaultValue[0] == 'L':
-                    # Remove L"", but the '\0' must be appended
-                    MaxDatumSize = str((len(DefaultValue) - 2) * 2)
-                elif DefaultValue[0] == '{':
-                    MaxDatumSize = str(len(DefaultValue.split(',')))
-                else:
-                    MaxDatumSize = str(len(DefaultValue) - 1)
-                if DscOverride:
-                    Pcd.MaxDatumSize = PatchPcd.MaxDatumSize
-                # If no defined the maximum size in DSC, try to get current size from INF
-                if not Pcd.MaxDatumSize:
-                    Pcd.MaxDatumSize = str(len(Pcd.InfDefaultValue.split(',')))
-            else:
-                Base1 = Base2 = 10
-                if Pcd.InfDefaultValue.upper().startswith('0X'):
-                    Base1 = 16
-                if DefaultValue.upper().startswith('0X'):
-                    Base2 = 16
-                try:
-                    PcdValueInImg = int(Pcd.InfDefaultValue, Base1)
-                    PcdValueInDscOrFdf = int(DefaultValue, Base2)
-                    if PcdValueInImg == PcdValueInDscOrFdf:
+                if Pcd.Type != TAB_PCDS_PATCHABLE_IN_MODULE:
+                    continue
+                # Override Patchable PCD value by the value from DSC
+                PatchPcd = None
+                if InfLowerPath in DscModules and PcdKey in DscModules[InfLowerPath].Pcds:
+                    PatchPcd = DscModules[InfLowerPath].Pcds[PcdKey]
+                elif PcdKey in Platform.Pcds:
+                    PatchPcd = Platform.Pcds[PcdKey]
+                DscOverride = False
+                if PatchPcd and Pcd.Type == PatchPcd.Type:
+                    DefaultValue = PatchPcd.DefaultValue
+                    DscOverride = True
+                # Override Patchable PCD value by the value from FDF
+                FdfOverride = False
+                if PcdKey in FdfPcdDict:
+                    DefaultValue = FdfPcdDict[PcdKey]
+                    FdfOverride = True
+                # Override Patchable PCD value by the value from Build Option
+                BuildOptionOverride = False
+                if GlobalData.BuildOptionPcd:
+                    for pcd in GlobalData.BuildOptionPcd:
+                        if PcdKey == (pcd[1], pcd[0]):
+                            if pcd[2]:
+                                continue
+                            DefaultValue = pcd[3]
+                            BuildOptionOverride = True
+                            break
+                if not DscOverride and not FdfOverride and not BuildOptionOverride:
+                    continue
+                # Support Flexible PCD format
+                if DefaultValue:
+                    try:
+                        DefaultValue = ValueExpressionEx(DefaultValue, Pcd.DatumType, Platform._GuidDict)(True)
+                    except BadExpression:
+                        EdkLogger.error("GenFds", GENFDS_ERROR, 'PCD [%s.%s] Value "%s"' %(Pcd.TokenSpaceGuidCName, Pcd.TokenCName, DefaultValue), File=self.InfFileName)
+                if Pcd.InfDefaultValue:
+                    try:
+                        Pcd.InfDefaultValue = ValueExpressionEx(Pcd.InfDefaultValue, Pcd.DatumType, Platform._GuidDict)(True)
+                    except BadExpression:
+                        EdkLogger.error("GenFds", GENFDS_ERROR, 'PCD [%s.%s] Value "%s"' %(Pcd.TokenSpaceGuidCName, Pcd.TokenCName, Pcd.DefaultValue), File=self.InfFileName)
+                # Check value, if value are equal, no need to patch
+                if Pcd.DatumType == TAB_VOID:
+                    if Pcd.InfDefaultValue == DefaultValue or not DefaultValue:
                         continue
-                except:
-                    continue
-            # Check the Pcd size and data type
-            if Pcd.DatumType == TAB_VOID:
-                if int(MaxDatumSize) > int(Pcd.MaxDatumSize):
-                    EdkLogger.error("GenFds", GENFDS_ERROR, "The size of VOID* type PCD '%s.%s' exceeds its maximum size %d bytes." \
-                                    % (Pcd.TokenSpaceGuidCName, Pcd.TokenCName, int(MaxDatumSize) - int(Pcd.MaxDatumSize)))
-            else:
-                if PcdValueInDscOrFdf > MAX_VAL_TYPE[Pcd.DatumType] \
-                    or PcdValueInImg > MAX_VAL_TYPE[Pcd.DatumType]:
-                    EdkLogger.error("GenFds", GENFDS_ERROR, "The size of %s type PCD '%s.%s' doesn't match its data type." \
-                                    % (Pcd.DatumType, Pcd.TokenSpaceGuidCName, Pcd.TokenCName))
-            self.PatchPcds.append((Pcd, DefaultValue))
+                    # Get the string size from FDF or DSC
+                    if DefaultValue[0] == 'L':
+                        # Remove L"", but the '\0' must be appended
+                        MaxDatumSize = str((len(DefaultValue) - 2) * 2)
+                    elif DefaultValue[0] == '{':
+                        MaxDatumSize = str(len(DefaultValue.split(',')))
+                    else:
+                        MaxDatumSize = str(len(DefaultValue) - 1)
+                    if DscOverride:
+                        Pcd.MaxDatumSize = PatchPcd.MaxDatumSize
+                    # If no defined the maximum size in DSC, try to get current size from INF
+                    if not Pcd.MaxDatumSize:
+                        Pcd.MaxDatumSize = str(len(Pcd.InfDefaultValue.split(',')))
+                else:
+                    Base1 = Base2 = 10
+                    if Pcd.InfDefaultValue.upper().startswith('0X'):
+                        Base1 = 16
+                    if DefaultValue.upper().startswith('0X'):
+                        Base2 = 16
+                    try:
+                        PcdValueInImg = int(Pcd.InfDefaultValue, Base1)
+                        PcdValueInDscOrFdf = int(DefaultValue, Base2)
+                        if PcdValueInImg == PcdValueInDscOrFdf:
+                            continue
+                    except:
+                        continue
+                # Check the Pcd size and data type
+                if Pcd.DatumType == TAB_VOID:
+                    if int(MaxDatumSize) > int(Pcd.MaxDatumSize):
+                        EdkLogger.error("GenFds", GENFDS_ERROR, "The size of VOID* type PCD '%s.%s' exceeds its maximum size %d bytes." \
+                                        % (Pcd.TokenSpaceGuidCName, Pcd.TokenCName, int(MaxDatumSize) - int(Pcd.MaxDatumSize)))
+                else:
+                    if PcdValueInDscOrFdf > MAX_VAL_TYPE[Pcd.DatumType] \
+                        or PcdValueInImg > MAX_VAL_TYPE[Pcd.DatumType]:
+                        EdkLogger.error("GenFds", GENFDS_ERROR, "The size of %s type PCD '%s.%s' doesn't match its data type." \
+                                        % (Pcd.DatumType, Pcd.TokenSpaceGuidCName, Pcd.TokenCName))
+                self.PatchPcds.append((Pcd, DefaultValue))
 
-        self.InfModule = Inf
-        self.PcdIsDriver = Inf.PcdIsDriver
-        self.IsBinaryModule = Inf.IsBinaryModule
-        Inf._GetDepex()
-        Inf._GetDepexExpression()
-        if len(Inf._Depex.data) > 0 and len(Inf._DepexExpression.data) > 0:
-            self.Depex = True
-
-        GenFdsGlobalVariable.VerboseLogger("BaseName : %s" % self.BaseName)
-        GenFdsGlobalVariable.VerboseLogger("ModuleGuid : %s" % self.ModuleGuid)
-        GenFdsGlobalVariable.VerboseLogger("ModuleType : %s" % self.ModuleType)
-        GenFdsGlobalVariable.VerboseLogger("VersionString : %s" % self.VersionString)
-        GenFdsGlobalVariable.VerboseLogger("InfFileName :%s" % self.InfFileName)
-
-        #
-        # Set OutputPath = ${WorkSpace}\Build\Fv\Ffs\${ModuleGuid}+ ${MdouleName}\
-        #
-
-        self.OutputPath = os.path.join(GenFdsGlobalVariable.FfsDir, \
-                                       self.ModuleGuid + self.BaseName)
-        if not os.path.exists(self.OutputPath) :
-            os.makedirs(self.OutputPath)
-
-        self.EfiOutputPath, self.EfiDebugPath = self.__GetEFIOutPutPath__()
-        GenFdsGlobalVariable.VerboseLogger( "ModuelEFIPath: " + self.EfiOutputPath)
+            self.InfModule = Inf
+            self.PcdIsDriver = Inf.PcdIsDriver
+            self.IsBinaryModule = Inf.IsBinaryModule
+            Inf._GetDepex()
+            Inf._GetDepexExpression()
+            if len(Inf._Depex.data) > 0 and len(Inf._DepexExpression.data) > 0:
+                self.Depex = True
+            GenFdsGlobalVariable.VerboseLogger("BaseName : %s" % self.BaseName)
+            GenFdsGlobalVariable.VerboseLogger("ModuleGuid : %s" % self.ModuleGuid)
+            GenFdsGlobalVariable.VerboseLogger("ModuleType : %s" % self.ModuleType)
+            GenFdsGlobalVariable.VerboseLogger("VersionString : %s" % self.VersionString)
+            GenFdsGlobalVariable.VerboseLogger("InfFileName :%s" % self.InfFileName)
+            #
+            # Set OutputPath = ${WorkSpace}\Build\Fv\Ffs\${ModuleGuid}+ ${MdouleName}\
+            #
+            self.OutputPath = os.path.join(GenFdsGlobalVariable.FfsDir, \
+                                           self.ModuleGuid + self.BaseName)
+            if not os.path.exists(self.OutputPath) :
+                os.makedirs(self.OutputPath)
+            self.EfiOutputPath, self.EfiDebugPath = self.__GetEFIOutPutPath__()
+            GenFdsGlobalVariable.VerboseLogger( "ModuelEFIPath: " + self.EfiOutputPath)
+        else:
+            self.InfModule = Inf
+            self.IsBinaryModule = True
 
     ## PatchEfiFile
     #

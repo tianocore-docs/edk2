@@ -173,13 +173,16 @@ class FV (FvClassObject):
                 continue
             if hasattr(FfsFile, "Rule") and FfsFile.Rule == "InnerFv":
                 FfsFile.InfFileName = os.path.join(GenFdsGlobalVariable.FvDir,FfsFile.InfFileName)
-                FfsFile.__InfParse__()
-                FfsFile.IsBinaryModule = True
-            FileGuid = FfsFile.ModuleGuid.upper()
-            if FileGuid not in ModuleOffsetList and FfsFile.Rule != "InnerFv":
-                continue
-            FileName = FfsFile.GetFfsAsBuildInfFile()
-            FileArch = FfsFile.GetCurrentArch()
+                FfsFile.__InfParse__(FvAsBuild = True)
+                FileGuid = FfsFile.ModuleGuid.upper()
+                FileName = FfsFile.GetFfsAsBuildInfFile()
+                FileArch = TAB_ARCH_COMMON
+            else:
+                FileGuid = FfsFile.ModuleGuid.upper()
+                if FileGuid not in ModuleOffsetList:
+                    continue
+                FileName = FfsFile.GetFfsAsBuildInfFile()
+                FileArch = FfsFile.GetCurrentArch()
             if not FvArch:
                 FvArch = FileArch
             InfObj = InfSectionParser (FileName)
@@ -235,7 +238,7 @@ class FV (FvClassObject):
 
         if not FvArch:
             FvArch = "Common"
-        AsBuiltInfDict['module_arch'] = FvArch
+        AsBuiltInfDict['module_arch'] = TAB_ARCH_COMMON
         AsBuiltInf = TemplateString()
         AsBuiltInf.Append(gAsBuiltFvInfString.Replace(AsBuiltInfDict))
 

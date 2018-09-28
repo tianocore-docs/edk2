@@ -2239,7 +2239,7 @@ class FdfParser:
             for FvBuildInf in InnerFv:
                 ffsInf = FfsInfStatement.FfsInfStatement()
                 ffsInf.InfFileName = FvBuildInf
-                ffsInf.UseArch = "IA32"
+                ffsInf.UseArch = TAB_ARCH_COMMON
                 ffsInf.Rule = "InnerFv"
                 FvObj.FfsList.append(ffsInf)
         return True
