@@ -2224,7 +2224,24 @@ class FdfParser:
             isFile = self.__GetFileStatement(FvObj, MacroDict = FvObj.DefineVarDict.copy())
             if not isInf and not isFile:
                 break
-
+        InnerFv = []
+        if hasattr(FvObj,"FfsList") and FvObj.FfsList:
+            for ffs in [ffs for ffs in FvObj.FfsList if hasattr(ffs,"FvFileType") and ffs.FvFileType == "FV_IMAGE"]:
+                if hasattr(ffs, "SectionList"):
+                    for section in ffs.SectionList:
+                        if isinstance(section,FvImageSection.FvImageSection):
+                            FvBuildInf = "AsBuild" + section.FvName + ".inf"
+                            InnerFv.append(FvBuildInf)
+                        if hasattr(section, "SectionList"):
+                            for fvimagesection in section.SectionList:
+                                FvBuildInf = "AsBuild" + fvimagesection.FvName + ".inf"
+                                InnerFv.append(FvBuildInf)
+            for FvBuildInf in InnerFv:
+                ffsInf = FfsInfStatement.FfsInfStatement()
+                ffsInf.InfFileName = FvBuildInf
+                ffsInf.UseArch = "IA32"
+                ffsInf.Rule = "InnerFv"
+                FvObj.FfsList.append(ffsInf)
         return True
 
     ## __GetFvAlignment() method

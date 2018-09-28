@@ -171,9 +171,12 @@ class FV (FvClassObject):
         for FfsFile in self.FfsList:
             if not isinstance(FfsFile, FfsInfStatement):
                 continue
-
+            if hasattr(FfsFile, "Rule") and FfsFile.Rule == "InnerFv":
+                FfsFile.InfFileName = os.path.join(GenFdsGlobalVariable.FvDir,FfsFile.InfFileName)
+                FfsFile.__InfParse__()
+                FfsFile.IsBinaryModule = True
             FileGuid = FfsFile.ModuleGuid.upper()
-            if FileGuid not in ModuleOffsetList:
+            if FileGuid not in ModuleOffsetList and FfsFile.Rule != "InnerFv":
                 continue
             FileName = FfsFile.GetFfsAsBuildInfFile()
             FileArch = FfsFile.GetCurrentArch()
@@ -303,6 +306,8 @@ class FV (FvClassObject):
                 if isinstance(FfsFile, FileStatement):
                     continue
             if GenFdsGlobalVariable.EnableGenfdsMultiThread and GenFdsGlobalVariable.ModuleFile and GenFdsGlobalVariable.ModuleFile.Path.find(os.path.normpath(FfsFile.InfFileName)) == -1:
+                continue
+            if hasattr(FfsFile, "Rule") and FfsFile.Rule == "InnerFv":
                 continue
             FileName = FfsFile.GenFfs(MacroDict, FvParentAddr=BaseAddress, IsMakefile=Flag, FvName=self.UiFvName)
             FfsFileList.append(FileName)
