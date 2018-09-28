@@ -302,6 +302,13 @@ def ClearDuplicatedInf():
         File = _TempInfs.pop()
         if os.path.exists(File):
             os.remove(File)
+def RemovePcdInitExe():
+    BaseToolPath = os.getenv("EDK_TOOLS_PATH")
+    if BaseToolPath is None:
+        return
+    PcdInit = os.path.join(BaseToolPath,"Bin","Win32","PcdValueInit.exe") 
+    if os.path.exists(PcdInit):
+        os.remove(PcdInit)
 
 ## Convert GUID string in xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx style to C structure style
 #

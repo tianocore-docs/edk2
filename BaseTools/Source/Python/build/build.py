@@ -2547,6 +2547,7 @@ def Main():
     finally:
         Utils.Progressor.Abort()
         Utils.ClearDuplicatedInf()
+        Utils.RemovePcdInitExe()
 
     if ReturnCode == 0:
         try:
