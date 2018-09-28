@@ -74,6 +74,8 @@
   ## NOTIFY
   ## SOMETIMES_CONSUMES
   gPeiSecPerformancePpiGuid
+  gEfiPeiFirmwareVolumeInfoPpiGuid                     ## SOMETIMES_CONSUMES
+  gEfiPeiFirmwareVolumeInfo2PpiGuid                     ## SOMETIMES_CONSUMES
 
 [Guids]
   ## SOMETIMES_PRODUCES   ## HOB

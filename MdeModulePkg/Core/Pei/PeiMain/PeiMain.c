@@ -84,19 +84,26 @@ ShadowPeiCore (
   EFI_PHYSICAL_ADDRESS EntryPoint;
   EFI_STATUS           Status;
   UINT32               AuthenticationState;
+  UINTN                Index;
 
   PeiCoreFileHandle = NULL;
 
-  //
-  // Find the PEI Core in the BFV
-  //
-  Status = PrivateData->Fv[0].FvPpi->FindFileByType (
-                                       PrivateData->Fv[0].FvPpi,
-                                       EFI_FV_FILETYPE_PEI_CORE,
-                                       PrivateData->Fv[0].FvHandle,
-                                       &PeiCoreFileHandle
-                                       );
-  ASSERT_EFI_ERROR (Status);
+  for (Index = 0; Index < PrivateData->FvCount; Index++) {
+    //
+    // Find the PEI Core in FVs
+    //
+    Status = PrivateData->Fv[Index].FvPpi->FindFileByType (
+                                         PrivateData->Fv[Index].FvPpi,
+                                         EFI_FV_FILETYPE_PEI_CORE,
+                                         PrivateData->Fv[Index].FvHandle,
+                                         &PeiCoreFileHandle
+                                         );
+    if (!EFI_ERROR (Status)) {
+      break;
+    }
+  }
+
+  ASSERT (Index < PrivateData->FvCount);
 
   //
   // Shadow PEI Core into memory so it will run faster

@@ -21,6 +21,8 @@
 #include <Ppi/SecPlatformInformation2.h>
 #include <Ppi/TemporaryRamDone.h>
 #include <Ppi/SecPerformance.h>
+#include <Ppi/FirmwareVolumeInfo.h>
+#include <Ppi/FirmwareVolumeInfo2.h>
 
 #include <Guid/FirmwarePerformance.h>
 
