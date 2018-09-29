@@ -81,6 +81,7 @@ ShadowPeiCore (
   )
 {
   EFI_PEI_FILE_HANDLE  PeiCoreFileHandle;
+  EFI_FV_FILE_INFO     FileInfo;
   EFI_PHYSICAL_ADDRESS EntryPoint;
   EFI_STATUS           Status;
   UINT32               AuthenticationState;
@@ -99,18 +100,37 @@ ShadowPeiCore (
                                          &PeiCoreFileHandle
                                          );
     if (!EFI_ERROR (Status)) {
-      break;
+      Status = PrivateData->Fv[Index].FvPpi->GetFileInfo (
+                                               PrivateData->Fv[Index].FvPpi,
+                                               PeiCoreFileHandle,
+                                               &FileInfo
+                                               );
+      ASSERT_EFI_ERROR (Status);
+      //
+      // There may be multiple PEI Core in different FVs,
+      // find the matched one.
+      //
+      if (((UINTN) _ModuleEntryPoint >= (UINTN) FileInfo.Buffer) &&
+          ((UINTN) _ModuleEntryPoint < ((UINTN) FileInfo.Buffer + FileInfo.BufferSize))) {
+        break;
+      }
     }
   }
 
-  ASSERT (Index < PrivateData->FvCount);
+  //
+  // If (Index == PrivateData->FvCount) and (PeiCoreFileHandle != NULL),
+  // it should be the emulator platform which may have the module's entrypoint
+  // dynamically loaded and not in the image buffer range. Assume there is only
+  // one PEI Core and continue.
+  //
+  ASSERT ((Index < PrivateData->FvCount) || (PeiCoreFileHandle != NULL));
 
   //
   // Shadow PEI Core into memory so it will run faster
   //
   Status = PeiLoadImage (
               GetPeiServicesTablePointer (),
-              *((EFI_PEI_FILE_HANDLE*)&PeiCoreFileHandle),
+              PeiCoreFileHandle,
               PEIM_STATE_REGISTER_FOR_SHADOW,
               &EntryPoint,
               &AuthenticationState

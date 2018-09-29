@@ -59,17 +59,19 @@ IsBufferErased (
 /**
   Find core image base.
 
-  @param   BootFirmwareVolumePtr    Point to the boot firmware volume.
-  @param   SecCoreImageBase         The base address of the SEC core image.
-  @param   PeiCoreImageBase         The base address of the PEI core image.
+  @param   BootFirmwareVolumePtr    Pointer to the boot firmware volume.
+  @param   SecCoreImageBase         Pointer to the base address of the SEC core
+                                    image, or NULL if no need to find SEC core.
+  @param   PeiCoreImageBase         Pointer to the base address of the PEI core
+                                    image, or NULL if no need to find PEI core.
 
 **/
 VOID
 EFIAPI
 FindImageBase (
   IN  EFI_FIRMWARE_VOLUME_HEADER       *BootFirmwareVolumePtr,
-  OUT EFI_PHYSICAL_ADDRESS             *SecCoreImageBase,
-  OUT EFI_PHYSICAL_ADDRESS             *PeiCoreImageBase
+  OUT EFI_PHYSICAL_ADDRESS             *SecCoreImageBase, OPTIONAL
+  OUT EFI_PHYSICAL_ADDRESS             *PeiCoreImageBase  OPTIONAL
   )
 {
   EFI_PHYSICAL_ADDRESS        CurrentAddress;
@@ -82,8 +84,16 @@ FindImageBase (
   BOOLEAN                     ErasePolarity;
   UINTN                       TestLength;
 
-  *SecCoreImageBase = 0;
-  *PeiCoreImageBase = 0;
+  if ((SecCoreImageBase == NULL) && (PeiCoreImageBase == NULL)) {
+    return;
+  }
+
+  if (SecCoreImageBase != NULL) {
+    *SecCoreImageBase = 0;
+  }
+  if (PeiCoreImageBase != NULL) {
+    *PeiCoreImageBase = 0;
+  }
 
   CurrentAddress = (EFI_PHYSICAL_ADDRESS)(UINTN) BootFirmwareVolumePtr;
   EndOfFirmwareVolume = CurrentAddress + BootFirmwareVolumePtr->FvLength;
@@ -132,6 +142,11 @@ FindImageBase (
     //
     if (File->Type != EFI_FV_FILETYPE_SECURITY_CORE &&
         File->Type != EFI_FV_FILETYPE_PEI_CORE) {
+      continue;
+    }
+
+    if (((File->Type == EFI_FV_FILETYPE_SECURITY_CORE) && (SecCoreImageBase == NULL)) ||
+        ((File->Type == EFI_FV_FILETYPE_PEI_CORE) && (PeiCoreImageBase == NULL))) {
       continue;
     }
 
@@ -189,7 +204,8 @@ FindImageBase (
     //
     // Both SEC Core and PEI Core images found
     //
-    if (*SecCoreImageBase != 0 && *PeiCoreImageBase != 0) {
+    if (((SecCoreImageBase == NULL) || (*SecCoreImageBase != 0)) &&
+        ((PeiCoreImageBase == NULL) || (*PeiCoreImageBase != 0))) {
       return;
     }
 
@@ -200,59 +216,91 @@ FindImageBase (
 }
 
 /**
-  Find and return Pei Core entry point.
+  Find and report SecCore and PeiCore.
 
-  It also find SEC and PEI Core file debug information. It will report them if
-  remote debug is enabled.
+  It finds SEC and PEI Core file debug information.
+  It will report them if remote debug is enabled.
+  It will return Pei Core entry point.
 
-  @param   BootFirmwareVolumePtr    Point to the boot firmware volume.
-  @param   PeiCoreEntryPoint        The entry point of the PEI core.
+  @param BootFirmwareVolumePtr  Pointer to the boot firmware volume.
+  @param SecCoreFound           Pointer to the indicator to return whether the
+                                SecCore is found or not, or NULL if no need to
+                                find SecCore.
+  @param PeiCoreFound           Pointer to the indicator to return whether the
+                                PeiCore is found or not, or NULL if no need to
+                                find PeiCore.
+  @param PeiCoreEntryPoint      Pointer to the entry point of the PEI core, or
+                                NULL if  no need to find PeiCore or PeiCoreFound
+                                is NULL.
 
 **/
 VOID
 EFIAPI
-FindAndReportEntryPoints (
+FindAndReportSecAndPeiCore (
   IN  EFI_FIRMWARE_VOLUME_HEADER       *BootFirmwareVolumePtr,
+  OUT BOOLEAN                          *SecCoreFound,     OPTIONAL
+  OUT BOOLEAN                          *PeiCoreFound,     OPTIONAL
   OUT EFI_PEI_CORE_ENTRY_POINT         *PeiCoreEntryPoint OPTIONAL
   )
 {
+  EFI_STATUS                       Status;
   EFI_PHYSICAL_ADDRESS             SecCoreImageBase;
   EFI_PHYSICAL_ADDRESS             PeiCoreImageBase;
   PE_COFF_LOADER_IMAGE_CONTEXT     ImageContext;
 
-  if (PeiCoreEntryPoint != NULL) {
-    *PeiCoreEntryPoint = 0;
+  if ((SecCoreFound == NULL) && (PeiCoreFound == NULL)) {
+    return;
+  }
+
+  if (SecCoreFound != NULL) {
+    *SecCoreFound = FALSE;
+  }
+
+  if (PeiCoreFound != NULL) {
+    *PeiCoreFound = FALSE;
+    if (PeiCoreEntryPoint != NULL) {
+      *PeiCoreEntryPoint = NULL;
+    }
   }
 
   //
   // Find SEC Core and PEI Core image base
   //
-  FindImageBase (BootFirmwareVolumePtr, &SecCoreImageBase, &PeiCoreImageBase);
+  FindImageBase (
+    BootFirmwareVolumePtr,
+    SecCoreFound ? &SecCoreImageBase : NULL,
+    PeiCoreFound ? &PeiCoreImageBase : NULL
+    );
 
   ZeroMem ((VOID *) &ImageContext, sizeof (PE_COFF_LOADER_IMAGE_CONTEXT));
 
-  if (SecCoreImageBase != 0) {
-    //
-    // Report SEC Core debug information when remote debug is enabled
-    //
-    ImageContext.ImageAddress = SecCoreImageBase;
-    ImageContext.PdbPointer = PeCoffLoaderGetPdbPointer ((VOID*) (UINTN) ImageContext.ImageAddress);
-    PeCoffLoaderRelocateImageExtraAction (&ImageContext);
+  if (SecCoreFound != NULL) {
+    if (SecCoreImageBase != 0) {
+      //
+      // Report SEC Core debug information when remote debug is enabled
+      //
+      ImageContext.ImageAddress = SecCoreImageBase;
+      ImageContext.PdbPointer = PeCoffLoaderGetPdbPointer ((VOID*) (UINTN) ImageContext.ImageAddress);
+      PeCoffLoaderRelocateImageExtraAction (&ImageContext);
+    }
   }
 
-  if (PeiCoreImageBase != 0) {
-    //
-    // Report PEI Core debug information when remote debug is enabled
-    //
-    ImageContext.ImageAddress = PeiCoreImageBase;
-    ImageContext.PdbPointer = PeCoffLoaderGetPdbPointer ((VOID*) (UINTN) ImageContext.ImageAddress);
-    PeCoffLoaderRelocateImageExtraAction (&ImageContext);
+  if (PeiCoreFound != NULL) {
+    if (PeiCoreImageBase != 0) {
+      //
+      // Report PEI Core debug information when remote debug is enabled
+      //
+      ImageContext.ImageAddress = PeiCoreImageBase;
+      ImageContext.PdbPointer = PeCoffLoaderGetPdbPointer ((VOID*) (UINTN) ImageContext.ImageAddress);
+      PeCoffLoaderRelocateImageExtraAction (&ImageContext);
 
-    if (PeiCoreEntryPoint != NULL) {
-      //
-      // Find PEI Core entry point
-      //
-      PeCoffLoaderGetEntryPoint ((VOID *) (UINTN) PeiCoreImageBase, (VOID**) PeiCoreEntryPoint);
+      if (PeiCoreEntryPoint != NULL) {
+        //
+        // Find PEI Core entry point
+        //
+        Status = PeCoffLoaderGetEntryPoint ((VOID *) (UINTN) PeiCoreImageBase, (VOID **) PeiCoreEntryPoint);
+        ASSERT_EFI_ERROR (Status);
+      }
     }
   }
 

@@ -87,20 +87,31 @@ SecStartup (
   );
 
 /**
-  Find and return Pei Core entry point.
+  Find and report SecCore and PeiCore.
 
-  It also find SEC and PEI Core file debug information. It will report them if
-  remote debug is enabled.
+  It finds SEC and PEI Core file debug information.
+  It will report them if remote debug is enabled.
+  It will return Pei Core entry point.
 
-  @param  BootFirmwareVolumePtr  Point to the boot firmware volume.
-  @param  PeiCoreEntryPoint      Point to the PEI core entry point.
+  @param BootFirmwareVolumePtr  Pointer to the boot firmware volume.
+  @param SecCoreFound           Pointer to the indicator to return whether the
+                                SecCore is found or not, or NULL if no need to
+                                find SecCore.
+  @param PeiCoreFound           Pointer to the indicator to return whether the
+                                PeiCore is found or not, or NULL if no need to
+                                find PeiCore.
+  @param PeiCoreEntryPoint      Pointer to the entry point of the PEI core, or
+                                NULL if  no need to find PeiCore or PeiCoreFound
+                                is NULL.
 
 **/
 VOID
 EFIAPI
-FindAndReportEntryPoints (
+FindAndReportSecAndPeiCore (
   IN  EFI_FIRMWARE_VOLUME_HEADER       *BootFirmwareVolumePtr,
-  OUT EFI_PEI_CORE_ENTRY_POINT         *PeiCoreEntryPoint
+  OUT BOOLEAN                          *SecCoreFound,     OPTIONAL
+  OUT BOOLEAN                          *PeiCoreFound,     OPTIONAL
+  OUT EFI_PEI_CORE_ENTRY_POINT         *PeiCoreEntryPoint OPTIONAL
   );
 
 /**

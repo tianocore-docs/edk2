@@ -230,16 +230,23 @@ SecStartupPhase2(
   EFI_PEI_PPI_DESCRIPTOR            *PpiList;
   UINT32                            Index;
   EFI_PEI_PPI_DESCRIPTOR            *AllSecPpiList;
+  BOOLEAN                           SecCoreFound;
+  BOOLEAN                           PeiCoreFound;
   EFI_PEI_CORE_ENTRY_POINT          PeiCoreEntryPoint;
   EFI_PEI_FIRMWARE_VOLUME_INFO_PPI  *FvInfoPpi;
 
   SecCoreData   = (EFI_SEC_PEI_HAND_OFF *) Context;
   AllSecPpiList = (EFI_PEI_PPI_DESCRIPTOR *) SecCoreData->PeiTemporaryRamBase;
   //
+  // It will report SEC and PEI Core debug information if remote debug is enabled.
   // Find Pei Core entry point in BFV.
-  // It will report SEC and Pei Core debug information if remote debug is enabled.
   //
-  FindAndReportEntryPoints ((EFI_FIRMWARE_VOLUME_HEADER *) SecCoreData->BootFirmwareVolumeBase, &PeiCoreEntryPoint);
+  FindAndReportSecAndPeiCore (
+    (EFI_FIRMWARE_VOLUME_HEADER *) SecCoreData->BootFirmwareVolumeBase,
+    &SecCoreFound,
+    &PeiCoreFound,
+    &PeiCoreEntryPoint
+    );
 
   //
   // Perform platform specific initialization before entering PeiCore.
@@ -258,17 +265,22 @@ SecStartupPhase2(
     //
     Index += 1;
     while (((PpiList->Flags & EFI_PEI_PPI_DESCRIPTOR_TERMINATE_LIST) != EFI_PEI_PPI_DESCRIPTOR_TERMINATE_LIST)) {
-      if (CompareGuid (PpiList->Guid, &gEfiPeiFirmwareVolumeInfoPpiGuid) ||
-          CompareGuid (PpiList->Guid, &gEfiPeiFirmwareVolumeInfo2PpiGuid)) {
+      if (!SecCoreFound || !PeiCoreFound) {
         //
-        // SEC and Pei Core may be not in same FV or in BFV,
-        // so try to find them by the FvInfo(2)Ppi passed from platform.
+        // SecCore or PeiCore is not found in BFV.
+        // SEC and PEI Core may be not in same FV or in BFV, so try to find them
+        // in other FVs reported by the FvInfo(2)Ppi passed from platform.
         //
-        FvInfoPpi = PpiList->Ppi;
-        FindAndReportEntryPoints (
-          (EFI_FIRMWARE_VOLUME_HEADER *) FvInfoPpi->FvInfo,
-          (PeiCoreEntryPoint != NULL) ? NULL : &PeiCoreEntryPoint
-          );
+        if (CompareGuid (PpiList->Guid, &gEfiPeiFirmwareVolumeInfoPpiGuid) ||
+            CompareGuid (PpiList->Guid, &gEfiPeiFirmwareVolumeInfo2PpiGuid)) {
+          FvInfoPpi = PpiList->Ppi;
+          FindAndReportSecAndPeiCore (
+            (EFI_FIRMWARE_VOLUME_HEADER *) FvInfoPpi->FvInfo,
+            SecCoreFound ? NULL : &SecCoreFound,
+            PeiCoreFound ? NULL : &PeiCoreFound,
+            (PeiCoreEntryPoint != NULL) ? NULL : &PeiCoreEntryPoint
+            );
+        }
       }
       CopyMem (&AllSecPpiList[Index], PpiList, sizeof (EFI_PEI_PPI_DESCRIPTOR));
       Index++;
