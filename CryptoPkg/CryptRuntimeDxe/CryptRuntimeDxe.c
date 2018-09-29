@@ -1477,6 +1477,7 @@ CryptRuntimeDriverInitialize (
   EFI_STATUS  Status;
   EFI_HANDLE  Handle;
 
+  Handle = NULL;
   //
   // Install the Runtime Crypt Protocol onto a new handle
   //

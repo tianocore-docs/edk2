@@ -1011,7 +1011,7 @@ EDKII_PEI_CRYPT_PPI  mCryptPpiInstance = {
 
 EFI_PEI_PPI_DESCRIPTOR mPpiList[] = {
   {
-    EFI_PEI_PPI_DESCRIPTOR_PPI,
+    (EFI_PEI_PPI_DESCRIPTOR_PPI | EFI_PEI_PPI_DESCRIPTOR_TERMINATE_LIST),
     &gEdkiiPeiCryptPpiGuid,
     &mCryptPpiInstance
   }
