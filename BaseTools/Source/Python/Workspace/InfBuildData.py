@@ -960,24 +960,25 @@ class InfBuildData(ModuleBuildClassObject):
             ValueList = AnalyzePcdData(Setting)
             DefaultValue = ValueList[0]
             SkuInfoList = {}
+            Phase = "DXE"
+            PcdType = ""
             if "|" in Setting:
                 PcdAttr = Setting.split("|")
                 if len(PcdAttr) == 3:
                     (DefaultValue,Phase,PcdType) = PcdAttr
-                    SkuInfo = SkuInfoClass(DT.TAB_DEFAULT, 0, DefaultValue = DefaultValue)
+                    SkuInfo = SkuInfoClass(DT.TAB_DEFAULT, 0, DefaultValue = DefaultValue.strip())
                     if PcdType == TAB_PCDS_DYNAMIC_EX_VPD:
                         SkuInfo.VpdOffset = "*"
                     SkuInfoList = {DT.TAB_DEFAULT : SkuInfo}
                 elif len(PcdAttr) == 7:
                     (DefaultValue,Phase,PcdType,VarGuid,VarName,VarOffset,VarAttr) = PcdAttr
-                    SkuInfo = SkuInfoClass(DT.TAB_DEFAULT,0, VarName, VarGuid, VarOffset, DefaultValue,VariableAttribute=VarAttr)
-            SkuInfo = SkuInfoClass(DT.TAB_DEFAULT, 0, DefaultValue = DefaultValue)
-            Phase = "DXE"
-            PcdType = ""
+                    SkuInfo = SkuInfoClass(DT.TAB_DEFAULT,0, VarName.strip(), VarGuid.strip(), VarOffset.strip(), DefaultValue.strip(),VariableAttribute=VarAttr.strip())
+                    SkuInfoList = {DT.TAB_DEFAULT : SkuInfo}
+
             Pcd = PcdClassObject(
                     PcdCName,
                     TokenSpaceGuid,
-                    PcdType,
+                    PcdType.strip(),
                     '',
                     DefaultValue,
                     '',
@@ -986,7 +987,7 @@ class InfBuildData(ModuleBuildClassObject):
                     False,
                     self.Guids[TokenSpaceGuid]
                     )
-            Pcd.Phase = Phase
+            Pcd.Phase = Phase.strip()
 
             if Type == MODEL_PCD_PATCHABLE_IN_MODULE and ValueList[1]:
                 # Patch PCD: TokenSpace.PcdCName|Value|Offset
