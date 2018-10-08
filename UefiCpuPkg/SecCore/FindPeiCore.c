@@ -230,7 +230,7 @@ FindImageBase (
                                 PeiCore is found or not, or NULL if no need to
                                 find PeiCore.
   @param PeiCoreEntryPoint      Pointer to the entry point of the PEI core, or
-                                NULL if  no need to find PeiCore or PeiCoreFound
+                                NULL if no need to find PeiCore or PeiCoreFound
                                 is NULL.
 
 **/
