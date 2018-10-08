@@ -55,7 +55,7 @@
   gEdkiiSecurityManagementProtocolGuid          ## PRODUCES
 
 [Depex]
-  gEfiSmmCommunicationProtocolGuid
+  TRUE
 
 [UserExtensions.TianoCore."ExtraFiles"]
   SecurityStubDxeExtra.uni
