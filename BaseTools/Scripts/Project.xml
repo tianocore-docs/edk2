@@ -1,0 +1,30 @@
+<Manifest>
+  <GeneralConfig>
+    <CurrentClonedCombo combination="Edk2Master" />
+  </GeneralConfig>
+
+  <SparseCheckout>
+    <SparseData remote="EdkRepo">
+      <AlwaysInclude>BaseTools|Conf</AlwaysInclude>
+      <AlwaysInclude>IntelFrameworkModulePkg|IntelFrameworkPkg</AlwaysInclude>
+      <AlwaysInclude>FatPkg|MdeModulePkg|MdePkg|NetworkPkg|PcAtChipsetPkg|SecurityPkg</AlwaysInclude>
+      <AlwaysInclude>CryptoPkg|OvmfPkg|ShellPkg|SourceLevelDebugPkg|UefiCpuPkg</AlwaysInclude>
+    </SparseData>
+  </SparseCheckout>
+
+  <RemoteList>
+    <!-- The 'name' attribute for each Remote tag must be unique. -->
+    <Remote name="EdkRepo">git@github.com:tianocore/edk2.git</Remote>
+  </RemoteList>
+
+  <CombinationList>
+    <Combination name="Edk2Master" description="master branch from all repos">
+      <Source localRoot="Edk2" remote="EdkRepo" branch="master" sparseCheckout="True" />
+      <Build group="Build-Master" />
+    </Combination>
+    <Combination name="UDK2018" description="UDK2018 branch from Edk2">
+      <Source localRoot="Edk2" remote="EdkRepo" branch="UDK2018" sparseCheckout="True" />
+      <Build group="Build-UDK2018" />
+    </Combination>
+  </CombinationList>
+</Manifest>
