@@ -30,7 +30,7 @@
   #
   PeiCoreEntryPoint|MdePiPeiPkg/Library/PeiCoreEntryPoint/PeiCoreEntryPoint.inf
   PeimEntryPoint|MdePiPeiPkg/Library/PeimEntryPoint/PeimEntryPoint.inf
-  DxeCoreEntryPoint|MdePkg/Library/DxeCoreEntryPoint/DxeCoreEntryPoint.inf
+  DxeCoreEntryPoint|MdePiDxePkg/Library/DxeCoreEntryPoint/DxeCoreEntryPoint.inf
   UefiDriverEntryPoint|MdeUefiPkg/Library/UefiDriverEntryPoint/UefiDriverEntryPoint.inf
   UefiApplicationEntryPoint|MdeUefiPkg/Library/UefiApplicationEntryPoint/UefiApplicationEntryPoint.inf
   #
@@ -61,15 +61,18 @@
   UefiDecompressLib|MdePkg/Library/BaseUefiDecompressLib/BaseUefiDecompressLib.inf
   PeiServicesTablePointerLib|MdePiPeiPkg/Library/PeiServicesTablePointerLib/PeiServicesTablePointerLib.inf
   PeiServicesLib|MdePiPeiPkg/Library/PeiServicesLib/PeiServicesLib.inf
-  DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
-  DxeServicesTableLib|MdePkg/Library/DxeServicesTableLib/DxeServicesTableLib.inf
+  DxeServicesLib|MdePiDxePkg/Library/DxeServicesLib/DxeServicesLib.inf
+  DxeServicesTableLib|MdePiDxePkg/Library/DxeServicesTableLib/DxeServicesTableLib.inf
   #
   # Generic Modules
   #
   TimerLib|MdePkg/Library/BaseTimerLibNullTemplate/BaseTimerLibNullTemplate.inf
   SerialPortLib|MdePkg/Library/BaseSerialPortLibNull/BaseSerialPortLibNull.inf
   PcdLib|MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
-  PalLib|MdePkg/Library/BasePalLibNull/BasePalLibNull.inf
+
+  # Please review if we need this one or not
+  #PalLib|MdePkg/Library/BasePalLibNull/BasePalLibNull.inf
+
   FrameBufferBltLib|MdeModulePkg/Library/FrameBufferBltLib/FrameBufferBltLib.inf
   #
   # Misc
@@ -80,7 +83,7 @@
   PeCoffExtraActionLib|MdePkg/Library/BasePeCoffExtraActionLibNull/BasePeCoffExtraActionLibNull.inf
   PerformanceLib|MdePkg/Library/BasePerformanceLibNull/BasePerformanceLibNull.inf
   DebugAgentLib|MdeModulePkg/Library/DebugAgentLibNull/DebugAgentLibNull.inf
-  SmbusLib|MdePkg/Library/DxeSmbusLib/DxeSmbusLib.inf
+  SmbusLib|MdePiDxePkg/Library/DxeSmbusLib/DxeSmbusLib.inf
   CpuExceptionHandlerLib|MdeModulePkg/Library/CpuExceptionHandlerLibNull/CpuExceptionHandlerLibNull.inf
   TpmMeasurementLib|MdeModulePkg/Library/TpmMeasurementLibNull/TpmMeasurementLibNull.inf
   NonDiscoverableDeviceRegistrationLib|MdeModulePkg/Library/NonDiscoverableDeviceRegistrationLib/NonDiscoverableDeviceRegistrationLib.inf
@@ -96,29 +99,29 @@
   ExtractGuidedSectionLib|MdePiPeiPkg/Library/PeiExtractGuidedSectionLib/PeiExtractGuidedSectionLib.inf
 
 [LibraryClasses.common.DXE_DRIVER]
-  HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
+  HobLib|MdePiDxePkg/Library/DxeHobLib/DxeHobLib.inf
   MemoryAllocationLib|MdeUefiPkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
-  ExtractGuidedSectionLib|MdePkg/Library/DxeExtractGuidedSectionLib/DxeExtractGuidedSectionLib.inf
+  ExtractGuidedSectionLib|MdePiDxePkg/Library/DxeExtractGuidedSectionLib/DxeExtractGuidedSectionLib.inf
 
 [LibraryClasses.common.DXE_RUNTIME_DRIVER]
-  HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
+  HobLib|MdePiDxePkg/Library/DxeHobLib/DxeHobLib.inf
   MemoryAllocationLib|MdeUefiPkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
   DebugLib|MdeUefiPkg/Library/UefiDebugLibConOut/UefiDebugLibConOut.inf
 
 [LibraryClasses.common.DXE_SMM_DRIVER]
-  HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
+  HobLib|MdePiDxePkg/Library/DxeHobLib/DxeHobLib.inf
   DebugLib|MdeUefiPkg/Library/UefiDebugLibConOut/UefiDebugLibConOut.inf
-  MemoryAllocationLib|MdePkg/Library/SmmMemoryAllocationLib/SmmMemoryAllocationLib.inf
-  SmmServicesTableLib|MdePkg/Library/SmmServicesTableLib/SmmServicesTableLib.inf
-  SmmMemLib|MdePkg/Library/SmmMemLib/SmmMemLib.inf
+  MemoryAllocationLib|MdePiMmPkg/Library/SmmMemoryAllocationLib/SmmMemoryAllocationLib.inf
+  SmmServicesTableLib|MdePiMmPkg/Library/SmmServicesTableLib/SmmServicesTableLib.inf
+  SmmMemLib|MdePiMmPkg/Library/SmmMemLib/SmmMemLib.inf
 
 [LibraryClasses.common.UEFI_DRIVER]
-  HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
+  HobLib|MdePiDxePkg/Library/DxeHobLib/DxeHobLib.inf
   MemoryAllocationLib|MdeUefiPkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
   DebugLib|MdeUefiPkg/Library/UefiDebugLibConOut/UefiDebugLibConOut.inf
 
 [LibraryClasses.common.UEFI_APPLICATION]
-  HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
+  HobLib|MdePiDxePkg/Library/DxeHobLib/DxeHobLib.inf
   MemoryAllocationLib|MdeUefiPkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
   DebugLib|MdeUefiPkg/Library/UefiDebugLibStdErr/UefiDebugLibStdErr.inf
 
