@@ -43,7 +43,11 @@
 
 [Packages]
   MdePkg/MdePkg.dec
+  MdeUefiPkg/MdeUefiPkg.dec
+  MdePiPeiPkg/MdePiPeiPkg.dec
+  MdePiDxePkg/MdePiDxePkg.dec
   MdeModulePkg/MdeModulePkg.dec
+  MdePiMmPkg/MdePiMmPkg.dec
 
 [LibraryClasses]
   MemoryAllocationLib

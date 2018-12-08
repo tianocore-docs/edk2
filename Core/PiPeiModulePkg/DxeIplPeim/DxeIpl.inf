@@ -62,6 +62,8 @@
 
 [Packages]
   MdePkg/MdePkg.dec
+  MdeUefiPkg/MdeUefiPkg.dec
+  MdePiPeiPkg/MdePiPeiPkg.dec
   MdeModulePkg/MdeModulePkg.dec
 
 [Packages.ARM, Packages.AARCH64]

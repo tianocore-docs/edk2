@@ -5,18 +5,20 @@
   could be much more generic.
 
   Copyright (c) 2006 - 2015, Intel Corporation. All rights reserved.<BR>
-  This program and the accompanying materials                          
-  are licensed and made available under the terms and conditions of the BSD License         
-  which accompanies this distribution.  The full text of the license may be found at        
-  http://opensource.org/licenses/bsd-license.php                                            
+  This program and the accompanying materials
+  are licensed and made available under the terms and conditions of the BSD License
+  which accompanies this distribution.  The full text of the license may be found at
+  http://opensource.org/licenses/bsd-license.php
 
-  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,                     
-  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.             
+  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 **/
 
 #ifndef __SERIAL_IO_PROTOCOL_H__
 #define __SERIAL_IO_PROTOCOL_H__
+
+#include <IndustryStandard/Serial.h>
 
 #define EFI_SERIAL_IO_PROTOCOL_GUID \
   { \
@@ -25,7 +27,7 @@
 
 ///
 /// Protocol GUID defined in EFI1.1.
-/// 
+///
 #define SERIAL_IO_PROTOCOL  EFI_SERIAL_IO_PROTOCOL_GUID
 
 typedef struct _EFI_SERIAL_IO_PROTOCOL EFI_SERIAL_IO_PROTOCOL;
@@ -33,31 +35,19 @@ typedef struct _EFI_SERIAL_IO_PROTOCOL EFI_SERIAL_IO_PROTOCOL;
 
 ///
 /// Backward-compatible with EFI1.1.
-/// 
+///
 typedef EFI_SERIAL_IO_PROTOCOL  SERIAL_IO_INTERFACE;
 
 ///
 /// Parity type that is computed or checked as each character is transmitted or received. If the
 /// device does not support parity, the value is the default parity value.
 ///
-typedef enum {
-  DefaultParity,
-  NoParity,
-  EvenParity,
-  OddParity,
-  MarkParity,
-  SpaceParity
-} EFI_PARITY_TYPE;
+#define EFI_PARITY_TYPE     SERIAL_PARITY_TYPE
 
 ///
 /// Stop bits type
 ///
-typedef enum {
-  DefaultStopBits,
-  OneStopBit,
-  OneFiveStopBits,
-  TwoStopBits
-} EFI_STOP_BITS_TYPE;
+#define EFI_STOP_BITS_TYPE  SERIAL_STOP_BITS_TYPE
 
 //
 // define for Control bits, grouped by read only, write only, and read write
@@ -65,25 +55,25 @@ typedef enum {
 //
 // Read Only
 //
-#define EFI_SERIAL_CLEAR_TO_SEND        0x00000010
-#define EFI_SERIAL_DATA_SET_READY       0x00000020
-#define EFI_SERIAL_RING_INDICATE        0x00000040
-#define EFI_SERIAL_CARRIER_DETECT       0x00000080
-#define EFI_SERIAL_INPUT_BUFFER_EMPTY   0x00000100
-#define EFI_SERIAL_OUTPUT_BUFFER_EMPTY  0x00000200
+#define EFI_SERIAL_CLEAR_TO_SEND        SERIAL_CLEAR_TO_SEND
+#define EFI_SERIAL_DATA_SET_READY       SERIAL_DATA_SET_READY
+#define EFI_SERIAL_RING_INDICATE        SERIAL_RING_INDICATE
+#define EFI_SERIAL_CARRIER_DETECT       SERIAL_CARRIER_DETECT
+#define EFI_SERIAL_INPUT_BUFFER_EMPTY   SERIAL_INPUT_BUFFER_EMPTY
+#define EFI_SERIAL_OUTPUT_BUFFER_EMPTY  SERIAL_OUTPUT_BUFFER_EMPTY
 
 //
 // Write Only
 //
-#define EFI_SERIAL_REQUEST_TO_SEND      0x00000002
-#define EFI_SERIAL_DATA_TERMINAL_READY  0x00000001
+#define EFI_SERIAL_REQUEST_TO_SEND      SERIAL_REQUEST_TO_SEND
+#define EFI_SERIAL_DATA_TERMINAL_READY  SERIAL_DATA_TERMINAL_READY
 
 //
 // Read Write
 //
-#define EFI_SERIAL_HARDWARE_LOOPBACK_ENABLE     0x00001000
-#define EFI_SERIAL_SOFTWARE_LOOPBACK_ENABLE     0x00002000
-#define EFI_SERIAL_HARDWARE_FLOW_CONTROL_ENABLE 0x00004000
+#define EFI_SERIAL_HARDWARE_LOOPBACK_ENABLE     SERIAL_HARDWARE_LOOPBACK_ENABLE
+#define EFI_SERIAL_SOFTWARE_LOOPBACK_ENABLE     SERIAL_SOFTWARE_LOOPBACK_ENABLE
+#define EFI_SERIAL_HARDWARE_FLOW_CONTROL_ENABLE SERIAL_HARDWARE_FLOW_CONTROL_ENABLE
 
 //
 // Serial IO Member Functions
@@ -92,7 +82,7 @@ typedef enum {
   Reset the serial device.
 
   @param  This              Protocol instance pointer.
-                            
+
   @retval EFI_SUCCESS       The device was reset.
   @retval EFI_DEVICE_ERROR  The serial device could not be reset.
 
@@ -104,7 +94,7 @@ EFI_STATUS
   );
 
 /**
-  Sets the baud rate, receive FIFO depth, transmit/receice time out, parity, 
+  Sets the baud rate, receive FIFO depth, transmit/receice time out, parity,
   data bits, and stop bits on a serial device.
 
   @param  This             Protocol instance pointer.
@@ -165,7 +155,7 @@ EFI_STATUS
 
   @param  This              Protocol instance pointer.
   @param  Control           A pointer to return the current Control signals from the serial device.
-                            
+
   @retval EFI_SUCCESS       The control bits were read from the serial device.
   @retval EFI_DEVICE_ERROR  The serial device is not functioning correctly.
 
@@ -221,33 +211,33 @@ EFI_STATUS
 
 /**
   @par Data Structure Description:
-  The data values in SERIAL_IO_MODE are read-only and are updated by the code 
+  The data values in SERIAL_IO_MODE are read-only and are updated by the code
   that produces the SERIAL_IO_PROTOCOL member functions.
 
   @param ControlMask
   A mask for the Control bits that the device supports. The device
   must always support the Input Buffer Empty control bit.
-  
+
   @param TimeOut
   If applicable, the number of microseconds to wait before timing out
   a Read or Write operation.
-  
+
   @param BaudRate
   If applicable, the current baud rate setting of the device; otherwise,
   baud rate has the value of zero to indicate that device runs at the
   device's designed speed.
-  
+
   @param ReceiveFifoDepth
   The number of characters the device will buffer on input
-  
+
   @param DataBits
   The number of characters the device will buffer on input
-  
+
   @param Parity
-  If applicable, this is the EFI_PARITY_TYPE that is computed or 
+  If applicable, this is the EFI_PARITY_TYPE that is computed or
   checked as each character is transmitted or reveived. If the device
   does not support parity the value is the default parity value.
-  
+
   @param StopBits
   If applicable, the EFI_STOP_BITS_TYPE number of stop bits per
   character. If the device does not support stop bits the value is
@@ -272,14 +262,14 @@ typedef struct {
 #define SERIAL_IO_INTERFACE_REVISION  EFI_SERIAL_IO_PROTOCOL_REVISION
 
 ///
-/// The Serial I/O protocol is used to communicate with UART-style serial devices. 
-/// These can be standard UART serial ports in PC-AT systems, serial ports attached 
+/// The Serial I/O protocol is used to communicate with UART-style serial devices.
+/// These can be standard UART serial ports in PC-AT systems, serial ports attached
 /// to a USB interface, or potentially any character-based I/O device.
 ///
 struct _EFI_SERIAL_IO_PROTOCOL {
   ///
-  /// The revision to which the EFI_SERIAL_IO_PROTOCOL adheres. All future revisions 
-  /// must be backwards compatible. If a future version is not backwards compatible, 
+  /// The revision to which the EFI_SERIAL_IO_PROTOCOL adheres. All future revisions
+  /// must be backwards compatible. If a future version is not backwards compatible,
   /// it is not the same GUID.
   ///
   UINT32                      Revision;

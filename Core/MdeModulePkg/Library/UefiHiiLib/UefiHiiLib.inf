@@ -35,8 +35,8 @@
 
 [Packages]
   MdePkg/MdePkg.dec
+  MdeUefiPkg/MdeUefiPkg.dec
   MdeModulePkg/MdeModulePkg.dec
-  UiPkg/UiPkg.dec
 
 [LibraryClasses]
   MemoryAllocationLib

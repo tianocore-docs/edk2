@@ -184,12 +184,12 @@ SerialPortGetControl (
 RETURN_STATUS
 EFIAPI
 SerialPortSetAttributes (
-  IN OUT UINT64             *BaudRate,
-  IN OUT UINT32             *ReceiveFifoDepth,
-  IN OUT UINT32             *Timeout,
-  IN OUT EFI_PARITY_TYPE    *Parity,
-  IN OUT UINT8              *DataBits,
-  IN OUT EFI_STOP_BITS_TYPE *StopBits
+  IN OUT UINT64                 *BaudRate,
+  IN OUT UINT32                 *ReceiveFifoDepth,
+  IN OUT UINT32                 *Timeout,
+  IN OUT SERIAL_PARITY_TYPE     *Parity,
+  IN OUT UINT8                  *DataBits,
+  IN OUT SERIAL_STOP_BITS_TYPE  *StopBits
   )
 {
   return RETURN_UNSUPPORTED;

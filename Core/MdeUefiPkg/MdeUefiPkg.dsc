@@ -70,6 +70,7 @@
   MdeUefiPkg/Library/UefiUsbLib/UefiUsbLib.inf
   MdeUefiPkg/Library/UefiPciLibPciRootBridgeIo/UefiPciLibPciRootBridgeIo.inf
   MdeUefiPkg/Library/UefiPciSegmentLibPciRootBridgeIo/UefiPciSegmentLibPciRootBridgeIo.inf
+  MdeUefiPkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
 
 [Components.IA32, Components.X64]
   MdeUefiPkg/Library/UefiRuntimeLib/UefiRuntimeLib.inf

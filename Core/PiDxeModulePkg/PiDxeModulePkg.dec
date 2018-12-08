@@ -25,5 +25,3 @@
 [Includes]
   Include
 
-[Includes.Common.Private]
-  Include/Private

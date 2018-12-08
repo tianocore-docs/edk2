@@ -37,7 +37,7 @@
   UefiDriverEntryPoint|MdeUefiPkg/Library/UefiDriverEntryPoint/UefiDriverEntryPoint.inf
   UefiApplicationEntryPoint|MdeUefiPkg/Library/UefiApplicationEntryPoint/UefiApplicationEntryPoint.inf
   UefiBootServicesTableLib|MdeUefiPkg/Library/UefiBootServicesTableLib/UefiBootServicesTableLib.inf
-  SmmServicesTableLib|MdePkg/Library/SmmServicesTableLib/SmmServicesTableLib.inf
+  SmmServicesTableLib|MdePiMmPkg/Library/SmmServicesTableLib/SmmServicesTableLib.inf
   UefiLib|MdeUefiPkg/Library/UefiLib/UefiLib.inf
   UefiRuntimeServicesTableLib|MdeUefiPkg/Library/UefiRuntimeServicesTableLib/UefiRuntimeServicesTableLib.inf
   PeiServicesTablePointerLib|MdePiPeiPkg/Library/PeiServicesTablePointerLib/PeiServicesTablePointerLib.inf
@@ -46,8 +46,8 @@
   TimerLib|MdePkg/Library/BaseTimerLibNullTemplate/BaseTimerLibNullTemplate.inf
   PerformanceLib|MdePkg/Library/BasePerformanceLibNull/BasePerformanceLibNull.inf
   PeCoffGetEntryPointLib|MdePkg/Library/BasePeCoffGetEntryPointLib/BasePeCoffGetEntryPointLib.inf
-  DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
-  DxeServicesTableLib|MdePkg/Library/DxeServicesTableLib/DxeServicesTableLib.inf
+  DxeServicesLib|MdePiDxePkg/Library/DxeServicesLib/DxeServicesLib.inf
+  DxeServicesTableLib|MdePiDxePkg/Library/DxeServicesTableLib/DxeServicesTableLib.inf
   SafeIntLib|MdePkg/Library/BaseSafeIntLib/BaseSafeIntLib.inf
   CacheMaintenanceLib|MdePkg/Library/BaseCacheMaintenanceLib/BaseCacheMaintenanceLib.inf
   PeCoffLib|MdePkg/Library/BasePeCoffLib/BasePeCoffLib.inf
@@ -55,14 +55,14 @@
   PeCoffExtraActionLib|MdePkg/Library/BasePeCoffExtraActionLibNull/BasePeCoffExtraActionLibNull.inf
 
   DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf  
-  FileHandleLib|MdePkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
+  FileHandleLib|MdeUefiPkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
   SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
 
-  ReportStatusCodeLib|MdePkg/Library/BaseReportStatusCodeLibNull/BaseReportStatusCodeLibNull.inf  
+  ReportStatusCodeLib|MdePiPeiPkg/Library/BaseReportStatusCodeLibNull/BaseReportStatusCodeLibNull.inf  
   UefiRuntimeLib|MdeUefiPkg/Library/UefiRuntimeLib/UefiRuntimeLib.inf
   CpuExceptionHandlerLib|MdeModulePkg/Library/CpuExceptionHandlerLibNull/CpuExceptionHandlerLibNull.inf
   DebugAgentLib|MdeModulePkg/Library/DebugAgentLibNull/DebugAgentLibNull.inf
-  SmmMemLib|MdePkg/Library/SmmMemLib/SmmMemLib.inf
+  SmmMemLib|MdePiMmPkg/Library/SmmMemLib/SmmMemLib.inf
   IoLib|MdePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsic.inf
   SynchronizationLib|MdePkg/Library/BaseSynchronizationLib/BaseSynchronizationLib.inf
   SerialPortLib|MdePkg/Library/BaseSerialPortLibNull/BaseSerialPortLibNull.inf
@@ -70,27 +70,27 @@
   UefiDecompressLib|MdePkg/Library/BaseUefiDecompressLib/BaseUefiDecompressLib.inf
 
 [LibraryClasses.common.DXE_DRIVER,LibraryClasses.common.UEFI_DRIVER]
-  HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
+  HobLib|MdePiDxePkg/Library/DxeHobLib/DxeHobLib.inf
   MemoryAllocationLib|MdeUefiPkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
 
 [LibraryClasses.common.DXE_RUNTIME_DRIVER]
-  HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
+  HobLib|MdePiDxePkg/Library/DxeHobLib/DxeHobLib.inf
   MemoryAllocationLib|MdeUefiPkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
 
 [LibraryClasses.common.DXE_SMM_DRIVER]
-  HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
-  MemoryAllocationLib|MdePkg/Library/SmmMemoryAllocationLib/SmmMemoryAllocationLib.inf
+  HobLib|MdePiDxePkg/Library/DxeHobLib/DxeHobLib.inf
+  MemoryAllocationLib|MdePiMmPkg/Library/SmmMemoryAllocationLib/SmmMemoryAllocationLib.inf
 
 [LibraryClasses.common.UEFI_APPLICATION]
-  HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
+  HobLib|MdePiDxePkg/Library/DxeHobLib/DxeHobLib.inf
   MemoryAllocationLib|MdeUefiPkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
 
 [LibraryClasses.common.SMM_CORE]
-  HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
+  HobLib|MdePiDxePkg/Library/DxeHobLib/DxeHobLib.inf
   MemoryAllocationLib|PiSmmModulePkg/Library/PiSmmCoreMemoryAllocationLib/PiSmmCoreMemoryAllocationLib.inf
   SmmServicesTableLib|PiSmmModulePkg/Library/PiSmmCoreSmmServicesTableLib/PiSmmCoreSmmServicesTableLib.inf
   SmmCorePlatformHookLib|PiSmmModulePkg/Library/SmmCorePlatformHookLibNull/SmmCorePlatformHookLibNull.inf  
-  SmmMemLib|MdePkg/Library/SmmMemLib/SmmMemLib.inf
+  SmmMemLib|MdePiMmPkg/Library/SmmMemLib/SmmMemLib.inf
 
 ###################################################################################################
 #
@@ -116,9 +116,11 @@
   PiSmmModulePkg/Library/PiSmmCoreMemoryAllocationLib/PiSmmCoreMemoryAllocationLib.inf
   PiSmmModulePkg/Library/SmmCorePerformanceLib/SmmCorePerformanceLib.inf
   PiSmmModulePkg/Library/SmmCorePlatformHookLibNull/SmmCorePlatformHookLibNull.inf
+  PiSmmModulePkg/Universal/SmmCommunicationBufferDxe/SmmCommunicationBufferDxe.inf
+  PiSmmModulePkg/Library/PiSmmCoreSmmServicesTableLib/PiSmmCoreSmmServicesTableLib.inf
+
   PiSmmModulePkg/PiSmmCore/PiSmmIpl.inf
   PiSmmModulePkg/PiSmmCore/PiSmmCore.inf
-  PiSmmModulePkg/Universal/SmmCommunicationBufferDxe/SmmCommunicationBufferDxe.inf
 
 [BuildOptions]
   *_*_*_CC_FLAGS = -D DISABLE_NEW_DEPRECATED_INTERFACES

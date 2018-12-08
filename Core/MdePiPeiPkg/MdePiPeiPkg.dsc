@@ -70,6 +70,7 @@
   MdePiPeiPkg/Library/PeiPciSegmentLibPciCfg2/PeiPciSegmentLibPciCfg2.inf
   MdePiPeiPkg/Library/BaseExtractGuidedSectionLib/BaseExtractGuidedSectionLib.inf
   MdePiPeiPkg/Library/BaseS3PciSegmentLib/BaseS3PciSegmentLib.inf
+  MdePiPeiPkg/Library/BaseReportStatusCodeLibNull/BaseReportStatusCodeLibNull.inf
 
 [Components.IA32, Components.X64]
   MdePiPeiPkg/Library/PeiServicesTablePointerLibIdt/PeiServicesTablePointerLibIdt.inf

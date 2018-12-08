@@ -16,8 +16,8 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #ifndef __SERIAL_PORT_LIB__
 #define __SERIAL_PORT_LIB__
 
-#include <Uefi/UefiBaseType.h>
-#include <Protocol/SerialIo.h>
+#include <Base.h>
+#include <IndustryStandard/Serial.h>
 
 /**
   Initialize the serial device hardware.
@@ -169,12 +169,12 @@ SerialPortGetControl (
 RETURN_STATUS
 EFIAPI
 SerialPortSetAttributes (
-  IN OUT UINT64             *BaudRate,
-  IN OUT UINT32             *ReceiveFifoDepth,
-  IN OUT UINT32             *Timeout,
-  IN OUT EFI_PARITY_TYPE    *Parity,
-  IN OUT UINT8              *DataBits,
-  IN OUT EFI_STOP_BITS_TYPE *StopBits
+  IN OUT UINT64                 *BaudRate,
+  IN OUT UINT32                 *ReceiveFifoDepth,
+  IN OUT UINT32                 *Timeout,
+  IN OUT SERIAL_PARITY_TYPE     *Parity,
+  IN OUT UINT8                  *DataBits,
+  IN OUT SERIAL_STOP_BITS_TYPE  *StopBits
   );
 
 #endif

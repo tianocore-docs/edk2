@@ -77,6 +77,10 @@
 
 [Packages]
   MdePkg/MdePkg.dec
+  MdeUefiPkg/MdeUefiPkg.dec
+  MdePiPeiPkg/MdePiPeiPkg.dec
+  MdePiDxePkg/MdePiDxePkg.dec
+  MdePiMmPkg/MdePiMmPkg.dec
   MdeModulePkg/MdeModulePkg.dec
   PiDxeModulePkg/PiDxeModulePkg.dec
   UefiCpuPkg/UefiCpuPkg.dec

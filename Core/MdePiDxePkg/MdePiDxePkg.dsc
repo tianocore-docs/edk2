@@ -66,6 +66,7 @@
 
   MdePiDxePkg/Library/DxeRuntimePciExpressLib/DxeRuntimePciExpressLib.inf
   MdePiDxePkg/Library/DxeRuntimePciSegmentLibSegmentInfo/DxeRuntimePciSegmentLibSegmentInfo.inf
+  MdePiDxePkg/Library/DxeRuntimeDebugLibSerialPort/DxeRuntimeDebugLibSerialPort.inf
 
 [BuildOptions]
   *_*_*_CC_FLAGS = -D DISABLE_NEW_DEPRECATED_INTERFACES
