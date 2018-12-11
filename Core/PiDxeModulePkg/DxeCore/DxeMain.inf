@@ -83,7 +83,6 @@
   MdePiMmPkg/MdePiMmPkg.dec
   MdeModulePkg/MdeModulePkg.dec
   PiDxeModulePkg/PiDxeModulePkg.dec
-  UefiCpuPkg/UefiCpuPkg.dec
 
 [LibraryClasses]
   BaseMemoryLib
