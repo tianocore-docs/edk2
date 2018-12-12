@@ -43,23 +43,22 @@
   TimerLib|MdePkg/Library/BaseTimerLibNullTemplate/BaseTimerLibNullTemplate.inf
   PerformanceLib|MdePkg/Library/BasePerformanceLibNull/BasePerformanceLibNull.inf
   PeCoffGetEntryPointLib|MdePkg/Library/BasePeCoffGetEntryPointLib/BasePeCoffGetEntryPointLib.inf
-  DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
-  DxeServicesTableLib|MdePkg/Library/DxeServicesTableLib/DxeServicesTableLib.inf
+  DxeServicesLib|MdePiDxePkg/Library/DxeServicesLib/DxeServicesLib.inf
+  DxeServicesTableLib|MdePiDxePkg/Library/DxeServicesTableLib/DxeServicesTableLib.inf
   SafeIntLib|MdePkg/Library/BaseSafeIntLib/BaseSafeIntLib.inf
 
   DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf  
-  FileHandleLib|MdePkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
+  FileHandleLib|MdeUefiPkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
   SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
 
 [LibraryClasses.common.UEFI_DRIVER, LibraryClasses.common.DXE_DRIVER]
-  HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
+  HobLib|MdePiDxePkg/Library/DxeHobLib/DxeHobLib.inf
   ReportStatusCodeLib|StatusCodePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib.inf
   DebugLib|MdeUefiPkg/Library/UefiDebugLibConOut/UefiDebugLibConOut.inf
   PlatformBootManagerLib|BdsPkg/Library/PlatformBootManagerLibNull/PlatformBootManagerLibNull.inf
 
 [LibraryClasses.common.UEFI_APPLICATION]
   DebugLib|MdeUefiPkg/Library/UefiDebugLibStdErr/UefiDebugLibStdErr.inf
-  ShellLib|ShellPkg/Library/UefiShellLib/UefiShellLib.inf
 
 [PcdsFeatureFlag]
   gEfiMdePkgTokenSpaceGuid.PcdComponentName2Disable|TRUE

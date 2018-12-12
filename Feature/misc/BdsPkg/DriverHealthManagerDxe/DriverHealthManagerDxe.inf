@@ -26,7 +26,7 @@
   BASE_NAME                      = DriverHealthManagerDxe
   MODULE_UNI_FILE                = DriverHealthManagerDxe.uni
   FILE_GUID                      = EBF8ED7C-0DD1-4787-84F1-F48D537DCACF
-  MODULE_TYPE                    = DXE_DRIVER
+  MODULE_TYPE                    = UEFI_DRIVER
   VERSION_STRING                 = 1.0
   ENTRY_POINT                    = InitializeDriverHealthManager
 
@@ -47,6 +47,8 @@
 
 [Packages]
   MdePkg/MdePkg.dec
+  MdeUefiPkg/MdeUefiPkg.dec
+  BdsPkg/BdsPkg.dec
   MdeModulePkg/MdeModulePkg.dec
 
 [LibraryClasses]

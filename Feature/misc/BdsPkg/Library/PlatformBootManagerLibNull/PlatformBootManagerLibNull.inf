@@ -34,4 +34,7 @@
 
 [Packages]
   MdePkg/MdePkg.dec
-  MdeModulePkg/MdeModulePkg.dec
+  MdeUefiPkg/MdeUefiPkg.dec
+  MdePiPeiPkg/MdePiPeiPkg.dec
+  MdePiDxePkg/MdePiDxePkg.dec
+  BdsPkg/BdsPkg.dec

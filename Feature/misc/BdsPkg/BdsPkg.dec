@@ -22,3 +22,13 @@
   PACKAGE_GUID                   = 5A91DBD8-203A-46B4-B88F-815098E7443A
   PACKAGE_VERSION                = 0.1
 
+[Includes]
+  Include
+
+[LibraryClasses]
+  ## @libraryclass   Provides core boot manager functions
+  UefiBootManagerLib|Include/Library/UefiBootManagerLib.h
+
+  ## @libraryclass   Provides core boot manager functions
+  PlatformBootManagerLib|Include/Library/PlatformBootManagerLib.h
+

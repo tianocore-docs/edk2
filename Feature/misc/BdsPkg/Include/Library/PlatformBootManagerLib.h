@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 #ifndef __PLATFORM_BOOT_MANAGER_LIB_H_
 #define __PLATFORM_BOOT_MANAGER_LIB_H_
-#include <Library/UefiBootManagerLib.h>
+#include <Base.h>
 
 /**
   Do the platform specific action before the console is connected.
