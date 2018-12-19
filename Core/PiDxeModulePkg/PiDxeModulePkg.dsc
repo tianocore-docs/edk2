@@ -81,10 +81,10 @@
   MemoryAllocationLib|MdeUefiPkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
 
 [LibraryClasses.common.DXE_CORE]
-  HobLib|MdePiDxePkg/Library/DxeCoreHobLib/DxeCoreHobLib.inf
+  HobLib|PiDxeModulePkg/Library/DxeCoreHobLib/DxeCoreHobLib.inf
   MemoryAllocationLib|PiDxeModulePkg/Library/DxeCoreMemoryAllocationLib/DxeCoreMemoryAllocationLib.inf
   ExtractGuidedSectionLib|MdePiDxePkg/Library/DxeExtractGuidedSectionLib/DxeExtractGuidedSectionLib.inf
-  DxeCoreEntryPoint|MdePiDxePkg/Library/DxeCoreEntryPoint/DxeCoreEntryPoint.inf
+  DxeCoreEntryPoint|PiDxeModulePkg/Library/DxeCoreEntryPoint/DxeCoreEntryPoint.inf
 
 ###################################################################################################
 #
@@ -106,6 +106,8 @@
 ###################################################################################################
 
 [Components]
+  PiDxeModulePkg/Library/DxeCoreEntryPoint/DxeCoreEntryPoint.inf
+  PiDxeModulePkg/Library/DxeCoreHobLib/DxeCoreHobLib.inf
 
   PiDxeModulePkg/Library/DxeCoreMemoryAllocationLib/DxeCoreMemoryAllocationProfileLib.inf
   PiDxeModulePkg/Library/DxeCoreMemoryAllocationLib/DxeCoreMemoryAllocationLib.inf

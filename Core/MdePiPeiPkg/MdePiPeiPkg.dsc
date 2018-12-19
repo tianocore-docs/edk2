@@ -53,7 +53,6 @@
 
 [Components]
 
-  MdePiPeiPkg/Library/PeiCoreEntryPoint/PeiCoreEntryPoint.inf
   MdePiPeiPkg/Library/PeiDxePostCodeLibReportStatusCode/PeiDxePostCodeLibReportStatusCode.inf
   MdePiPeiPkg/Library/PeiExtractGuidedSectionLib/PeiExtractGuidedSectionLib.inf
   MdePiPeiPkg/Library/PeiHobLib/PeiHobLib.inf

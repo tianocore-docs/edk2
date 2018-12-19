@@ -76,7 +76,7 @@
 [LibraryClasses.common.PEI_CORE]
   HobLib|MdePiPeiPkg/Library/PeiHobLib/PeiHobLib.inf
   MemoryAllocationLib|MdePiPeiPkg/Library/PeiMemoryAllocationLib/PeiMemoryAllocationLib.inf
-  PeiCoreEntryPoint|MdePiPeiPkg/Library/PeiCoreEntryPoint/PeiCoreEntryPoint.inf
+  PeiCoreEntryPoint|PiPeiModulePkg/Library/PeiCoreEntryPoint/PeiCoreEntryPoint.inf
 
 ###################################################################################################
 #
@@ -98,7 +98,7 @@
 ###################################################################################################
 
 [Components]
-
+  PiPeiModulePkg/Library/PeiCoreEntryPoint/PeiCoreEntryPoint.inf
   PiPeiModulePkg/DxeIplPeim/DxeIpl.inf
   PiPeiModulePkg/PeiCore/PeiMain.inf
 

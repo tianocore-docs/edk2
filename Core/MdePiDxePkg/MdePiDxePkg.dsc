@@ -53,8 +53,6 @@
 
 [Components]
 
-  MdePiDxePkg/Library/DxeCoreEntryPoint/DxeCoreEntryPoint.inf
-  MdePiDxePkg/Library/DxeCoreHobLib/DxeCoreHobLib.inf
   MdePiDxePkg/Library/DxeExtractGuidedSectionLib/DxeExtractGuidedSectionLib.inf
   MdePiDxePkg/Library/DxeHobLib/DxeHobLib.inf
   MdePiDxePkg/Library/DxePcdLib/DxePcdLib.inf
