@@ -37,7 +37,7 @@
 
 
 [Packages]
-  MdePkg/MdePkg.dec
+  BasePkg/BasePkg.dec
 
 
 [LibraryClasses]

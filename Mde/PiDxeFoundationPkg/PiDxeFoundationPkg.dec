@@ -18,7 +18,7 @@
 
 [Defines]
   DEC_SPECIFICATION              = 0x00010005
-  PACKAGE_NAME                   = PiDxeModulePkg
+  PACKAGE_NAME                   = PiDxeFoundationPkg
   PACKAGE_GUID                   = DBCF52CB-2A32-45DE-9128-81A8B36AE0FB
   PACKAGE_VERSION                = 0.1
 

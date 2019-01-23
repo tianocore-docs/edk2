@@ -140,7 +140,7 @@
   X64/IsZeroBuffer.nasm
 
 [Packages]
-  MdePkg/MdePkg.dec
+  BasePkg/BasePkg.dec
 
 [LibraryClasses]
   DebugLib

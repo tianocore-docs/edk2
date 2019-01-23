@@ -1,5 +1,5 @@
 ## @file
-# EFI/PI MdePkg Package
+# EFI/PI PiDxePkg Package
 #
 # Copyright (c) 2007 - 2018, Intel Corporation. All rights reserved.<BR>
 # Portions copyright (c) 2008 - 2009, Apple Inc. All rights reserved.<BR>
@@ -15,11 +15,11 @@
 ##
 
 [Defines]
-  PLATFORM_NAME                  = MdePiDxePkg
+  PLATFORM_NAME                  = PiDxePkg
   PLATFORM_GUID                  = 87EB1B3F-A65B-4AD6-891B-BAC48F00F8B9
   PLATFORM_VERSION               = 1.08
   DSC_SPECIFICATION              = 0x00010005
-  OUTPUT_DIRECTORY               = Build/MdePiDxePkg
+  OUTPUT_DIRECTORY               = Build/PiDxePkg
   SUPPORTED_ARCHITECTURES        = IA32|IPF|X64|EBC|ARM|AARCH64
   BUILD_TARGETS                  = DEBUG|RELEASE|NOOPT
   SKUID_IDENTIFIER               = DEFAULT
@@ -53,18 +53,18 @@
 
 [Components]
 
-  MdePiDxePkg/Library/DxeExtractGuidedSectionLib/DxeExtractGuidedSectionLib.inf
-  MdePiDxePkg/Library/DxeHobLib/DxeHobLib.inf
-  MdePiDxePkg/Library/DxePcdLib/DxePcdLib.inf
-  MdePiDxePkg/Library/DxeServicesLib/DxeServicesLib.inf
-  MdePiDxePkg/Library/DxeServicesTableLib/DxeServicesTableLib.inf
-  MdePiDxePkg/Library/DxeSmbusLib/DxeSmbusLib.inf
-  MdePiDxePkg/Library/DxeIoLibCpuIo2/DxeIoLibCpuIo2.inf
-  MdePiDxePkg/Library/DxeHstiLib/DxeHstiLib.inf
+  PiDxePkg/Library/DxeExtractGuidedSectionLib/DxeExtractGuidedSectionLib.inf
+  PiDxePkg/Library/DxeHobLib/DxeHobLib.inf
+  PiDxePkg/Library/DxePcdLib/DxePcdLib.inf
+  PiDxePkg/Library/DxeServicesLib/DxeServicesLib.inf
+  PiDxePkg/Library/DxeServicesTableLib/DxeServicesTableLib.inf
+  PiDxePkg/Library/DxeSmbusLib/DxeSmbusLib.inf
+  PiDxePkg/Library/DxeIoLibCpuIo2/DxeIoLibCpuIo2.inf
+  PiDxePkg/Library/DxeHstiLib/DxeHstiLib.inf
 
-  MdePiDxePkg/Library/DxeRuntimePciExpressLib/DxeRuntimePciExpressLib.inf
-  MdePiDxePkg/Library/DxeRuntimePciSegmentLibSegmentInfo/DxeRuntimePciSegmentLibSegmentInfo.inf
-  MdePiDxePkg/Library/DxeRuntimeDebugLibSerialPort/DxeRuntimeDebugLibSerialPort.inf
+  PiDxePkg/Library/DxeRuntimePciExpressLib/DxeRuntimePciExpressLib.inf
+  PiDxePkg/Library/DxeRuntimePciSegmentLibSegmentInfo/DxeRuntimePciSegmentLibSegmentInfo.inf
+  PiDxePkg/Library/DxeRuntimeDebugLibSerialPort/DxeRuntimeDebugLibSerialPort.inf
 
 [BuildOptions]
   *_*_*_CC_FLAGS = -D DISABLE_NEW_DEPRECATED_INTERFACES

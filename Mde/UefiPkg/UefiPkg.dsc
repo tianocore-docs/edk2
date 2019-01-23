@@ -1,5 +1,5 @@
 ## @file
-# EFI/PI MdePkg Package
+# EFI/PI UefiPkg Package
 #
 # Copyright (c) 2007 - 2018, Intel Corporation. All rights reserved.<BR>
 # Portions copyright (c) 2008 - 2009, Apple Inc. All rights reserved.<BR>
@@ -15,11 +15,11 @@
 ##
 
 [Defines]
-  PLATFORM_NAME                  = MdeUefiPkg
+  PLATFORM_NAME                  = UefiPkg
   PLATFORM_GUID                  = 62CFF52F-E32A-4378-B07F-7880B0565DF2
   PLATFORM_VERSION               = 1.08
   DSC_SPECIFICATION              = 0x00010005
-  OUTPUT_DIRECTORY               = Build/MdeUefiPkg
+  OUTPUT_DIRECTORY               = Build/UefiPkg
   SUPPORTED_ARCHITECTURES        = IA32|IPF|X64|EBC|ARM|AARCH64
   BUILD_TARGETS                  = DEBUG|RELEASE|NOOPT
   SKUID_IDENTIFIER               = DEFAULT
@@ -53,30 +53,30 @@
 
 [Components]
 
-  MdeUefiPkg/Library/UefiApplicationEntryPoint/UefiApplicationEntryPoint.inf
-  MdeUefiPkg/Library/UefiBootServicesTableLib/UefiBootServicesTableLib.inf
-  MdeUefiPkg/Library/UefiDebugLibConOut/UefiDebugLibConOut.inf
-  MdeUefiPkg/Library/UefiDebugLibDebugPortProtocol/UefiDebugLibDebugPortProtocol.inf
-  MdeUefiPkg/Library/UefiDebugLibStdErr/UefiDebugLibStdErr.inf
-  MdeUefiPkg/Library/UefiDevicePathLib/UefiDevicePathLib.inf
-  MdeUefiPkg/Library/UefiDevicePathLib/UefiDevicePathLibOptionalDevicePathProtocol.inf
-  MdeUefiPkg/Library/UefiDevicePathLibDevicePathProtocol/UefiDevicePathLibDevicePathProtocol.inf
-  MdeUefiPkg/Library/UefiDriverEntryPoint/UefiDriverEntryPoint.inf
-  MdeUefiPkg/Library/UefiLib/UefiLib.inf
-  MdeUefiPkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
-  MdeUefiPkg/Library/UefiMemoryLib/UefiMemoryLib.inf
-  MdeUefiPkg/Library/UefiRuntimeServicesTableLib/UefiRuntimeServicesTableLib.inf
-  MdeUefiPkg/Library/UefiScsiLib/UefiScsiLib.inf
-  MdeUefiPkg/Library/UefiUsbLib/UefiUsbLib.inf
-  MdeUefiPkg/Library/UefiPciLibPciRootBridgeIo/UefiPciLibPciRootBridgeIo.inf
-  MdeUefiPkg/Library/UefiPciSegmentLibPciRootBridgeIo/UefiPciSegmentLibPciRootBridgeIo.inf
-  MdeUefiPkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
+  UefiPkg/Library/UefiApplicationEntryPoint/UefiApplicationEntryPoint.inf
+  UefiPkg/Library/UefiBootServicesTableLib/UefiBootServicesTableLib.inf
+  UefiPkg/Library/UefiDebugLibConOut/UefiDebugLibConOut.inf
+  UefiPkg/Library/UefiDebugLibDebugPortProtocol/UefiDebugLibDebugPortProtocol.inf
+  UefiPkg/Library/UefiDebugLibStdErr/UefiDebugLibStdErr.inf
+  UefiPkg/Library/UefiDevicePathLib/UefiDevicePathLib.inf
+  UefiPkg/Library/UefiDevicePathLib/UefiDevicePathLibOptionalDevicePathProtocol.inf
+  UefiPkg/Library/UefiDevicePathLibDevicePathProtocol/UefiDevicePathLibDevicePathProtocol.inf
+  UefiPkg/Library/UefiDriverEntryPoint/UefiDriverEntryPoint.inf
+  UefiPkg/Library/UefiLib/UefiLib.inf
+  UefiPkg/Library/UefiMemoryAllocationLib/UefiMemoryAllocationLib.inf
+  UefiPkg/Library/UefiMemoryLib/UefiMemoryLib.inf
+  UefiPkg/Library/UefiRuntimeServicesTableLib/UefiRuntimeServicesTableLib.inf
+  UefiPkg/Library/UefiScsiLib/UefiScsiLib.inf
+  UefiPkg/Library/UefiUsbLib/UefiUsbLib.inf
+  UefiPkg/Library/UefiPciLibPciRootBridgeIo/UefiPciLibPciRootBridgeIo.inf
+  UefiPkg/Library/UefiPciSegmentLibPciRootBridgeIo/UefiPciSegmentLibPciRootBridgeIo.inf
+  UefiPkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
 
 [Components.IA32, Components.X64]
-  MdeUefiPkg/Library/UefiRuntimeLib/UefiRuntimeLib.inf
+  UefiPkg/Library/UefiRuntimeLib/UefiRuntimeLib.inf
 
 [Components.EBC]
-  MdeUefiPkg/Library/UefiRuntimeLib/UefiRuntimeLib.inf
+  UefiPkg/Library/UefiRuntimeLib/UefiRuntimeLib.inf
 
 [BuildOptions]
   *_*_*_CC_FLAGS = -D DISABLE_NEW_DEPRECATED_INTERFACES

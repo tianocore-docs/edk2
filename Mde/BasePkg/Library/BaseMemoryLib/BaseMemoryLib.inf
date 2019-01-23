@@ -49,7 +49,7 @@
   MemLibInternals.h
 
 [Packages]
-  MdePkg/MdePkg.dec
+  BasePkg/BasePkg.dec
 
 [LibraryClasses]
   DebugLib

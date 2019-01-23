@@ -109,7 +109,7 @@
   AArch64/Synchronization.asm   | MSFT
 
 [Packages]
-  MdePkg/MdePkg.dec
+  BasePkg/BasePkg.dec
 
 [LibraryClasses]
   PcdLib

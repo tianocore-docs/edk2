@@ -1,4 +1,4 @@
-## @file  MdePkg.dec
+## @file  PiMmPkg.dec
 # This Package provides all definitions, library classes and libraries instances.
 #
 # It also provides the definitions(including PPIs/PROTOCOLs/GUIDs) of
@@ -21,7 +21,7 @@
 
 [Defines]
   DEC_SPECIFICATION              = 0x00010005
-  PACKAGE_NAME                   = MdePiMmPkg
+  PACKAGE_NAME                   = PiMmPkg
   PACKAGE_GUID                   = 0B4E0D81-338B-4701-981F-B557B7215384
   PACKAGE_VERSION                = 1.08
 

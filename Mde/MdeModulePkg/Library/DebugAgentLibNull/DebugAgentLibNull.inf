@@ -31,5 +31,5 @@
   DebugAgentLibNull.c
 
 [Packages]
-  MdePkg/MdePkg.dec
+  BasePkg/BasePkg.dec
   MdeModulePkg/MdeModulePkg.dec

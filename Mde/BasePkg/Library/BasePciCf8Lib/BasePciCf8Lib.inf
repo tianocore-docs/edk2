@@ -33,7 +33,7 @@
   PciCf8Lib.c
 
 [Packages]
-  MdePkg/MdePkg.dec
+  BasePkg/BasePkg.dec
 
 [LibraryClasses]
   BaseLib

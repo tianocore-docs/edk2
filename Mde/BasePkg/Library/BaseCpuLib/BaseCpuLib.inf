@@ -77,7 +77,7 @@
   AArch64/CpuSleep.asm    | MSFT
 
 [Packages]
-  MdePkg/MdePkg.dec
+  BasePkg/BasePkg.dec
 
 
 [LibraryClasses.IPF]

@@ -51,7 +51,7 @@
   X64/IoFifoSev.nasm
 
 [Packages]
-  MdePkg/MdePkg.dec
+  BasePkg/BasePkg.dec
 
 [LibraryClasses]
   DebugLib

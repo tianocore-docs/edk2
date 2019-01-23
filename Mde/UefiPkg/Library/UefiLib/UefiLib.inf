@@ -44,9 +44,9 @@
 
 
 [Packages]
-  MdePkg/MdePkg.dec
-  MdeUefiPkg/MdeUefiPkg.dec
-  MdePiDxePkg/MdePiDxePkg.dec
+  BasePkg/BasePkg.dec
+  UefiPkg/UefiPkg.dec
+  PiDxePkg/PiDxePkg.dec
 
 [LibraryClasses]
   PrintLib

@@ -37,11 +37,11 @@
   SmmIoLib.c
 
 [Packages]
-  MdePkg/MdePkg.dec
-  MdeUefiPkg/MdeUefiPkg.dec
-  MdePiPeiPkg/MdePiPeiPkg.dec
-  MdePiDxePkg/MdePiDxePkg.dec
-  MdePiMmPkg/MdePiMmPkg.dec
+  BasePkg/BasePkg.dec
+  UefiPkg/UefiPkg.dec
+  PiPeiPkg/PiPeiPkg.dec
+  PiDxePkg/PiDxePkg.dec
+  PiMmPkg/PiMmPkg.dec
 
 [LibraryClasses]
   SmmServicesTableLib

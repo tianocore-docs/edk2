@@ -42,12 +42,12 @@
   SmmCorePerformanceLibInternal.h
 
 [Packages]
-  MdePkg/MdePkg.dec
-  MdeUefiPkg/MdeUefiPkg.dec
-  MdePiPeiPkg/MdePiPeiPkg.dec
-  MdePiDxePkg/MdePiDxePkg.dec
+  BasePkg/BasePkg.dec
+  UefiPkg/UefiPkg.dec
+  PiPeiPkg/PiPeiPkg.dec
+  PiDxePkg/PiDxePkg.dec
   MdeModulePkg/MdeModulePkg.dec
-  MdePiMmPkg/MdePiMmPkg.dec
+  PiMmPkg/PiMmPkg.dec
 
 [LibraryClasses]
   MemoryAllocationLib

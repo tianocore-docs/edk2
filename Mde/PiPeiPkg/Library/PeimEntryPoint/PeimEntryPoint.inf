@@ -31,9 +31,9 @@
 
 
 [Packages]
-  MdePkg/MdePkg.dec
-  MdeUefiPkg/MdeUefiPkg.dec
-  MdePiPeiPkg/MdePiPeiPkg.dec
+  BasePkg/BasePkg.dec
+  UefiPkg/UefiPkg.dec
+  PiPeiPkg/PiPeiPkg.dec
 
 
 [LibraryClasses]

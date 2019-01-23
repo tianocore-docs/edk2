@@ -1,4 +1,4 @@
-## @file  MdePkg.dec
+## @file  UefiPkg.dec
 # This Package provides all definitions, library classes and libraries instances.
 #
 # It also provides the definitions(including PPIs/PROTOCOLs/GUIDs) of
@@ -21,7 +21,7 @@
 
 [Defines]
   DEC_SPECIFICATION              = 0x00010005
-  PACKAGE_NAME                   = MdeUefiPkg
+  PACKAGE_NAME                   = UefiPkg
   PACKAGE_GUID                   = CDC95748-C8A7-423F-8EE7-E11D652A976D
   PACKAGE_VERSION                = 1.08
 

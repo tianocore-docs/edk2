@@ -18,7 +18,7 @@
 
 [Defines]
   DEC_SPECIFICATION              = 0x00010005
-  PACKAGE_NAME                   = PiPeiModulePkg
+  PACKAGE_NAME                   = PiPeiFoundationPkg
   PACKAGE_GUID                   = 03261EB6-4EC0-44E9-9D81-2C1383A2CC72
   PACKAGE_VERSION                = 0.1
 

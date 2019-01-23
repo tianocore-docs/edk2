@@ -1,4 +1,4 @@
-## @file  MdePkg.dec
+## @file  PiPeiPkg.dec
 # This Package provides all definitions, library classes and libraries instances.
 #
 # It also provides the definitions(including PPIs/PROTOCOLs/GUIDs) of
@@ -21,7 +21,7 @@
 
 [Defines]
   DEC_SPECIFICATION              = 0x00010005
-  PACKAGE_NAME                   = MdePiPeiPkg
+  PACKAGE_NAME                   = PiPeiPkg
   PACKAGE_GUID                   = 3C53AE09-B273-4282-A4A1-7092AC28B256
   PACKAGE_VERSION                = 1.08
 

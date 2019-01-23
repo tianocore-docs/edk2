@@ -1,4 +1,4 @@
-## @file  MdePkg.dec
+## @file  PiDxePkg.dec
 # This Package provides all definitions, library classes and libraries instances.
 #
 # It also provides the definitions(including PPIs/PROTOCOLs/GUIDs) of
@@ -21,7 +21,7 @@
 
 [Defines]
   DEC_SPECIFICATION              = 0x00010005
-  PACKAGE_NAME                   = MdePiDxePkg
+  PACKAGE_NAME                   = PiDxePkg
   PACKAGE_GUID                   = 3DAE45E0-A6BE-42CB-BE07-9E31C5802417
   PACKAGE_VERSION                = 1.08
 

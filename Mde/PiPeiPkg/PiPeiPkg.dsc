@@ -1,5 +1,5 @@
 ## @file
-# EFI/PI MdePkg Package
+# EFI/PI PiPeiPkg Package
 #
 # Copyright (c) 2007 - 2018, Intel Corporation. All rights reserved.<BR>
 # Portions copyright (c) 2008 - 2009, Apple Inc. All rights reserved.<BR>
@@ -15,11 +15,11 @@
 ##
 
 [Defines]
-  PLATFORM_NAME                  = MdePiPeiPkg
+  PLATFORM_NAME                  = PiPeiPkg
   PLATFORM_GUID                  = FA724C06-3080-4B53-8B8E-C3382ADB5214
   PLATFORM_VERSION               = 1.08
   DSC_SPECIFICATION              = 0x00010005
-  OUTPUT_DIRECTORY               = Build/MdePiPeiPkg
+  OUTPUT_DIRECTORY               = Build/PiPeiPkg
   SUPPORTED_ARCHITECTURES        = IA32|IPF|X64|EBC|ARM|AARCH64
   BUILD_TARGETS                  = DEBUG|RELEASE|NOOPT
   SKUID_IDENTIFIER               = DEFAULT
@@ -53,32 +53,32 @@
 
 [Components]
 
-  MdePiPeiPkg/Library/PeiDxePostCodeLibReportStatusCode/PeiDxePostCodeLibReportStatusCode.inf
-  MdePiPeiPkg/Library/PeiExtractGuidedSectionLib/PeiExtractGuidedSectionLib.inf
-  MdePiPeiPkg/Library/PeiHobLib/PeiHobLib.inf
-  MdePiPeiPkg/Library/PeiIoLibCpuIo/PeiIoLibCpuIo.inf
-  MdePiPeiPkg/Library/PeiMemoryAllocationLib/PeiMemoryAllocationLib.inf
-  MdePiPeiPkg/Library/PeiMemoryLib/PeiMemoryLib.inf
-  MdePiPeiPkg/Library/PeimEntryPoint/PeimEntryPoint.inf
-  MdePiPeiPkg/Library/PeiPcdLib/PeiPcdLib.inf
-  MdePiPeiPkg/Library/PeiResourcePublicationLib/PeiResourcePublicationLib.inf
-  MdePiPeiPkg/Library/PeiServicesLib/PeiServicesLib.inf
-  MdePiPeiPkg/Library/PeiServicesTablePointerLib/PeiServicesTablePointerLib.inf
-  MdePiPeiPkg/Library/PeiSmbusLibSmbus2Ppi/PeiSmbusLibSmbus2Ppi.inf
-  MdePiPeiPkg/Library/PeiPciLibPciCfg2/PeiPciLibPciCfg2.inf
-  MdePiPeiPkg/Library/PeiPciSegmentLibPciCfg2/PeiPciSegmentLibPciCfg2.inf
-  MdePiPeiPkg/Library/BaseExtractGuidedSectionLib/BaseExtractGuidedSectionLib.inf
-  MdePiPeiPkg/Library/BaseS3PciSegmentLib/BaseS3PciSegmentLib.inf
-  MdePiPeiPkg/Library/BaseReportStatusCodeLibNull/BaseReportStatusCodeLibNull.inf
+  PiPeiPkg/Library/PeiDxePostCodeLibReportStatusCode/PeiDxePostCodeLibReportStatusCode.inf
+  PiPeiPkg/Library/PeiExtractGuidedSectionLib/PeiExtractGuidedSectionLib.inf
+  PiPeiPkg/Library/PeiHobLib/PeiHobLib.inf
+  PiPeiPkg/Library/PeiIoLibCpuIo/PeiIoLibCpuIo.inf
+  PiPeiPkg/Library/PeiMemoryAllocationLib/PeiMemoryAllocationLib.inf
+  PiPeiPkg/Library/PeiMemoryLib/PeiMemoryLib.inf
+  PiPeiPkg/Library/PeimEntryPoint/PeimEntryPoint.inf
+  PiPeiPkg/Library/PeiPcdLib/PeiPcdLib.inf
+  PiPeiPkg/Library/PeiResourcePublicationLib/PeiResourcePublicationLib.inf
+  PiPeiPkg/Library/PeiServicesLib/PeiServicesLib.inf
+  PiPeiPkg/Library/PeiServicesTablePointerLib/PeiServicesTablePointerLib.inf
+  PiPeiPkg/Library/PeiSmbusLibSmbus2Ppi/PeiSmbusLibSmbus2Ppi.inf
+  PiPeiPkg/Library/PeiPciLibPciCfg2/PeiPciLibPciCfg2.inf
+  PiPeiPkg/Library/PeiPciSegmentLibPciCfg2/PeiPciSegmentLibPciCfg2.inf
+  PiPeiPkg/Library/BaseExtractGuidedSectionLib/BaseExtractGuidedSectionLib.inf
+  PiPeiPkg/Library/BaseS3PciSegmentLib/BaseS3PciSegmentLib.inf
+  PiPeiPkg/Library/BaseReportStatusCodeLibNull/BaseReportStatusCodeLibNull.inf
 
 [Components.IA32, Components.X64]
-  MdePiPeiPkg/Library/PeiServicesTablePointerLibIdt/PeiServicesTablePointerLibIdt.inf
-  MdePiPeiPkg/Library/SecPeiDxeTimerLibCpu/SecPeiDxeTimerLibCpu.inf
-  MdePiPeiPkg/Library/BaseS3BootScriptLibNull/BaseS3BootScriptLibNull.inf
-  MdePiPeiPkg/Library/BaseS3IoLib/BaseS3IoLib.inf
-  MdePiPeiPkg/Library/BaseS3PciLib/BaseS3PciLib.inf
-  MdePiPeiPkg/Library/BaseS3SmbusLib/BaseS3SmbusLib.inf
-  MdePiPeiPkg/Library/BaseS3StallLib/BaseS3StallLib.inf
+  PiPeiPkg/Library/PeiServicesTablePointerLibIdt/PeiServicesTablePointerLibIdt.inf
+  PiPeiPkg/Library/SecPeiDxeTimerLibCpu/SecPeiDxeTimerLibCpu.inf
+  PiPeiPkg/Library/BaseS3BootScriptLibNull/BaseS3BootScriptLibNull.inf
+  PiPeiPkg/Library/BaseS3IoLib/BaseS3IoLib.inf
+  PiPeiPkg/Library/BaseS3PciLib/BaseS3PciLib.inf
+  PiPeiPkg/Library/BaseS3SmbusLib/BaseS3SmbusLib.inf
+  PiPeiPkg/Library/BaseS3StallLib/BaseS3StallLib.inf
 
 [BuildOptions]
   *_*_*_CC_FLAGS = -D DISABLE_NEW_DEPRECATED_INTERFACES

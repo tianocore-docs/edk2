@@ -61,9 +61,9 @@
   Arm/DxeLoadFunc.c
 
 [Packages]
-  MdePkg/MdePkg.dec
-  MdeUefiPkg/MdeUefiPkg.dec
-  MdePiPeiPkg/MdePiPeiPkg.dec
+  BasePkg/BasePkg.dec
+  UefiPkg/UefiPkg.dec
+  PiPeiPkg/PiPeiPkg.dec
   MdeModulePkg/MdeModulePkg.dec
 
 [Packages.ARM, Packages.AARCH64]

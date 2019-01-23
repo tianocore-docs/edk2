@@ -1,5 +1,5 @@
 ## @file
-# EFI/PI MdePkg Package
+# EFI/PI PiMmPkg Package
 #
 # Copyright (c) 2007 - 2018, Intel Corporation. All rights reserved.<BR>
 # Portions copyright (c) 2008 - 2009, Apple Inc. All rights reserved.<BR>
@@ -15,11 +15,11 @@
 ##
 
 [Defines]
-  PLATFORM_NAME                  = MdePiMmPkg
+  PLATFORM_NAME                  = PiMmPkg
   PLATFORM_GUID                  = 3DC54011-C093-47DA-B2F3-7146964A61EA
   PLATFORM_VERSION               = 1.08
   DSC_SPECIFICATION              = 0x00010005
-  OUTPUT_DIRECTORY               = Build/MdePiMmPkg
+  OUTPUT_DIRECTORY               = Build/PiMmPkg
   SUPPORTED_ARCHITECTURES        = IA32|IPF|X64|EBC|ARM|AARCH64
   BUILD_TARGETS                  = DEBUG|RELEASE|NOOPT
   SKUID_IDENTIFIER               = DEFAULT
@@ -54,15 +54,15 @@
 [Components]
 
 [Components.IA32, Components.X64]
-  MdePiMmPkg/Library/SmmIoLibSmmCpuIo2/SmmIoLibSmmCpuIo2.inf
-  MdePiMmPkg/Library/SmmPciLibPciRootBridgeIo/SmmPciLibPciRootBridgeIo.inf
-  MdePiMmPkg/Library/SmmServicesTableLib/SmmServicesTableLib.inf
-  MdePiMmPkg/Library/SmmMemoryAllocationLib/SmmMemoryAllocationLib.inf
-  MdePiMmPkg/Library/SmmPeriodicSmiLib/SmmPeriodicSmiLib.inf
-  MdePiMmPkg/Library/SmmMemLib/SmmMemLib.inf
-  MdePiMmPkg/Library/SmmIoLib/SmmIoLib.inf
-  MdePiMmPkg/Library/SmmPciExpressLib/SmmPciExpressLib.inf
-  MdePiMmPkg/Library/SmiHandlerProfileLibNull/SmiHandlerProfileLibNull.inf
+  PiMmPkg/Library/SmmIoLibSmmCpuIo2/SmmIoLibSmmCpuIo2.inf
+  PiMmPkg/Library/SmmPciLibPciRootBridgeIo/SmmPciLibPciRootBridgeIo.inf
+  PiMmPkg/Library/SmmServicesTableLib/SmmServicesTableLib.inf
+  PiMmPkg/Library/SmmMemoryAllocationLib/SmmMemoryAllocationLib.inf
+  PiMmPkg/Library/SmmPeriodicSmiLib/SmmPeriodicSmiLib.inf
+  PiMmPkg/Library/SmmMemLib/SmmMemLib.inf
+  PiMmPkg/Library/SmmIoLib/SmmIoLib.inf
+  PiMmPkg/Library/SmmPciExpressLib/SmmPciExpressLib.inf
+  PiMmPkg/Library/SmiHandlerProfileLibNull/SmiHandlerProfileLibNull.inf
 
 [BuildOptions]
   *_*_*_CC_FLAGS = -D DISABLE_NEW_DEPRECATED_INTERFACES

@@ -32,11 +32,11 @@
 
 
 [Packages]
-  MdePkg/MdePkg.dec
-  MdeUefiPkg/MdeUefiPkg.dec
-  PiDxeModulePkg/PiDxeModulePkg.dec
-  MdePiPeiPkg/MdePiPeiPkg.dec
-  MdePiDxePkg/MdePiDxePkg.dec
+  BasePkg/BasePkg.dec
+  UefiPkg/UefiPkg.dec
+  PiDxeFoundationPkg/PiDxeFoundationPkg.dec
+  PiPeiPkg/PiPeiPkg.dec
+  PiDxePkg/PiDxePkg.dec
 
 
 [LibraryClasses]

@@ -1,5 +1,5 @@
 ## @file
-# EFI/PI MdePkg Package
+# EFI/PI BasePkg Package
 #
 # Copyright (c) 2007 - 2018, Intel Corporation. All rights reserved.<BR>
 # Portions copyright (c) 2008 - 2009, Apple Inc. All rights reserved.<BR>
@@ -49,54 +49,54 @@
 ###################################################################################################
 
 [Components]
-  MdePkg/Library/BaseCacheMaintenanceLib/BaseCacheMaintenanceLib.inf
-  MdePkg/Library/BaseCpuLib/BaseCpuLib.inf
-  MdePkg/Library/BaseDebugLibNull/BaseDebugLibNull.inf
-  MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
-  MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
-  MdePkg/Library/BaseLib/BaseLib.inf
-  MdePkg/Library/BaseMemoryLib/BaseMemoryLib.inf
-  MdePkg/Library/BaseOrderedCollectionRedBlackTreeLib/BaseOrderedCollectionRedBlackTreeLib.inf
-  MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
-  MdePkg/Library/BasePciCf8Lib/BasePciCf8Lib.inf
-  MdePkg/Library/BasePciExpressLib/BasePciExpressLib.inf
-  MdePkg/Library/BasePciLibCf8/BasePciLibCf8.inf
-  MdePkg/Library/BasePciLibPciExpress/BasePciLibPciExpress.inf
-  MdePkg/Library/BasePciSegmentLibPci/BasePciSegmentLibPci.inf
-  MdePkg/Library/BasePciSegmentInfoLibNull/BasePciSegmentInfoLibNull.inf
-  MdePkg/Library/BasePciSegmentLibSegmentInfo/BasePciSegmentLibSegmentInfo.inf
-  MdePkg/Library/BasePeCoffGetEntryPointLib/BasePeCoffGetEntryPointLib.inf
-  MdePkg/Library/BasePeCoffLib/BasePeCoffLib.inf
-  MdePkg/Library/BasePeCoffExtraActionLibNull/BasePeCoffExtraActionLibNull.inf
-  MdePkg/Library/BasePerformanceLibNull/BasePerformanceLibNull.inf
-  MdePkg/Library/BasePostCodeLibDebug/BasePostCodeLibDebug.inf
-  MdePkg/Library/BasePostCodeLibPort80/BasePostCodeLibPort80.inf
-  MdePkg/Library/BasePrintLib/BasePrintLib.inf
-  MdePkg/Library/BaseSerialPortLibNull/BaseSerialPortLibNull.inf
-  MdePkg/Library/BaseSynchronizationLib/BaseSynchronizationLib.inf
-  MdePkg/Library/BaseTimerLibNullTemplate/BaseTimerLibNullTemplate.inf
-  MdePkg/Library/BaseUefiDecompressLib/BaseUefiDecompressLib.inf
-  MdePkg/Library/BaseSmbusLibNull/BaseSmbusLibNull.inf
-  MdePkg/Library/BaseSafeIntLib/BaseSafeIntLib.inf
+  BasePkg/Library/BaseCacheMaintenanceLib/BaseCacheMaintenanceLib.inf
+  BasePkg/Library/BaseCpuLib/BaseCpuLib.inf
+  BasePkg/Library/BaseDebugLibNull/BaseDebugLibNull.inf
+  BasePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
+  BasePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
+  BasePkg/Library/BaseLib/BaseLib.inf
+  BasePkg/Library/BaseMemoryLib/BaseMemoryLib.inf
+  BasePkg/Library/BaseOrderedCollectionRedBlackTreeLib/BaseOrderedCollectionRedBlackTreeLib.inf
+  BasePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
+  BasePkg/Library/BasePciCf8Lib/BasePciCf8Lib.inf
+  BasePkg/Library/BasePciExpressLib/BasePciExpressLib.inf
+  BasePkg/Library/BasePciLibCf8/BasePciLibCf8.inf
+  BasePkg/Library/BasePciLibPciExpress/BasePciLibPciExpress.inf
+  BasePkg/Library/BasePciSegmentLibPci/BasePciSegmentLibPci.inf
+  BasePkg/Library/BasePciSegmentInfoLibNull/BasePciSegmentInfoLibNull.inf
+  BasePkg/Library/BasePciSegmentLibSegmentInfo/BasePciSegmentLibSegmentInfo.inf
+  BasePkg/Library/BasePeCoffGetEntryPointLib/BasePeCoffGetEntryPointLib.inf
+  BasePkg/Library/BasePeCoffLib/BasePeCoffLib.inf
+  BasePkg/Library/BasePeCoffExtraActionLibNull/BasePeCoffExtraActionLibNull.inf
+  BasePkg/Library/BasePerformanceLibNull/BasePerformanceLibNull.inf
+  BasePkg/Library/BasePostCodeLibDebug/BasePostCodeLibDebug.inf
+  BasePkg/Library/BasePostCodeLibPort80/BasePostCodeLibPort80.inf
+  BasePkg/Library/BasePrintLib/BasePrintLib.inf
+  BasePkg/Library/BaseSerialPortLibNull/BaseSerialPortLibNull.inf
+  BasePkg/Library/BaseSynchronizationLib/BaseSynchronizationLib.inf
+  BasePkg/Library/BaseTimerLibNullTemplate/BaseTimerLibNullTemplate.inf
+  BasePkg/Library/BaseUefiDecompressLib/BaseUefiDecompressLib.inf
+  BasePkg/Library/BaseSmbusLibNull/BaseSmbusLibNull.inf
+  BasePkg/Library/BaseSafeIntLib/BaseSafeIntLib.inf
 
 [Components.IA32, Components.X64]
-  MdePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsic.inf
-  MdePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsicSev.inf
-  MdePkg/Library/BaseMemoryLibMmx/BaseMemoryLibMmx.inf
-  MdePkg/Library/BaseMemoryLibOptDxe/BaseMemoryLibOptDxe.inf
-  MdePkg/Library/BaseMemoryLibOptPei/BaseMemoryLibOptPei.inf
-  MdePkg/Library/BaseMemoryLibRepStr/BaseMemoryLibRepStr.inf
-  MdePkg/Library/BaseMemoryLibSse2/BaseMemoryLibSse2.inf
-  MdePkg/Library/BaseRngLib/BaseRngLib.inf
+  BasePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsic.inf
+  BasePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsicSev.inf
+  BasePkg/Library/BaseMemoryLibMmx/BaseMemoryLibMmx.inf
+  BasePkg/Library/BaseMemoryLibOptDxe/BaseMemoryLibOptDxe.inf
+  BasePkg/Library/BaseMemoryLibOptPei/BaseMemoryLibOptPei.inf
+  BasePkg/Library/BaseMemoryLibRepStr/BaseMemoryLibRepStr.inf
+  BasePkg/Library/BaseMemoryLibSse2/BaseMemoryLibSse2.inf
+  BasePkg/Library/BaseRngLib/BaseRngLib.inf
 
 [Components.IPF]
-  MdePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsic.inf
+  BasePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsic.inf
   
 [Components.EBC]
-  MdePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsic.inf
+  BasePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsic.inf
 
 [Components.ARM, Components.AARCH64]
-  MdePkg/Library/BaseStackCheckLib/BaseStackCheckLib.inf
+  BasePkg/Library/BaseStackCheckLib/BaseStackCheckLib.inf
 
 [BuildOptions]
   *_*_*_CC_FLAGS = -D DISABLE_NEW_DEPRECATED_INTERFACES
