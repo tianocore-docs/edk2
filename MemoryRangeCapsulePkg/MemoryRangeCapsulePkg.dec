@@ -1,0 +1,36 @@
+## @file
+#
+# Copyright (c) 2017, Intel Corporation. All rights reserved.<BR>
+# This program and the accompanying materials are licensed and made available under
+# the terms and conditions of the BSD License that accompanies this distribution.
+# The full text of the license may be found at
+# http://opensource.org/licenses/bsd-license.php.
+#
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = MemoryRangeCapsulePkg
+  PACKAGE_GUID                   = 46BF8312-07B3-45F0-A2CA-D561EBBD20EB
+  PACKAGE_VERSION                = 0.1
+
+[Includes]
+  Include
+
+[LibraryClasses]
+  ## @libraryclass  Provides services for MemoryRange capsule.
+  #
+  MemoryRangeCapsuleLib|Include/Library/MemoryRangeCapsuleLib.h
+
+[Guids]
+  ## Include/Guid/MemoryRangeCapsule.h
+  gEfiMemoryRangeCapsuleGuid         = { 0xe8143950, 0x8c5c, 0x410e, { 0x86, 0xf, 0x12, 0x63, 0x64, 0xd3, 0xc6, 0xc9 }}
+  gEfiMemoryRangeRequirementDataGuid = { 0xf7d8603, 0xa812, 0x4210, { 0x86, 0x1b, 0x1b, 0x32, 0x4, 0xde, 0x56, 0x5b }}
+  
+[PcdsFixedAtBuild, PcdsPatchableInModule, PcdsDynamic, PcdsDynamicEx]
+  # Additional page added for MemoryRangeRequirementData
+  gEfiMdeModulePkgTokenSpaceGuid.PcdMemoryRangeCapsuleAdditionalPages|0x1000|UINT64|0x00040001

@@ -1,0 +1,51 @@
+### @file
+# Module Information file for the PlatformInit DXE driver.
+#
+# Copyright (c) 2017, Intel Corporation. All rights reserved.<BR>
+#
+# This program and the accompanying materials are licensed and made available under
+# the terms and conditions of the BSD License which accompanies this distribution.
+# The full text of the license may be found at
+# http://opensource.org/licenses/bsd-license.php
+#
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+###
+
+[Defines]
+  INF_VERSION                    = 0x00010017
+  BASE_NAME                      = MemoryRangeReport
+  FILE_GUID                      = 0B136FF2-746B-4DB8-868C-98BA3A6E377D
+  VERSION_STRING                 = 1.0
+  MODULE_TYPE                    = DXE_DRIVER
+  ENTRY_POINT                    = MemoryRangeReportEntryPoint
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  DxeServicesTableLib
+  MemoryAllocationLib
+  PcdLib
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+  UefiLib
+  UefiRuntimeServicesTableLib
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  MemoryRangeCapsulePkg/MemoryRangeCapsulePkg.dec
+
+[Sources]
+  MemoryRangeReport.c
+  
+[Guids]
+  gEfiMemoryRangeRequirementDataGuid
+
+[Pcd]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdMemoryRangeCapsuleAdditionalPages
+
+[Depex]
+  TRUE
