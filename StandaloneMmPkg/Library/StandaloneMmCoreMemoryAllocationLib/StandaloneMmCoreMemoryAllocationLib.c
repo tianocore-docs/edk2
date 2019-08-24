@@ -1,7 +1,7 @@
 /** @file
   Support routines for memory allocation routines based on Standalone MM Core internal functions.
 
-  Copyright (c) 2015, Intel Corporation. All rights reserved.<BR>
+  Copyright (c) 2015 - 2019, Intel Corporation. All rights reserved.<BR>
   Copyright (c) 2016 - 2018, ARM Limited. All rights reserved.<BR>
 
   SPDX-License-Identifier: BSD-2-Clause-Patent
@@ -877,7 +877,7 @@ MemoryAllocationLibConstructor (
     DataInHob      = GET_GUID_HOB_DATA (GuidHob);
     MmCorePrivate = (MM_CORE_PRIVATE_DATA *)(UINTN)DataInHob->Address;
     MmramRanges     = (EFI_MMRAM_DESCRIPTOR *)(UINTN)MmCorePrivate->MmramRanges;
-    MmramRangeCount = MmCorePrivate->MmramRangeCount;
+    MmramRangeCount = (UINT32)MmCorePrivate->MmramRangeCount;
   }
 
   {
