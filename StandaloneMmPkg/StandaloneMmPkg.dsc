@@ -137,6 +137,7 @@
 
 [Components.IA32, Components.X64]
   StandaloneMmPkg/Drivers/CpuMpInfoPei/CpuMpInfoPei.inf
+  StandaloneMmPkg/Drivers/StandaloneMmIplPei/StandaloneMmIplPei.inf
 
 ###################################################################################################
 #
