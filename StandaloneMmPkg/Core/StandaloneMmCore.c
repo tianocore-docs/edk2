@@ -1,7 +1,7 @@
 /** @file
   MM Core Main Entry Point
 
-  Copyright (c) 2009 - 2014, Intel Corporation. All rights reserved.<BR>
+  Copyright (c) 2009 - 2019, Intel Corporation. All rights reserved.<BR>
   Copyright (c) 2016 - 2018, ARM Limited. All rights reserved.<BR>
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -552,7 +552,7 @@ StandaloneMmMain (
     DataInHob       = GET_GUID_HOB_DATA (GuidHob);
     gMmCorePrivate = (MM_CORE_PRIVATE_DATA *)(UINTN)DataInHob->Address;
     MmramRanges     = (EFI_MMRAM_DESCRIPTOR *)(UINTN)gMmCorePrivate->MmramRanges;
-    MmramRangeCount = gMmCorePrivate->MmramRangeCount;
+    MmramRangeCount = (UINT32)gMmCorePrivate->MmramRangeCount;
   }
 
   //
