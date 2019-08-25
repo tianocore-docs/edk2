@@ -7,6 +7,7 @@
 #   it via the gEfiAcpiVariableGuid GUIDed HOB.
 #
 # Copyright (C) 2013, 2015, Red Hat, Inc.
+# Copyright (c) 2019, Intel Corporation. All rights reserved.<BR>
 #
 # SPDX-License-Identifier: BSD-2-Clause-Patent
 #
@@ -38,6 +39,7 @@
 
 [Guids]
   gEfiAcpiVariableGuid
+  gEfiSmmSmramMemoryGuid
 
 [LibraryClasses]
   BaseLib

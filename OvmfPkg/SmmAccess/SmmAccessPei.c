@@ -11,13 +11,14 @@
   duration.
 
   Copyright (C) 2013, 2015, Red Hat, Inc.<BR>
-  Copyright (c) 2010, Intel Corporation. All rights reserved.<BR>
+  Copyright (c) 2010 - 2019, Intel Corporation. All rights reserved.<BR>
 
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
 #include <Guid/AcpiS3Context.h>
+#include <Guid/SmramMemoryReserve.h>
 #include <Library/BaseLib.h>
 #include <Library/BaseMemoryLib.h>
 #include <Library/DebugLib.h>
@@ -247,6 +248,8 @@ SmmAccessPeiEntryPoint (
   UINTN                SmramMapSize;
   EFI_SMRAM_DESCRIPTOR SmramMap[DescIdxCount];
   VOID                 *GuidHob;
+  UINTN                Count;
+  EFI_SMRAM_HOB_DESCRIPTOR_BLOCK *SmramHobDesc;
 
   //
   // This module should only be included if SMRAM support is required.
@@ -345,12 +348,12 @@ SmmAccessPeiEntryPoint (
              &SmramMapSize, SmramMap);
   ASSERT_EFI_ERROR (Status);
 
+  Count = SmramMapSize / sizeof SmramMap[0];
+
   DEBUG_CODE_BEGIN ();
   {
-    UINTN Count;
     UINTN Idx;
 
-    Count = SmramMapSize / sizeof SmramMap[0];
     DEBUG ((EFI_D_VERBOSE, "%a: SMRAM map follows, %d entries\n", __FUNCTION__,
       (INT32)Count));
     DEBUG ((EFI_D_VERBOSE, "% 20a % 20a % 20a % 20a\n", "PhysicalStart(0x)",
@@ -371,6 +374,17 @@ SmmAccessPeiEntryPoint (
 
   CopyMem (GuidHob, &SmramMap[DescIdxSmmS3ResumeState],
     sizeof SmramMap[DescIdxSmmS3ResumeState]);
+  
+  GuidHob = BuildGuidHob (&gEfiSmmSmramMemoryGuid,
+    sizeof(EFI_SMRAM_HOB_DESCRIPTOR_BLOCK) + sizeof(EFI_SMRAM_DESCRIPTOR) * (Count - 1));
+  if (GuidHob == NULL) {
+    return EFI_OUT_OF_RESOURCES;
+  }
+
+  SmramHobDesc = (EFI_SMRAM_HOB_DESCRIPTOR_BLOCK *)GuidHob;
+  SmramHobDesc->NumberOfSmmReservedRegions = Count;
+
+  CopyMem (SmramHobDesc->Descriptor, SmramMap, SmramMapSize);
 
   //
   // We're done. The next step should succeed, but even if it fails, we can't
