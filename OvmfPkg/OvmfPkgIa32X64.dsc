@@ -857,7 +857,7 @@
 
 !if $(SMM_REQUIRE) == TRUE
   OvmfPkg/SmmAccess/SmmAccess2Dxe.inf
-  OvmfPkg/SmmControl2Dxe/SmmControl2Dxe.inf
+  OvmfPkg/SmmControl/SmmControl2Dxe.inf
   UefiCpuPkg/CpuS3DataDxe/CpuS3DataDxe.inf
 
   #
