@@ -3,6 +3,7 @@
   accordingly.
 
   Copyright (C) 2016-2017, Red Hat, Inc.
+  Copyright (c) 2019, Intel Corporation. All rights reserved.<BR>
 
   SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
@@ -135,12 +136,21 @@ NegotiateSmiFeatures (
     // PiSmmCpuDxeSmm. Effectively, restore the UefiCpuPkg defaults, from which
     // the original QEMU behavior (i.e., unicast SMI) used to differ.
     //
+#ifdef SMM_STANDALONE
+    //
+    // In StandaloneMm, PcdCpuSmmApSyncTimeout and PcdCpuSmmSyncMode must be static.
+    // Using ASSERT to make sure user setting can be satisfied.
+    //
+    ASSERT (PcdGet64 (PcdCpuSmmApSyncTimeout) == 1000000);
+    ASSERT (PcdGet8 (PcdCpuSmmSyncMode) == 0x00);
+#else
     if (RETURN_ERROR (PcdSet64S (PcdCpuSmmApSyncTimeout, 1000000)) ||
         RETURN_ERROR (PcdSet8S (PcdCpuSmmSyncMode, 0x00))) {
       DEBUG ((DEBUG_ERROR, "%a: PiSmmCpuDxeSmm PCD configuration failed\n",
         __FUNCTION__));
       goto FatalError;
     }
+#endif
     DEBUG ((DEBUG_INFO, "%a: using SMI broadcast\n", __FUNCTION__));
   }
 

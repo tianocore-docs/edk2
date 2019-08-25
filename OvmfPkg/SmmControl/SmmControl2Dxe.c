@@ -13,7 +13,7 @@
   configuring it.
 
   Copyright (C) 2013, 2015, Red Hat, Inc.<BR>
-  Copyright (c) 2009 - 2010, Intel Corporation. All rights reserved.<BR>
+  Copyright (c) 2009 - 2019, Intel Corporation. All rights reserved.<BR>
 
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -203,6 +203,7 @@ SmmControl2DxeEntryPoint (
   // this bit is clear after each reset.
   //
   SmiEnableVal = IoRead32 (mSmiEnable);
+#ifndef SMM_STANDALONE
   if ((SmiEnableVal & ICH9_SMI_EN_APMC_EN) != 0) {
     DEBUG ((EFI_D_ERROR, "%a: this Q35 implementation lacks SMI\n",
       __FUNCTION__));
@@ -232,7 +233,7 @@ SmmControl2DxeEntryPoint (
       __FUNCTION__));
     goto FatalError;
   }
-
+#endif
   //
   // QEMU can inject SMIs in different ways, negotiate our preferences.
   //
