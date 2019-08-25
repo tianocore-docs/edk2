@@ -572,6 +572,13 @@ MaxCpuCountInitialization (
   VOID
   )
 {
+#ifdef SMM_STANDALONE
+  //
+  // In StandaloneMm, PcdCpuMaxLogicalProcessorNumber must be static.
+  //
+  mMaxCpuCount = PcdGet32 (PcdCpuMaxLogicalProcessorNumber);
+  return;
+#else
   UINT16        ProcessorCount;
   RETURN_STATUS PcdStatus;
 
@@ -601,6 +608,7 @@ MaxCpuCountInitialization (
   ASSERT_RETURN_ERROR (PcdStatus);
   DEBUG ((DEBUG_INFO, "%a: QEMU reports %d processor(s)\n", __FUNCTION__,
     ProcessorCount));
+#endif
 }
 
 
