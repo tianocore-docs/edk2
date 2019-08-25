@@ -37,6 +37,7 @@
   #
   # Network definition
   #
+  DEFINE NETWORK_ENABLE                 = TRUE
   DEFINE NETWORK_TLS_ENABLE             = FALSE
   DEFINE NETWORK_IP6_ENABLE             = FALSE
   DEFINE NETWORK_HTTP_BOOT_ENABLE       = FALSE
@@ -836,7 +837,9 @@
   #
   # Network Support
   #
+!if $(NETWORK_ENABLE) == TRUE
 !include NetworkPkg/NetworkComponents.dsc.inc
+!endif
 
 !if $(NETWORK_TLS_ENABLE) == TRUE
   NetworkPkg/TlsAuthConfigDxe/TlsAuthConfigDxe.inf {
