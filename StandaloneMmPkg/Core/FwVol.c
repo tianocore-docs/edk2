@@ -1,6 +1,6 @@
 /**@file
 
-Copyright (c) 2015, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2015 - 2019, Intel Corporation. All rights reserved.<BR>
 Copyright (c) 2016 - 2018, ARM Limited. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -15,7 +15,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 //
 EFI_FV_FILETYPE mMmFileTypes[] = {
   EFI_FV_FILETYPE_MM,
-  0xE, //EFI_FV_FILETYPE_MM_STANDALONE,
+  EFI_FV_FILETYPE_MM_STANDALONE,
        //
        // Note: DXE core will process the FV image file, so skip it in MM core
        // EFI_FV_FILETYPE_FIRMWARE_VOLUME_IMAGE
@@ -29,7 +29,8 @@ MmAddToDriverList (
   IN UINTN        Pe32DataSize,
   IN VOID         *Depex,
   IN UINTN        DepexSize,
-  IN EFI_GUID     *DriverName
+  IN EFI_GUID     *DriverName,
+  IN EFI_FV_FILETYPE FileType
   );
 
 BOOLEAN
@@ -164,7 +165,7 @@ Returns:
         DEBUG ((DEBUG_INFO, "Find PE data - 0x%x\n", Pe32Data));
         DepexStatus = FfsFindSectionData (EFI_SECTION_MM_DEPEX, FileHeader, &Depex, &DepexSize);
         if (!EFI_ERROR (DepexStatus)) {
-          MmAddToDriverList (FwVolHeader, Pe32Data, Pe32DataSize, Depex, DepexSize, &FileHeader->Name);
+          MmAddToDriverList (FwVolHeader, Pe32Data, Pe32DataSize, Depex, DepexSize, &FileHeader->Name, FileType);
         }
       }
     } while (!EFI_ERROR (Status));

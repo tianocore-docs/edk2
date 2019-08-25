@@ -89,6 +89,12 @@ MM_CORE_MMI_HANDLERS  mMmCoreMmiHandlers[] = {
   { MmEndOfDxeHandler,       &gEfiEndOfDxeEventGroupGuid,        NULL, FALSE },
   { MmExitBootServiceHandler,&gEfiEventExitBootServicesGuid,     NULL, FALSE },
   { MmReadyToBootHandler,    &gEfiEventReadyToBootGuid,          NULL, FALSE },
+  //
+  // NOTE: Handle below will NOT be registered if PcdMmStandaloneOnly is TRUE.
+  //
+  { MmUefiInfoHandler,       &gMmUefiInfoGuid,                   NULL, TRUE  },
+  { MmFvDispatchHandler,     &gMmFvDispatchGuid,                 NULL, TRUE  },
+  { MmDriverDispatchHandler, &gEfiEventDxeDispatchGuid,          NULL, TRUE  },
   { NULL,                    NULL,                               NULL, FALSE },
 };
 
@@ -321,7 +327,51 @@ MmEndOfDxeHandler (
   return Status;
 }
 
+/**
+  This function is the main entry point for an MM handler dispatch
+  or communicate-based callback.
 
+  @param  DispatchHandle  The unique handle assigned to this handler by SmiHandlerRegister().
+  @param  Context         Points to an optional handler context which was specified when the handler was registered.
+  @param  CommBuffer      A pointer to a collection of data in memory that will
+                          be conveyed from a non-SMM environment into an SMM environment.
+  @param  CommBufferSize  The size of the CommBuffer.
+
+  @return Status Code
+
+**/
+EFI_STATUS
+EFIAPI
+MmUefiInfoHandler (
+  IN     EFI_HANDLE               DispatchHandle,
+  IN     CONST VOID               *Context,        OPTIONAL
+  IN OUT VOID                     *CommBuffer,     OPTIONAL
+  IN OUT UINTN                    *CommBufferSize  OPTIONAL
+  )
+{
+  EFI_MM_COMMUNICATE_UEFI_INFO_DATA     *CommunicationData;
+  EFI_HANDLE                            MmHandle;
+  EFI_STATUS                            Status;
+
+  DEBUG ((EFI_D_INFO, "MmUefiInfoHandler\n"));
+
+  CommunicationData = CommBuffer;
+  
+  DEBUG ((EFI_D_INFO, "  SystemTable - 0x%016lx\n", CommunicationData->EfiSystemTable));
+  
+  if (mEfiSystemTable == NULL) {
+    mEfiSystemTable = (EFI_SYSTEM_TABLE *)(UINTN)CommunicationData->EfiSystemTable;
+    MmHandle = NULL;
+    Status = MmInstallProtocolInterface (
+               &MmHandle,
+               &gMmUefiInfoGuid,
+               EFI_NATIVE_INTERFACE,
+               mEfiSystemTable
+               );
+  }
+  
+  return EFI_SUCCESS;
+}
 
 /**
   The main entry point to MM Foundation.
@@ -618,6 +668,19 @@ StandaloneMmMain (
              &Registration
              );
   ASSERT_EFI_ERROR (Status);
+
+  if (FeaturePcdGet(PcdMmStandaloneOnly)) {
+    //
+    // Do not register gMmUefiInfoGuid 
+    //
+    for (Index = 0; mMmCoreMmiHandlers[Index].HandlerType != NULL; Index++) {
+      if (CompareGuid (mMmCoreMmiHandlers[Index].HandlerType, &gMmUefiInfoGuid)) {
+        mMmCoreMmiHandlers[Index].HandlerType = NULL;
+        mMmCoreMmiHandlers[Index].Handler = NULL;
+        break;
+      }
+    }
+  }
 
   //
   // Dispatch standalone BFV

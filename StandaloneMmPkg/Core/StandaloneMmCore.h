@@ -2,7 +2,7 @@
   The internal header file includes the common header files, defines
   internal structure and functions used by MmCore module.
 
-  Copyright (c) 2009 - 2014, Intel Corporation. All rights reserved.<BR>
+  Copyright (c) 2009 - 2019, Intel Corporation. All rights reserved.<BR>
   Copyright (c) 2016 - 2018, ARM Limited. All rights reserved.<BR>
 
   SPDX-License-Identifier: BSD-2-Clause-Patent
@@ -28,6 +28,7 @@
 #include <Guid/ZeroGuid.h>
 #include <Guid/MemoryProfile.h>
 #include <Guid/HobList.h>
+#include <Guid/MmUefiInfo.h>
 #include <Guid/MmFvDispatch.h>
 #include <Guid/MmramMemoryReserve.h>
 
@@ -68,6 +69,7 @@ typedef struct {
   LIST_ENTRY                      ScheduledLink;    // mScheduledQueue
 
   EFI_HANDLE                      FvHandle;
+  EFI_FV_FILETYPE                 FileType;
   EFI_GUID                        FileName;
   VOID                            *Pe32Data;
   UINTN                           Pe32DataSize;
@@ -611,6 +613,50 @@ MmiHandlerUnRegister (
 EFI_STATUS
 EFIAPI
 MmDriverDispatchHandler (
+  IN     EFI_HANDLE               DispatchHandle,
+  IN     CONST VOID               *Context,        OPTIONAL
+  IN OUT VOID                     *CommBuffer,     OPTIONAL
+  IN OUT UINTN                    *CommBufferSize  OPTIONAL
+  );
+
+/**
+  This function is the main entry point for an MM handler dispatch
+  or communicate-based callback.
+
+  @param  DispatchHandle  The unique handle assigned to this handler by MmiHandlerRegister().
+  @param  Context         Points to an optional handler context which was specified when the handler was registered.
+  @param  CommBuffer      A pointer to a collection of data in memory that will
+                          be conveyed from a non-MM environment into an MM environment.
+  @param  CommBufferSize  The size of the CommBuffer.
+
+  @return Status Code
+
+**/
+EFI_STATUS
+EFIAPI
+MmFvDispatchHandler (
+  IN     EFI_HANDLE               DispatchHandle,
+  IN     CONST VOID               *Context,        OPTIONAL
+  IN OUT VOID                     *CommBuffer,     OPTIONAL
+  IN OUT UINTN                    *CommBufferSize  OPTIONAL
+  );
+
+/**
+  This function is the main entry point for an MM handler dispatch
+  or communicate-based callback.
+
+  @param  DispatchHandle  The unique handle assigned to this handler by MmiHandlerRegister().
+  @param  Context         Points to an optional handler context which was specified when the handler was registered.
+  @param  CommBuffer      A pointer to a collection of data in memory that will
+                          be conveyed from a non-MM environment into an MM environment.
+  @param  CommBufferSize  The size of the CommBuffer.
+
+  @return Status Code
+
+**/
+EFI_STATUS
+EFIAPI
+MmUefiInfoHandler (
   IN     EFI_HANDLE               DispatchHandle,
   IN     CONST VOID               *Context,        OPTIONAL
   IN OUT VOID                     *CommBuffer,     OPTIONAL

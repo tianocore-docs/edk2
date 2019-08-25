@@ -28,7 +28,7 @@
   Depex - Dependency Expresion.
 
   Copyright (c) 2014, Hewlett-Packard Development Company, L.P.
-  Copyright (c) 2009 - 2014, Intel Corporation. All rights reserved.<BR>
+  Copyright (c) 2009 - 2019, Intel Corporation. All rights reserved.<BR>
   Copyright (c) 2016 - 2018, ARM Limited. All rights reserved.<BR>
 
   SPDX-License-Identifier: BSD-2-Clause-Patent
@@ -362,7 +362,10 @@ MmLoadImage (
   DriverEntry->ImageBuffer      = DstBuffer;
   DriverEntry->NumberOfPage     = PageCount;
 
-  if (mEfiSystemTable != NULL) {
+  if (DriverEntry->FileType == EFI_FV_FILETYPE_MM_STANDALONE) {
+    // TBD
+  } else {
+    ASSERT (mEfiSystemTable != NULL);
     Status = mEfiSystemTable->BootServices->AllocatePool (
                                               EfiBootServicesData,
                                               sizeof (EFI_LOADED_IMAGE_PROTOCOL),
@@ -635,10 +638,11 @@ MmDispatcher (
       //
       // For each MM driver, pass NULL as ImageHandle
       //
-      if (mEfiSystemTable == NULL) {
+      if (DriverEntry->FileType == EFI_FV_FILETYPE_MM_STANDALONE) {
         DEBUG ((DEBUG_INFO, "StartImage - 0x%x (Standalone Mode)\n", DriverEntry->ImageEntryPoint));
         Status = ((MM_IMAGE_ENTRY_POINT)(UINTN)DriverEntry->ImageEntryPoint) (DriverEntry->ImageHandle, &gMmCoreMmst);
       } else {
+        ASSERT (mEfiSystemTable != NULL);
         DEBUG ((DEBUG_INFO, "StartImage - 0x%x (Tradition Mode)\n", DriverEntry->ImageEntryPoint));
         Status = ((EFI_IMAGE_ENTRY_POINT)(UINTN)DriverEntry->ImageEntryPoint) (
                                                                DriverEntry->ImageHandle,
@@ -847,7 +851,8 @@ MmAddToDriverList (
   IN UINTN        Pe32DataSize,
   IN VOID         *Depex,
   IN UINTN        DepexSize,
-  IN EFI_GUID     *DriverName
+  IN EFI_GUID     *DriverName,
+  IN EFI_FV_FILETYPE FileType
   )
 {
   EFI_MM_DRIVER_ENTRY  *DriverEntry;
@@ -868,12 +873,130 @@ MmAddToDriverList (
   DriverEntry->Pe32DataSize     = Pe32DataSize;
   DriverEntry->Depex            = Depex;
   DriverEntry->DepexSize        = DepexSize;
+  DriverEntry->FileType         = FileType;
 
   MmGetDepexSectionAndPreProccess (DriverEntry);
 
   InsertTailList (&mDiscoveredList, &DriverEntry->Link);
   gRequestDispatch = TRUE;
 
+  return EFI_SUCCESS;
+}
+
+/**
+  This function is the main entry point for an MM handler dispatch
+  or communicate-based callback.
+
+  Event notification that is fired every time a FV dispatch protocol is added.
+  More than one protocol may have been added when this event is fired, so you
+  must loop on MmLocateHandle () to see how many protocols were added and
+  do the following to each FV:
+  If the Fv has already been processed, skip it. If the Fv has not been
+  processed then mark it as being processed, as we are about to process it.
+  Read the Fv and add any driver in the Fv to the mDiscoveredList.The
+  mDiscoveredList is never free'ed and contains variables that define
+  the other states the MM driver transitions to..
+  While you are at it read the A Priori file into memory.
+  Place drivers in the A Priori list onto the mScheduledQueue.
+
+  @param  DispatchHandle  The unique handle assigned to this handler by MmiHandlerRegister().
+  @param  Context         Points to an optional handler context which was specified when the handler was registered.
+  @param  CommBuffer      A pointer to a collection of data in memory that will
+                          be conveyed from a non-MM environment into an MM environment.
+  @param  CommBufferSize  The size of the CommBuffer.
+
+  @return Status Code
+
+**/
+EFI_STATUS
+EFIAPI
+MmDriverDispatchHandler (
+  IN     EFI_HANDLE  DispatchHandle,
+  IN     CONST VOID  *Context,        OPTIONAL
+  IN OUT VOID        *CommBuffer,     OPTIONAL
+  IN OUT UINTN       *CommBufferSize  OPTIONAL
+  )
+{
+  EFI_STATUS                            Status;
+
+  DEBUG ((EFI_D_INFO, "MmDriverDispatchHandler\n"));
+
+  //
+  // Execute the MM Dispatcher on any newly discovered FVs and previously 
+  // discovered MM drivers that have been discovered but not dispatched.
+  //
+  Status = MmDispatcher ();
+
+  //
+  // Check to see if CommBuffer and CommBufferSize are valid
+  //
+  if (CommBuffer != NULL && CommBufferSize != NULL) {
+    if (*CommBufferSize > 0) {
+      if (Status == EFI_NOT_READY) {
+        //
+        // If a the MM Core Entry Point was just registered, then set flag to 
+        // request the MM Dispatcher to be restarted.
+        //
+        *(UINT8 *)CommBuffer = COMM_BUFFER_MM_DISPATCH_RESTART;
+      } else if (!EFI_ERROR (Status)) {
+        //
+        // Set the flag to show that the MM Dispatcher executed without errors
+        //
+        *(UINT8 *)CommBuffer = COMM_BUFFER_MM_DISPATCH_SUCCESS;
+      } else {
+        //
+        // Set the flag to show that the MM Dispatcher encountered an error
+        //
+        *(UINT8 *)CommBuffer = COMM_BUFFER_MM_DISPATCH_ERROR;
+      }
+    }
+  }
+
+  return EFI_SUCCESS;
+}
+
+/**
+  This function is the main entry point for an MM handler dispatch
+  or communicate-based callback.
+
+  @param  DispatchHandle  The unique handle assigned to this handler by MmiHandlerRegister().
+  @param  Context         Points to an optional handler context which was specified when the handler was registered.
+  @param  CommBuffer      A pointer to a collection of data in memory that will
+                          be conveyed from a non-MM environment into an MM environment.
+  @param  CommBufferSize  The size of the CommBuffer.
+
+  @return Status Code
+
+**/
+EFI_STATUS
+EFIAPI
+MmFvDispatchHandler (
+  IN     EFI_HANDLE               DispatchHandle,
+  IN     CONST VOID               *Context,        OPTIONAL
+  IN OUT VOID                     *CommBuffer,     OPTIONAL
+  IN OUT UINTN                    *CommBufferSize  OPTIONAL
+  )
+{
+  EFI_STATUS                            Status;
+  EFI_MM_COMMUNICATE_FV_DISPATCH_DATA   *CommunicationFvDispatchData;
+  EFI_FIRMWARE_VOLUME_HEADER            *FwVolHeader;
+
+  DEBUG ((EFI_D_INFO, "MmFvDispatchHandler\n"));
+
+  CommunicationFvDispatchData = CommBuffer;
+  
+  DEBUG ((EFI_D_INFO, "  Dispatch - 0x%016lx - 0x%016lx\n", CommunicationFvDispatchData->Address, CommunicationFvDispatchData->Size));
+  
+  FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER *)(UINTN)CommunicationFvDispatchData->Address;
+
+  MmCoreFfsFindMmDriver (FwVolHeader);
+
+  //
+  // Execute the MM Dispatcher on any newly discovered FVs and previously 
+  // discovered MM drivers that have been discovered but not dispatched.
+  //
+  Status = MmDispatcher ();
+  
   return EFI_SUCCESS;
 }
 
