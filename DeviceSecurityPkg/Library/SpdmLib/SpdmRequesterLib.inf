@@ -1,0 +1,58 @@
+## @file
+#  SPDM library.
+#
+#  Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = SpdmRequesterLib
+  FILE_GUID                      = 8B6024A3-270A-410F-91AB-9E99F05C2A58
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = SpdmRequesterLib
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64 AARCH64
+#
+
+[Sources]
+  libspdm/library/spdm_common_lib/spdm_common_lib_internal.h
+  libspdm/library/spdm_requester_lib/challenge.c
+  libspdm/library/spdm_requester_lib/communication.c
+  libspdm/library/spdm_requester_lib/encap_certificate.c
+  libspdm/library/spdm_requester_lib/encap_challenge_auth.c
+  libspdm/library/spdm_requester_lib/encap_digests.c
+  libspdm/library/spdm_requester_lib/encap_error.c
+  libspdm/library/spdm_requester_lib/encap_key_update.c
+  libspdm/library/spdm_requester_lib/encap_request.c
+  libspdm/library/spdm_requester_lib/end_session.c
+  libspdm/library/spdm_requester_lib/finish.c
+  libspdm/library/spdm_requester_lib/get_capabilities.c
+  libspdm/library/spdm_requester_lib/get_certificate.c
+  libspdm/library/spdm_requester_lib/get_digests.c
+  libspdm/library/spdm_requester_lib/get_measurements.c
+  libspdm/library/spdm_requester_lib/get_version.c
+  libspdm/library/spdm_requester_lib/handle_error_response.c
+  libspdm/library/spdm_requester_lib/heartbeat.c
+  libspdm/library/spdm_requester_lib/spdm_requester_lib_internal.h
+  libspdm/library/spdm_requester_lib/key_exchange.c
+  libspdm/library/spdm_requester_lib/key_update.c
+  libspdm/library/spdm_requester_lib/negotiate_algorithms.c
+  libspdm/library/spdm_requester_lib/psk_exchange.c
+  libspdm/library/spdm_requester_lib/psk_finish.c
+  libspdm/library/spdm_requester_lib/send_receive.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  DeviceSecurityPkg/DeviceSecurityPkg.dec
+  CryptoPkg/CryptoPkg.dec
+
+[LibraryClasses]
+  SpdmCommonLib
+  SpdmSecuredMessageLib

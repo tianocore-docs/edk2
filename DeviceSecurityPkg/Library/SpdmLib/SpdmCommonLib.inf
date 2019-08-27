@@ -1,0 +1,45 @@
+## @file
+#  SPDM library.
+#
+#  Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = SpdmCommonLib
+  FILE_GUID                      = 271C5BBB-111E-4AAF-8748-A2188B65EFF1
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = SpdmCommonLib
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64 AARCH64
+#
+
+[Sources]
+  libspdm/library/spdm_common_lib/context_data.c
+  libspdm/library/spdm_common_lib/context_data_session.c
+  libspdm/library/spdm_common_lib/crypto_service.c
+  libspdm/library/spdm_common_lib/crypto_service_session.c
+  libspdm/library/spdm_common_lib/spdm_common_lib_internal.h
+  libspdm/library/spdm_common_lib/opaque_data.c
+  libspdm/library/spdm_common_lib/support.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  DeviceSecurityPkg/DeviceSecurityPkg.dec
+  CryptoPkg/CryptoPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  BaseCryptLib
+  RngLib
+  SpdmCryptLib
+  SpdmDeviceSecretLib
