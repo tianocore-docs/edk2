@@ -9,6 +9,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include "PiPei.h"
 #include <Ppi/EmuThunk.h>
 #include <Ppi/MemoryDiscovered.h>
+#include <Guid/SmramMemoryReserve.h>
 
 #include <Library/DebugLib.h>
 #include <Library/PeimEntryPoint.h>
@@ -45,6 +46,9 @@ Returns:
   EFI_PHYSICAL_ADDRESS        MemoryBase;
   UINTN                       Index;
   EFI_RESOURCE_ATTRIBUTE_TYPE Attributes;
+  UINT64                                SmramMemorySize;
+  EFI_PHYSICAL_ADDRESS                  SmramMemoryBase;
+  EFI_SMRAM_HOB_DESCRIPTOR_BLOCK        *SmramHobDescriptorBlock;
 
 
   DEBUG ((EFI_D_ERROR, "Emu Autoscan PEIM Loaded\n"));
@@ -61,9 +65,15 @@ Returns:
   ASSERT_EFI_ERROR (Status);
 
   Index = 0;
+  SmramMemorySize = 0;
+  SmramMemoryBase = 0;
   do {
     Status = Thunk->MemoryAutoScan (Index, &MemoryBase, &MemorySize);
+    DEBUG ((EFI_D_ERROR, "AutoScan(%d) Status - %r\n", Index, Status));
     if (!EFI_ERROR (Status)) {
+      DEBUG ((EFI_D_ERROR, "AutoScan(%d) Base - 0x%lx\n", Index, MemoryBase));
+      DEBUG ((EFI_D_ERROR, "AutoScan(%d) Size - 0x%lx\n", Index, MemorySize));
+
       Attributes =
         (
           EFI_RESOURCE_ATTRIBUTE_PRESENT |
@@ -75,6 +85,19 @@ Returns:
         );
 
       if (Index == 0) {
+
+        if (FeaturePcdGet(PcdEmuSmmEnable)) {
+          //
+          // SMRAM
+          //
+          SmramMemorySize = PcdGet64(PcdEmuSmramSize);
+          SmramMemoryBase = MemoryBase + MemorySize - SmramMemorySize;
+          DEBUG ((EFI_D_ERROR, "SmramMemoryBase - 0x%lx\n", SmramMemoryBase));
+          DEBUG ((EFI_D_ERROR, "SmramMemorySize - 0x%lx\n", SmramMemorySize));
+
+          MemorySize      = MemorySize - SmramMemorySize;
+        }
+
         //
         // Register the memory with the PEI Core
         //
@@ -98,6 +121,26 @@ Returns:
   // Build the CPU hob with 57-bit addressing and 16-bits of IO space.
   //
   BuildCpuHob (57, 16);
+
+
+  if (FeaturePcdGet(PcdEmuSmmEnable)) {
+    //
+    // BuildSmramHob
+    //
+    if ((SmramMemoryBase != 0) && (SmramMemorySize != 0)) {
+      SmramHobDescriptorBlock = BuildGuidHob (
+                                  &gEfiSmmSmramMemoryGuid,
+                                  sizeof (EFI_SMRAM_HOB_DESCRIPTOR_BLOCK) + sizeof (EFI_SMRAM_DESCRIPTOR)
+                                  );
+      ASSERT (SmramHobDescriptorBlock != NULL);
+      SmramHobDescriptorBlock->NumberOfSmmReservedRegions = 1;
+
+      SmramHobDescriptorBlock->Descriptor[0].PhysicalStart = SmramMemoryBase;
+      SmramHobDescriptorBlock->Descriptor[0].CpuStart      = SmramMemoryBase;
+      SmramHobDescriptorBlock->Descriptor[0].PhysicalSize  = SmramMemorySize;
+      SmramHobDescriptorBlock->Descriptor[0].RegionState   = EFI_SMRAM_CLOSED;
+    }
+  }
 
   return Status;
 }

@@ -47,6 +47,14 @@
   gEfiPeiMemoryDiscoveredPpiGuid                # PPI ALWAYS_PRODUCED
   gEmuThunkPpiGuid                              # PPI ALWAYS_CONSUMED
 
+[Guids]
+  gEfiSmmSmramMemoryGuid
+
+[FeaturePcd]
+  gEmulatorPkgTokenSpaceGuid.PcdEmuSmmEnable
+
+[Pcd]
+  gEmulatorPkgTokenSpaceGuid.PcdEmuSmramSize
 
 [Depex]
   gEmuThunkPpiGuid AND gEfiPeiMasterBootModePpiGuid
