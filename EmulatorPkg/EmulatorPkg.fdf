@@ -1,7 +1,7 @@
 ## @file
 # This is Emulator FDF file with UEFI HII features enabled
 #
-# Copyright (c) 2008 - 2018, Intel Corporation. All rights reserved.<BR>
+# Copyright (c) 2008 - 2019, Intel Corporation. All rights reserved.<BR>
 # Portions copyright (c) 2009 - 2011, Apple Inc. All rights reserved.<BR>
 #
 # SPDX-License-Identifier: BSD-2-Clause-Patent
@@ -135,6 +135,11 @@ INF  MdeModulePkg/Universal/FaultTolerantWritePei/FaultTolerantWritePei.inf
 INF  MdeModulePkg/Universal/Variable/Pei/VariablePei.inf
 INF  MdeModulePkg/Core/DxeIplPeim/DxeIpl.inf
 
+!if $(TPM2_ENABLE)
+INF  SecurityPkg/Tcg/Tcg2Pei/Tcg2Pei.inf
+INF  EmulatorPkg/Tpm2/EfiTpmDeviceSelectedPPI/EfiTpmDeviceSelectedPPI.inf
+!endif
+
 #
 #  DXE Phase modules
 #
@@ -173,6 +178,9 @@ INF  MdeModulePkg/Bus/Pci/PciBusDxe/PciBusDxe.inf
 INF  MdeModulePkg/Bus/Scsi/ScsiBusDxe/ScsiBusDxe.inf
 INF  MdeModulePkg/Bus/Scsi/ScsiDiskDxe/ScsiDiskDxe.inf
 INF  MdeModulePkg/Universal/SmbiosDxe/SmbiosDxe.inf
+!if $(TPM2_ENABLE)
+INF  MdeModulePkg/Universal/SmbiosMeasurementDxe/SmbiosMeasurementDxe.inf
+!endif
 
 INF  EmulatorPkg/EmuBusDriverDxe/EmuBusDriverDxe.inf
 INF  EmulatorPkg/EmuGopDxe/EmuGopDxe.inf
@@ -192,6 +200,14 @@ INF  MdeModulePkg/Universal/LoadFileOnFv2/LoadFileOnFv2.inf
 INF  RuleOverride = UI MdeModulePkg/Application/UiApp/UiApp.inf
 INF  MdeModulePkg/Application/BootManagerMenuApp/BootManagerMenuApp.inf
 INF  MdeModulePkg/Universal/DriverSampleDxe/DriverSampleDxe.inf
+
+INF  MdeModulePkg/Universal/Acpi/AcpiTableDxe/AcpiTableDxe.inf
+
+!if $(TPM2_ENABLE)
+INF  SecurityPkg/Tcg/Tcg2Dxe/Tcg2Dxe.inf
+INF  EmulatorPkg/Tpm2/Tcg2Acpi/Tcg2Acpi.inf
+INF  EmulatorPkg/Tpm2/Tcg2Config/Tcg2ConfigDxe.inf
+!endif
 
 #
 # Secure Boot Key Enroll

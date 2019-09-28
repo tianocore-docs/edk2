@@ -34,6 +34,7 @@
   DEFINE NETWORK_HTTP_BOOT_ENABLE = FALSE
   DEFINE NETWORK_ISCSI_ENABLE     = FALSE
   DEFINE SECURE_BOOT_ENABLE       = FALSE
+  DEFINE TPM2_ENABLE              = TRUE
 
 [SkuIds]
   0|DEFAULT
@@ -91,6 +92,21 @@
   TimerLib|MdePkg/Library/BaseTimerLibNullTemplate/BaseTimerLibNullTemplate.inf
   SerialPortLib|MdePkg/Library/BaseSerialPortLibNull/BaseSerialPortLibNull.inf
   CapsuleLib|MdeModulePkg/Library/DxeCapsuleLibNull/DxeCapsuleLibNull.inf
+
+  !if $(TPM2_ENABLE)
+  Tpm2CommandLib|SecurityPkg/Library/Tpm2CommandLib/Tpm2CommandLib.inf
+  EmuSocketLib|EmulatorPkg/Tpm2/DxeEmuSocketLib/DxeEmuSocketLib.inf
+  Tpm2DeviceLib|EmulatorPkg/Tpm2/Tpm2Simulator/Tpm2DeviceLibSimulator.inf
+  ResetSystemLib|EmulatorPkg/Library/ResetSystemLib/ResetSystemLib.inf
+  HashLib|SecurityPkg/Library/HashLibBaseCryptoRouter/HashLibBaseCryptoRouterDxe.inf
+  Tcg2PhysicalPresenceLib|SecurityPkg/Library/DxeTcg2PhysicalPresenceLib/DxeTcg2PhysicalPresenceLib.inf
+  Tcg2PpVendorLib|SecurityPkg/Library/Tcg2PpVendorLibNull/Tcg2PpVendorLibNull.inf
+  IntrinsicLib|CryptoPkg/Library/IntrinsicLib/IntrinsicLib.inf
+  OpensslLib|CryptoPkg/Library/OpensslLib/OpensslLibCrypto.inf
+  BaseCryptLib|CryptoPkg/Library/BaseCryptLib/BaseCryptLib.inf
+  RngLib|MdePkg/Library/BaseRngLibTimerLib/BaseRngLibTimerLib.inf
+  !endif
+
   #
   # Platform
   #
@@ -108,6 +124,10 @@
   LockBoxLib|MdeModulePkg/Library/LockBoxNullLib/LockBoxNullLib.inf
   CpuExceptionHandlerLib|MdeModulePkg/Library/CpuExceptionHandlerLibNull/CpuExceptionHandlerLibNull.inf
   TpmMeasurementLib|MdeModulePkg/Library/TpmMeasurementLibNull/TpmMeasurementLibNull.inf
+  !if $(TPM2_ENABLE)
+  TpmMeasurementLib|SecurityPkg/Library/DxeTpmMeasurementLib/DxeTpmMeasurementLib.inf
+  !endif
+  AuthVariableLib|MdeModulePkg/Library/AuthVariableLibNull/AuthVariableLibNull.inf
   VarCheckLib|MdeModulePkg/Library/VarCheckLib/VarCheckLib.inf
   VariablePolicyLib|MdeModulePkg/Library/VariablePolicyLib/VariablePolicyLibRuntimeDxe.inf
   VariablePolicyHelperLib|MdeModulePkg/Library/VariablePolicyHelperLib/VariablePolicyHelperLib.inf
@@ -158,6 +178,12 @@
   SerialPortLib|EmulatorPkg/Library/PeiEmuSerialPortLib/PeiEmuSerialPortLib.inf
   ReportStatusCodeLib|MdeModulePkg/Library/PeiReportStatusCodeLib/PeiReportStatusCodeLib.inf
   TimerLib|EmulatorPkg/Library/PeiTimerLib/PeiTimerLib.inf
+
+  !if $(TPM2_ENABLE)
+  BaseCryptLib|CryptoPkg/Library/BaseCryptLib/PeiCryptLib.inf
+  HashLib|SecurityPkg/Library/HashLibBaseCryptoRouter/HashLibBaseCryptoRouterPei.inf
+  EmuSocketLib|EmulatorPkg/Tpm2/PeiEmuSocketLib/PeiEmuSocketLib.inf
+  !endif
 
 [LibraryClasses.common.PEI_CORE]
   PcdLib|MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
@@ -252,10 +278,19 @@
   #  0-PCANSI, 1-VT100, 2-VT00+, 3-UTF8, 4-TTYTERM
   gEfiMdePkgTokenSpaceGuid.PcdDefaultTerminalType|1
 
+  gEfiMdeModulePkgTokenSpaceGuid.PcdAcpiExposedTableVersions|0x3C
+!if $(TPM2_ENABLE)
+  gEfiSecurityPkgTokenSpaceGuid.PcdTpm2AcpiTableRev|4
+!endif
+
 [PcdsDynamicDefault.common.DEFAULT]
   gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareBase64|0
   gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingBase64|0
   gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableBase64|0
+!if $(TPM2_ENABLE)
+  gEfiSecurityPkgTokenSpaceGuid.PcdTpmInstanceGuid|{0xca, 0xad, 0x80, 0x64, 0x94, 0xa5, 0xb4, 0x41, 0xb0, 0x6b, 0xdf, 0xff, 0xd7, 0x5d, 0x69, 0x45}
+  gEfiSecurityPkgTokenSpaceGuid.PcdTpmInitializationPolicy|1
+!endif
 
 [PcdsDynamicHii.common.DEFAULT]
   gEfiMdeModulePkgTokenSpaceGuid.PcdConOutColumn|L"Setup"|gEmuSystemConfigGuid|0x0|80
@@ -303,6 +338,18 @@
   EmulatorPkg/FirmwareVolumePei/FirmwareVolumePei.inf
   EmulatorPkg/FlashMapPei/FlashMapPei.inf
   EmulatorPkg/ThunkPpiToProtocolPei/ThunkPpiToProtocolPei.inf
+
+!if $(TPM2_ENABLE)
+
+  SecurityPkg/Tcg/Tcg2Pei/Tcg2Pei.inf {
+    <LibraryClasses>
+      NULL|SecurityPkg/Library/HashInstanceLibSha1/HashInstanceLibSha1.inf
+      NULL|SecurityPkg/Library/HashInstanceLibSha256/HashInstanceLibSha256.inf
+  }
+
+  EmulatorPkg/Tpm2/EfiTpmDeviceSelectedPPI/EfiTpmDeviceSelectedPPI.inf
+!endif
+
   MdeModulePkg/Core/DxeIplPeim/DxeIpl.inf
 
   ##
@@ -333,14 +380,15 @@
   EmulatorPkg/ResetRuntimeDxe/Reset.inf
   MdeModulePkg/Core/RuntimeDxe/RuntimeDxe.inf
   EmulatorPkg/FvbServicesRuntimeDxe/FvbServicesRuntimeDxe.inf
-
   MdeModulePkg/Universal/SecurityStubDxe/SecurityStubDxe.inf {
     <LibraryClasses>
 !if $(SECURE_BOOT_ENABLE) == TRUE
       NULL|SecurityPkg/Library/DxeImageVerificationLib/DxeImageVerificationLib.inf
 !endif
+!if $(TPM2_ENABLE)
+      NULL|SecurityPkg/Library/DxeTpm2MeasureBootLib/DxeTpm2MeasureBootLib.inf
+!endif
   }
-
   MdeModulePkg/Universal/EbcDxe/EbcDxe.inf
   MdeModulePkg/Universal/MemoryTest/NullMemoryTestDxe/NullMemoryTestDxe.inf
   EmulatorPkg/EmuThunkDxe/EmuThunk.inf
@@ -405,6 +453,9 @@
   MdeModulePkg/Application/HelloWorld/HelloWorld.inf
 
   MdeModulePkg/Universal/SmbiosDxe/SmbiosDxe.inf
+!if $(TPM2_ENABLE)
+  MdeModulePkg/Universal/SmbiosMeasurementDxe/SmbiosMeasurementDxe.inf
+!endif
   MdeModulePkg/Universal/HiiDatabaseDxe/HiiDatabaseDxe.inf
   MdeModulePkg/Universal/DisplayEngineDxe/DisplayEngineDxe.inf
   MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
@@ -413,6 +464,19 @@
     <LibraryClasses>
       PcdLib|MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
   }
+
+  MdeModulePkg/Universal/Acpi/AcpiTableDxe/AcpiTableDxe.inf
+
+!if $(TPM2_ENABLE)
+  SecurityPkg/Tcg/Tcg2Dxe/Tcg2Dxe.inf {
+    <LibraryClasses>
+      NULL|SecurityPkg/Library/HashInstanceLibSha1/HashInstanceLibSha1.inf
+      NULL|SecurityPkg/Library/HashInstanceLibSha256/HashInstanceLibSha256.inf
+  }
+  EmulatorPkg/Tpm2/Tcg2Acpi/Tcg2Acpi.inf
+
+  EmulatorPkg/Tpm2/Tcg2Config/Tcg2ConfigDxe.inf
+!endif
 
   FatPkg/EnhancedFatDxe/Fat.inf
 
