@@ -43,6 +43,7 @@ typedef struct {
   UINTN           Signature;
   LIST_ENTRY      Link;         // mFvHandleList
   EFI_HANDLE      Handle;
+  EFI_GUID        FvNameGuid;
 } KNOWN_HANDLE;
 
 //
@@ -1099,26 +1100,323 @@ FvHasBeenProcessed (
 }
 
 /**
-  Remember that Fv protocol on FvHandle has had its drivers placed on the
-  mDiscoveredList. This function adds entries on the mFvHandleList. Items are
-  never removed/freed from the mFvHandleList.
+  Verify checksum of the firmware volume header.
+
+  @param  FvHeader       Points to the firmware volume header to be checked
+
+  @retval TRUE           Checksum verification passed
+  @retval FALSE          Checksum verification failed
+
+**/
+BOOLEAN
+VerifyFvHeaderChecksum (
+  IN EFI_FIRMWARE_VOLUME_HEADER *FvHeader
+  )
+{
+  UINT16  Checksum;
+
+  Checksum = CalculateSum16 ((UINT16 *) FvHeader, FvHeader->HeaderLength);
+
+  if (Checksum == 0) {
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
+/**
+  Read data from Firmware Block by FVB protocol Read.
+  The data may cross the multi block ranges.
+
+  @param  Fvb                   The FW_VOL_BLOCK_PROTOCOL instance from which to read data.
+  @param  StartLba              Pointer to StartLba.
+                                On input, the start logical block index from which to read.
+                                On output,the end logical block index after reading.
+  @param  Offset                Pointer to Offset
+                                On input, offset into the block at which to begin reading.
+                                On output, offset into the end block after reading.
+  @param  DataSize              Size of data to be read.
+  @param  Data                  Pointer to Buffer that the data will be read into.
+
+  @retval EFI_SUCCESS           Successfully read data from firmware block.
+  @retval others
+**/
+EFI_STATUS
+ReadFvbData (
+  IN     EFI_FIRMWARE_VOLUME_BLOCK_PROTOCOL     *Fvb,
+  IN OUT EFI_LBA                                *StartLba,
+  IN OUT UINTN                                  *Offset,
+  IN     UINTN                                  DataSize,
+  OUT    UINT8                                  *Data
+  )
+{
+  UINTN                       BlockSize;
+  UINTN                       NumberOfBlocks;
+  UINTN                       BlockIndex;
+  UINTN                       ReadDataSize;
+  EFI_STATUS                  Status;
+
+  //
+  // Try read data in current block
+  //
+  BlockIndex   = 0;
+  ReadDataSize = DataSize;
+  Status = Fvb->Read (Fvb, *StartLba, *Offset, &ReadDataSize, Data);
+  if (Status == EFI_SUCCESS) {
+    *Offset  += DataSize;
+    return EFI_SUCCESS;
+  } else if (Status != EFI_BAD_BUFFER_SIZE) {
+    //
+    // other error will direct return
+    //
+    return Status;
+  }
+
+  //
+  // Data crosses the blocks, read data from next block
+  //
+  DataSize -= ReadDataSize;
+  Data     += ReadDataSize;
+  *StartLba = *StartLba + 1;
+  while (DataSize > 0) {
+    Status = Fvb->GetBlockSize (Fvb, *StartLba, &BlockSize, &NumberOfBlocks);
+    if (EFI_ERROR (Status)) {
+      return Status;
+    }
+
+    //
+    // Read data from the crossing blocks
+    //
+    BlockIndex = 0;
+    while (BlockIndex < NumberOfBlocks && DataSize >= BlockSize) {
+      Status = Fvb->Read (Fvb, *StartLba + BlockIndex, 0, &BlockSize, Data);
+      if (EFI_ERROR (Status)) {
+        return Status;
+      }
+      Data += BlockSize;
+      DataSize -= BlockSize;
+      BlockIndex ++;
+    }
+
+    //
+    // Data doesn't exceed the current block range.
+    //
+    if (DataSize < BlockSize) {
+      break;
+    }
+
+    //
+    // Data must be got from the next block range.
+    //
+    *StartLba += NumberOfBlocks;
+  }
+
+  //
+  // read the remaining data
+  //
+  if (DataSize > 0) {
+    Status = Fvb->Read (Fvb, *StartLba + BlockIndex, 0, &DataSize, Data);
+    if (EFI_ERROR (Status)) {
+      return Status;
+    }
+  }
+
+  //
+  // Update Lba and Offset used by the following read.
+  //
+  *StartLba += BlockIndex;
+  *Offset   = DataSize;
+
+  return EFI_SUCCESS;
+}
+
+/**
+  Given the supplied FW_VOL_BLOCK_PROTOCOL, allocate a buffer for output and
+  copy the real length volume header into it.
+
+  @param  Fvb                   The FW_VOL_BLOCK_PROTOCOL instance from which to
+                                read the volume header
+  @param  FwVolHeader           Pointer to pointer to allocated buffer in which
+                                the volume header is returned.
+
+  @retval EFI_OUT_OF_RESOURCES  No enough buffer could be allocated.
+  @retval EFI_SUCCESS           Successfully read volume header to the allocated
+                                buffer.
+  @retval EFI_INVALID_PARAMETER The FV Header signature is not as expected or
+                                the file system could not be understood.
+
+**/
+EFI_STATUS
+GetFwVolHeader (
+  IN     EFI_FIRMWARE_VOLUME_BLOCK_PROTOCOL     *Fvb,
+  OUT    EFI_FIRMWARE_VOLUME_HEADER             **FwVolHeader
+  )
+{
+  EFI_STATUS                  Status;
+  EFI_FIRMWARE_VOLUME_HEADER  TempFvh;
+  UINTN                       FvhLength;
+  EFI_LBA                     StartLba;
+  UINTN                       Offset;
+  UINT8                       *Buffer;
+
+  //
+  // Read the standard FV header
+  //
+  StartLba = 0;
+  Offset   = 0;
+  FvhLength = sizeof (EFI_FIRMWARE_VOLUME_HEADER);
+  Status = ReadFvbData (Fvb, &StartLba, &Offset, FvhLength, (UINT8 *)&TempFvh);
+  if (EFI_ERROR (Status)) {
+    return Status;
+  }
+
+  //
+  // Validate FV Header signature, if not as expected, continue.
+  //
+  if (TempFvh.Signature != EFI_FVH_SIGNATURE) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  //
+  // Check to see that the file system is indeed formatted in a way we can
+  // understand it...
+  //
+  if ((!CompareGuid (&TempFvh.FileSystemGuid, &gEfiFirmwareFileSystem2Guid)) &&
+      (!CompareGuid (&TempFvh.FileSystemGuid, &gEfiFirmwareFileSystem3Guid))) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  //
+  // Allocate a buffer for the caller
+  //
+  *FwVolHeader = AllocatePool (TempFvh.HeaderLength);
+  if (*FwVolHeader == NULL) {
+    return EFI_OUT_OF_RESOURCES;
+  }
+
+  //
+  // Copy the standard header into the buffer
+  //
+  CopyMem (*FwVolHeader, &TempFvh, sizeof (EFI_FIRMWARE_VOLUME_HEADER));
+
+  //
+  // Read the rest of the header
+  //
+  FvhLength = TempFvh.HeaderLength - sizeof (EFI_FIRMWARE_VOLUME_HEADER);
+  Buffer = (UINT8 *)*FwVolHeader + sizeof (EFI_FIRMWARE_VOLUME_HEADER);
+  Status = ReadFvbData (Fvb, &StartLba, &Offset, FvhLength, Buffer);
+  if (EFI_ERROR (Status)) {
+    //
+    // Read failed so free buffer
+    //
+    FreePool (*FwVolHeader);
+  }
+
+  return Status;
+}
+
+/**
+  Remember that Fv protocol on FvHandle has had it's drivers placed on the
+  mDiscoveredList. This fucntion adds entries on the mFvHandleList if new
+  entry is different from one in mFvHandleList by checking FvImage Guid.
+  Items are never removed/freed from the mFvHandleList.
 
   @param  FvHandle              The handle of a FV that has been processed
 
+  @return A point to new added FvHandle entry. If FvHandle with the same FvImage guid
+          has been added, NULL will return.
+
 **/
-VOID
-FvIsBeingProcessed (
+KNOWN_HANDLE *
+FvIsBeingProcesssed (
   IN EFI_HANDLE  FvHandle
   )
 {
-  KNOWN_HANDLE  *KnownHandle;
+  EFI_STATUS                            Status;
+  EFI_GUID                              FvNameGuid;
+  BOOLEAN                               FvNameGuidIsFound;
+  UINT32                                ExtHeaderOffset;
+  EFI_FIRMWARE_VOLUME_BLOCK_PROTOCOL    *Fvb;
+  EFI_FIRMWARE_VOLUME_HEADER            *FwVolHeader;
+  EFI_FV_BLOCK_MAP_ENTRY                *BlockMap;
+  UINTN                                 LbaOffset;
+  UINTN                                 Index;
+  EFI_LBA                               LbaIndex;
+  LIST_ENTRY                            *Link;
+  KNOWN_HANDLE                          *KnownHandle;
 
-  KnownHandle = AllocatePool (sizeof (KNOWN_HANDLE));
+  FwVolHeader = NULL;
+
+  //
+  // Get the FirmwareVolumeBlock protocol on that handle
+  //
+  FvNameGuidIsFound = FALSE;
+  Status = gBS->HandleProtocol (FvHandle, &gEfiFirmwareVolumeBlockProtocolGuid, (VOID **)&Fvb);
+  if (!EFI_ERROR (Status)) {
+    //
+    // Get the full FV header based on FVB protocol.
+    //
+    ASSERT (Fvb != NULL);
+    Status = GetFwVolHeader (Fvb, &FwVolHeader);
+    if (!EFI_ERROR (Status)) {
+      ASSERT (FwVolHeader != NULL);
+      if (VerifyFvHeaderChecksum (FwVolHeader) && FwVolHeader->ExtHeaderOffset != 0) {
+        ExtHeaderOffset = (UINT32) FwVolHeader->ExtHeaderOffset;
+        BlockMap  = FwVolHeader->BlockMap;
+        LbaIndex  = 0;
+        LbaOffset = 0;
+        //
+        // Find LbaIndex and LbaOffset for FV extension header based on BlockMap.
+        //
+        while ((BlockMap->NumBlocks != 0) || (BlockMap->Length != 0)) {
+          for (Index = 0; Index < BlockMap->NumBlocks && ExtHeaderOffset >= BlockMap->Length; Index ++) {
+            ExtHeaderOffset -= BlockMap->Length;
+            LbaIndex ++;
+          }
+          //
+          // Check whether FvExtHeader is crossing the multi block range.
+          //
+          if (Index < BlockMap->NumBlocks) {
+            LbaOffset = ExtHeaderOffset;
+            break;
+          }
+          BlockMap++;
+        }
+        //
+        // Read FvNameGuid from FV extension header.
+        //
+        Status = ReadFvbData (Fvb, &LbaIndex, &LbaOffset, sizeof (FvNameGuid), (UINT8 *) &FvNameGuid);
+        if (!EFI_ERROR (Status)) {
+          FvNameGuidIsFound = TRUE;
+        }
+      }
+      FreePool (FwVolHeader);
+    }
+  }
+
+  if (FvNameGuidIsFound) {
+    //
+    // Check whether the FV image with the found FvNameGuid has been processed.
+    //
+    for (Link = mFvHandleList.ForwardLink; Link != &mFvHandleList; Link = Link->ForwardLink) {
+      KnownHandle = CR(Link, KNOWN_HANDLE, Link, KNOWN_HANDLE_SIGNATURE);
+      if (CompareGuid (&FvNameGuid, &KnownHandle->FvNameGuid)) {
+        DEBUG ((EFI_D_ERROR, "FvImage on FvHandle %p and %p has the same FvNameGuid %g.\n", FvHandle, KnownHandle->Handle, &FvNameGuid));
+        return NULL;
+      }
+    }
+  }
+
+  KnownHandle = AllocateZeroPool (sizeof (KNOWN_HANDLE));
   ASSERT (KnownHandle != NULL);
 
   KnownHandle->Signature = KNOWN_HANDLE_SIGNATURE;
   KnownHandle->Handle = FvHandle;
+  if (FvNameGuidIsFound) {
+    CopyGuid (&KnownHandle->FvNameGuid, &FvNameGuid);
+  }
   InsertTailList (&mFvHandleList, &KnownHandle->Link);
+  return KnownHandle;
 }
 
 /**
@@ -1274,6 +1572,7 @@ SmmDriverDispatchHandler (
   LIST_ENTRY                    *Link;
   UINT32                        AuthenticationStatus;
   UINTN                         SizeOfBuffer;
+  KNOWN_HANDLE                  *KnownHandle;
 
   HandleBuffer = NULL;
   Status = gBS->LocateHandleBuffer (
@@ -1300,7 +1599,14 @@ SmmDriverDispatchHandler (
     //
     // Since we are about to process this Fv mark it as processed.
     //
-    FvIsBeingProcessed (FvHandle);
+    KnownHandle = FvIsBeingProcesssed (FvHandle);
+    if (KnownHandle == NULL) {
+      //
+      // The FV with the same FV name guid has already been processed.
+      // So lets skip it!
+      //
+      continue;
+    }
 
     Status = gBS->HandleProtocol (FvHandle, &gEfiFirmwareVolume2ProtocolGuid, (VOID **)&Fv);
     if (EFI_ERROR (Status)) {

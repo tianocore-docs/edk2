@@ -66,6 +66,7 @@
   gEfiSmmReadyToLockProtocolGuid                ## PRODUCES
   gEfiSmmCpuIo2ProtocolGuid                     ## CONSUMES
   gEfiFirmwareVolume2ProtocolGuid               ## CONSUMES
+  gEfiFirmwareVolumeBlockProtocolGuid           ## CONSUMES
   gEfiSmmEndOfDxeProtocolGuid                   ## PRODUCES
   gEfiSecurityArchProtocolGuid                  ## SOMETIMES_CONSUMES
   gEfiSecurity2ArchProtocolGuid                 ## SOMETIMES_CONSUMES
@@ -118,6 +119,8 @@
   gSmiHandlerProfileGuid
   gEdkiiEndOfS3ResumeGuid ## SOMETIMES_PRODUCES ## GUID # Install protocol
   gEdkiiS3SmmInitDoneGuid ## SOMETIMES_PRODUCES ## GUID # Install protocol
+  gEfiFirmwareFileSystem2Guid                   ## CONSUMES
+  gEfiFirmwareFileSystem3Guid                   ## CONSUMES
 
 [UserExtensions.TianoCore."ExtraFiles"]
   PiSmmCoreExtra.uni

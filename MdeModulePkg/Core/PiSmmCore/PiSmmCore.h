@@ -19,6 +19,7 @@
 #include <Protocol/SmmCommunication.h>
 #include <Protocol/SmmAccess2.h>
 #include <Protocol/FirmwareVolume2.h>
+#include <Protocol/FirmwareVolumeBlock.h>
 #include <Protocol/LoadedImage.h>
 #include <Protocol/DevicePath.h>
 #include <Protocol/Security.h>
