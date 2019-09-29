@@ -35,6 +35,7 @@
   DEFINE NETWORK_ISCSI_ENABLE     = FALSE
   DEFINE SECURE_BOOT_ENABLE       = FALSE
   DEFINE TPM2_ENABLE              = TRUE
+  DEFINE SMM_ENABLE               = FALSE
 
 [SkuIds]
   0|DEFAULT
@@ -221,10 +222,42 @@
   ReportStatusCodeLib|MdeModulePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib.inf
   TimerLib|EmulatorPkg/Library/DxeTimerLib/DxeTimerLib.inf
 
+[LibraryClasses.common.SMM_CORE]
+  HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
+  PcdLib|MdePkg/Library/DxePcdLib/DxePcdLib.inf
+  PeCoffExtraActionLib|EmulatorPkg/Library/DxeEmuPeCoffExtraActionLib/DxeEmuPeCoffExtraActionLib.inf
+  EmuThunkLib|EmulatorPkg/Library/DxeEmuLib/DxeEmuLib.inf
+  SmmCorePlatformHookLib|MdeModulePkg/Library/SmmCorePlatformHookLibNull/SmmCorePlatformHookLibNull.inf
+  MemoryAllocationLib|MdeModulePkg/Library/PiSmmCoreMemoryAllocationLib/PiSmmCoreMemoryAllocationLib.inf
+  SmmServicesTableLib|MdeModulePkg/Library/PiSmmCoreSmmServicesTableLib/PiSmmCoreSmmServicesTableLib.inf
+  ReportStatusCodeLib|MdeModulePkg/Library/SmmReportStatusCodeLib/SmmReportStatusCodeLib.inf
+  DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
+  SmmMemLib|EmulatorPkg/Smm/Library/SmmMemLibEmu/SmmMemLib.inf
+
+[LibraryClasses.common.DXE_SMM_DRIVER]
+  HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
+  PcdLib|MdePkg/Library/DxePcdLib/DxePcdLib.inf
+  PeCoffExtraActionLib|EmulatorPkg/Library/DxeEmuPeCoffExtraActionLib/DxeEmuPeCoffExtraActionLib.inf
+  EmuThunkLib|EmulatorPkg/Library/DxeEmuLib/DxeEmuLib.inf
+  MmServicesTableLib|MdePkg/Library/MmServicesTableLib/MmServicesTableLib.inf
+  SmmServicesTableLib|MdePkg/Library/SmmServicesTableLib/SmmServicesTableLib.inf
+  ReportStatusCodeLib|MdeModulePkg/Library/SmmReportStatusCodeLib/SmmReportStatusCodeLib.inf
+  MemoryAllocationLib|MdePkg/Library/SmmMemoryAllocationLib/SmmMemoryAllocationLib.inf
+  DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
+  BaseCryptLib|CryptoPkg/Library/BaseCryptLib/SmmCryptLib.inf
+  SmmMemLib|EmulatorPkg/Smm/Library/SmmMemLibEmu/SmmMemLib.inf
+  SmiHandlerProfileLib|MdeModulePkg/Library/SmmSmiHandlerProfileLib/SmmSmiHandlerProfileLib.inf
+  !if $(TPM2_ENABLE)
+  Tcg2PhysicalPresenceLib|SecurityPkg/Library/SmmTcg2PhysicalPresenceLib/SmmTcg2PhysicalPresenceLib.inf
+  !endif
+
 [PcdsFeatureFlag]
   gEfiMdeModulePkgTokenSpaceGuid.PcdDxeIplSwitchToLongMode|FALSE
   gEfiMdeModulePkgTokenSpaceGuid.PcdPeiCoreImageLoaderSearchTeSectionFirst|FALSE
   gEfiMdeModulePkgTokenSpaceGuid.PcdDxeIplBuildPageTables|FALSE
+!if $(SMM_ENABLE)
+  gEmulatorPkgTokenSpaceGuid.PcdEmuSmmEnable|TRUE
+!endif
 
 [PcdsFixedAtBuild]
   gEfiMdeModulePkgTokenSpaceGuid.PcdImageProtectionPolicy|0x00000000
@@ -379,7 +412,11 @@
   EmulatorPkg/RealTimeClockRuntimeDxe/RealTimeClock.inf
   EmulatorPkg/ResetRuntimeDxe/Reset.inf
   MdeModulePkg/Core/RuntimeDxe/RuntimeDxe.inf
+!if $(SMM_ENABLE)
+  EmulatorPkg/FvbServicesRuntimeDxe/FvbServicesRuntimeSmm.inf
+!else
   EmulatorPkg/FvbServicesRuntimeDxe/FvbServicesRuntimeDxe.inf
+!endif
   MdeModulePkg/Universal/SecurityStubDxe/SecurityStubDxe.inf {
     <LibraryClasses>
 !if $(SECURE_BOOT_ENABLE) == TRUE
@@ -393,7 +430,11 @@
   MdeModulePkg/Universal/MemoryTest/NullMemoryTestDxe/NullMemoryTestDxe.inf
   EmulatorPkg/EmuThunkDxe/EmuThunk.inf
   EmulatorPkg/CpuRuntimeDxe/Cpu.inf
+!if $(SMM_ENABLE)
+  MdeModulePkg/Universal/FaultTolerantWriteDxe/FaultTolerantWriteSmm.inf
+!else
   MdeModulePkg/Universal/FaultTolerantWriteDxe/FaultTolerantWriteDxe.inf
+!endif
   EmulatorPkg/PlatformSmbiosDxe/PlatformSmbiosDxe.inf
   EmulatorPkg/TimerDxe/Timer.inf
 
@@ -401,10 +442,20 @@
   SecurityPkg/VariableAuthenticated/SecureBootConfigDxe/SecureBootConfigDxe.inf
 !endif
 
+
+
+!if $(SMM_ENABLE)
+  MdeModulePkg/Universal/Variable/RuntimeDxe/VariableSmmRuntimeDxe.inf
+  MdeModulePkg/Universal/Variable/RuntimeDxe/VariableSmm.inf {
+    <LibraryClasses>
+      NULL|MdeModulePkg/Library/VarCheckUefiLib/VarCheckUefiLib.inf
+  }
+!else
   MdeModulePkg/Universal/Variable/RuntimeDxe/VariableRuntimeDxe.inf {
     <LibraryClasses>
       NULL|MdeModulePkg/Library/VarCheckUefiLib/VarCheckUefiLib.inf
   }
+!endif
   MdeModulePkg/Universal/WatchdogTimerDxe/WatchdogTimer.inf
   MdeModulePkg/Universal/MonotonicCounterRuntimeDxe/MonotonicCounterRuntimeDxe.inf
   MdeModulePkg/Universal/CapsuleRuntimeDxe/CapsuleRuntimeDxe.inf
@@ -464,6 +515,32 @@
     <LibraryClasses>
       PcdLib|MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
   }
+
+!if $(SMM_ENABLE)
+  EmulatorPkg/Smm/SmmAccessDxe/SmmAccessDxe.inf
+  EmulatorPkg/Smm/SmmControlDxe/SmmControlDxe.inf
+  MdeModulePkg/Core/PiSmmCore/PiSmmIpl.inf
+  MdeModulePkg/Core/PiSmmCore/PiSmmCore.inf {
+    <PcdsFixedAtBuild>
+      gEfiMdeModulePkgTokenSpaceGuid.PcdPropertiesTableEnable|TRUE
+      gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0x80400040
+    <LibraryClasses>
+      DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
+      SerialPortLib|EmulatorPkg/Library/DxeEmuStdErrSerialPortLib/DxeEmuStdErrSerialPortLib.inf
+      DxeEmuLib|EmulatorPkg/Library/DxeEmuLib/DxeEmuLib.inf
+    <BuildOptions>
+      DEBUG_*_*_CC_FLAGS = /Od
+  }
+  MdeModulePkg/Universal/ReportStatusCodeRouter/Smm/ReportStatusCodeRouterSmm.inf
+  MdeModulePkg/Universal/StatusCodeHandler/Smm/StatusCodeHandlerSmm.inf
+  UefiCpuPkg/CpuIo2Smm/CpuIo2Smm.inf {
+    <LibraryClasses>
+      IoLib|MdePkg/Library/BaseIoLibIntrinsic/BaseIoLibIntrinsic.inf
+  }
+  EmulatorPkg/Smm/SmmCpu/SmmCpu.inf
+  EmulatorPkg/Smm/SmmChildDispatcherSmm/SmmChildDispatcherSmm.inf
+  MdeModulePkg/Universal/SmmCommunicationBufferDxe/SmmCommunicationBufferDxe.inf
+!endif
 
   MdeModulePkg/Universal/Acpi/AcpiTableDxe/AcpiTableDxe.inf
 
