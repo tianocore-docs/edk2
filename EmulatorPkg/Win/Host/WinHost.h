@@ -26,6 +26,7 @@ Abstract:
 #include <Guid/FileSystemVolumeLabelInfo.h>
 #include <Ppi/EmuThunk.h>
 #include <Protocol/EmuThunk.h>
+#include <Protocol/EmuSocket.h>
 #include <Protocol/SimpleFileSystem.h>
 
 #include <Protocol/EmuBlockIo.h>
