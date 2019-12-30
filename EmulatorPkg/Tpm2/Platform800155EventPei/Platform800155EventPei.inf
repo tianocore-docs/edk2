@@ -1,0 +1,44 @@
+## @file
+# Report 800-155 event
+#
+# Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
+# Portions copyright (c) 2006 - 2010, Intel Corporation. All rights reserved.<BR>
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Platform800155EventPei
+  FILE_GUID                      = F106494B-0552-4340-AD66-521A235BC7AF
+  MODULE_TYPE                    = PEIM
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = Platform800155EventPeiEntryPoint
+
+[Sources]
+  Platform800155EventPei.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  SecurityPkg/SecurityPkg.dec
+
+[LibraryClasses]
+  PeimEntryPoint
+  BaseLib
+  BaseMemoryLib
+  HobLib
+  DebugLib
+  PcdLib
+
+[Guids]
+  gTcg800155PlatformIdEventHobGuid
+
+[Pcd]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVendor
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString
+
+[Depex]
+  gPeiTpmInitializedPpiGuid

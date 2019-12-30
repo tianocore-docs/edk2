@@ -1,0 +1,41 @@
+## @file
+# Report 800-155 event
+#
+# Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
+# Portions copyright (c) 2006 - 2010, Intel Corporation. All rights reserved.<BR>
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Platform800155EventDxe
+  FILE_GUID                      = 4C67DAEE-B0D9-4666-A9A1-7FB3EE6865CE
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = Platform800155EventDxeEntryPoint
+
+[Sources]
+  Platform800155EventDxe.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  PcdLib
+  MemoryAllocationLib
+  TpmMeasurementLib
+
+[Pcd]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVendor
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString
+
+[Depex]
+  gEfiTcg2ProtocolGuid
