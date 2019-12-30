@@ -138,6 +138,8 @@ INF  MdeModulePkg/Core/DxeIplPeim/DxeIpl.inf
 !if $(TPM2_ENABLE)
 INF  SecurityPkg/Tcg/Tcg2Pei/Tcg2Pei.inf
 INF  EmulatorPkg/Tpm2/EfiTpmDeviceSelectedPPI/EfiTpmDeviceSelectedPPI.inf
+INF  EmulatorPkg/Tpm2/Platform800155EventPei/Platform800155EventPei.inf
+INF  EmulatorPkg/Tpm2/StartupLocalityEventPei/StartupLocalityEventPei.inf
 !endif
 
 #
@@ -233,6 +235,7 @@ INF  MdeModulePkg/Universal/SmmCommunicationBufferDxe/SmmCommunicationBufferDxe.
 INF  SecurityPkg/Tcg/Tcg2Dxe/Tcg2Dxe.inf
 INF  EmulatorPkg/Tpm2/Tcg2Acpi/Tcg2Acpi.inf
 INF  EmulatorPkg/Tpm2/Tcg2Config/Tcg2ConfigDxe.inf
+INF  EmulatorPkg/Tpm2/Platform800155EventDxe/Platform800155EventDxe.inf
 !endif
 
 #

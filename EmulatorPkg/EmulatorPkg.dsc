@@ -314,6 +314,8 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdAcpiExposedTableVersions|0x3C
 !if $(TPM2_ENABLE)
   gEfiSecurityPkgTokenSpaceGuid.PcdTpm2AcpiTableRev|4
+  gEfiMdeModulePkgTokenSpaceGuid.PcdTcgPfpMeasurementRevision|105
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"0.3"
 !endif
 
 [PcdsDynamicDefault.common.DEFAULT]
@@ -381,6 +383,9 @@
   }
 
   EmulatorPkg/Tpm2/EfiTpmDeviceSelectedPPI/EfiTpmDeviceSelectedPPI.inf
+
+  EmulatorPkg/Tpm2/Platform800155EventPei/Platform800155EventPei.inf
+  EmulatorPkg/Tpm2/StartupLocalityEventPei/StartupLocalityEventPei.inf
 !endif
 
   MdeModulePkg/Core/DxeIplPeim/DxeIpl.inf
@@ -553,6 +558,8 @@
   EmulatorPkg/Tpm2/Tcg2Acpi/Tcg2Acpi.inf
 
   EmulatorPkg/Tpm2/Tcg2Config/Tcg2ConfigDxe.inf
+
+  EmulatorPkg/Tpm2/Platform800155EventDxe/Platform800155EventDxe.inf
 !endif
 
   FatPkg/EnhancedFatDxe/Fat.inf
