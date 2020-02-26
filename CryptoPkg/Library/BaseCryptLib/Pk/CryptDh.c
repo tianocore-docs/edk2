@@ -1,6 +1,8 @@
 /** @file
   Diffie-Hellman Wrapper Implementation over OpenSSL.
 
+  RFC 7919 - Negotiated Finite Field Diffie-Hellman Ephemeral (FFDHE) Parameters
+
 Copyright (c) 2010 - 2018, Intel Corporation. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -9,6 +11,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include "InternalCryptLib.h"
 #include <openssl/bn.h>
 #include <openssl/dh.h>
+#include <openssl/objects.h>
 
 /**
   Allocates and Initializes one Diffie-Hellman Context for subsequent use.
@@ -27,6 +30,34 @@ DhNew (
   // Allocates & Initializes DH Context by OpenSSL DH_new()
   //
   return (VOID *) DH_new ();
+}
+
+/**
+  Allocates and Initializes one Diffie-Hellman Context for subsequent use
+  with the NID.
+
+  @param Nid cipher NID
+
+  @return  Pointer to the Diffie-Hellman Context that has been initialized.
+           If the allocations fails, DhNew() returns NULL.
+
+**/
+VOID *
+EFIAPI
+DhNewByNid (
+  IN UINTN  Nid
+  )
+{
+  switch (Nid) {
+  case CRYPTO_NID_FFDHE2048:
+    return DH_new_by_nid (NID_ffdhe2048);
+  case CRYPTO_NID_FFDHE3072:
+    return DH_new_by_nid (NID_ffdhe3072);
+  case CRYPTO_NID_FFDHE4096:
+    return DH_new_by_nid (NID_ffdhe4096);
+  default:
+    return NULL;
+  }
 }
 
 /**
@@ -181,6 +212,10 @@ Error:
   If PublicKeySize is NULL, then return FALSE.
   If PublicKeySize is large enough but PublicKey is NULL, then return FALSE.
 
+  For FFDHE2048, the PublicSize is 256.
+  For FFDHE3072, the PublicSize is 384.
+  For FFDHE4096, the PublicSize is 512.
+
   @param[in, out]  DhContext      Pointer to the DH context.
   @param[out]      PublicKey      Pointer to the buffer to receive generated public key.
   @param[in, out]  PublicKeySize  On input, the size of PublicKey buffer in bytes.
@@ -203,6 +238,7 @@ DhGenerateKey (
   DH      *Dh;
   BIGNUM  *DhPubKey;
   INTN    Size;
+  UINTN   FinalPubKeySize;
 
   //
   // Check input parameters.
@@ -216,20 +252,39 @@ DhGenerateKey (
   }
 
   Dh = (DH *) DhContext;
+  switch (DH_size (Dh)) {
+  case 256:
+    FinalPubKeySize = 256;
+    break;
+  case 384:
+    FinalPubKeySize = 384;
+    break;
+  case 512:
+    FinalPubKeySize = 512;
+    break;
+  default:
+    return FALSE;
+  }
+
+  if (*PublicKeySize < FinalPubKeySize) {
+    *PublicKeySize = FinalPubKeySize;
+    return FALSE;
+  }
+  *PublicKeySize = FinalPubKeySize;
 
   RetVal = (BOOLEAN) DH_generate_key (DhContext);
   if (RetVal) {
     DH_get0_key (Dh, (const BIGNUM **)&DhPubKey, NULL);
     Size = BN_num_bytes (DhPubKey);
-    if ((Size > 0) && (*PublicKeySize < (UINTN) Size)) {
-      *PublicKeySize = Size;
+    if (Size <= 0) {
       return FALSE;
     }
+    ASSERT ((UINTN)Size <= FinalPubKeySize);
 
     if (PublicKey != NULL) {
-      BN_bn2bin (DhPubKey, PublicKey);
+      ZeroMem (PublicKey, *PublicKeySize);
+      BN_bn2bin (DhPubKey, &PublicKey[0 + FinalPubKeySize - Size]);
     }
-    *PublicKeySize = Size;
   }
 
   return RetVal;
@@ -246,6 +301,10 @@ DhGenerateKey (
   If KeySize is NULL, then return FALSE.
   If Key is NULL, then return FALSE.
   If KeySize is not large enough, then return FALSE.
+
+  For FFDHE2048, the PeerPublicSize is 256.
+  For FFDHE3072, the PeerPublicSize is 384.
+  For FFDHE4096, the PeerPublicSize is 512.
 
   @param[in, out]  DhContext          Pointer to the DH context.
   @param[in]       PeerPublicKey      Pointer to the peer's public key.
