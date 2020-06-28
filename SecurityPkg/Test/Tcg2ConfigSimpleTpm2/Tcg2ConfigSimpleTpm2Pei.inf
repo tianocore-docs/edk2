@@ -1,0 +1,51 @@
+## @file
+#  Set TPM device type
+#
+#  This module initializes TPM device type based on variable and detection.
+#  NOTE: This module is only for reference only, each platform should have its own setup page.
+#
+# Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
+# SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Tcg2ConfigSimpleTpm2Pei
+  FILE_GUID                      = 9317636C-E484-440D-9E2D-93B1FAFAEC88
+  MODULE_TYPE                    = PEIM
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = Tcg2ConfigPeimEntryPoint
+
+#
+#  VALID_ARCHITECTURES           = IA32 X64 EBC
+#
+# [BootMode]
+#   S3_RESUME                 ## SOMETIMES_CONSUMES
+#
+
+[Sources]
+  Tcg2ConfigSimpleTpm2Pei.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  SecurityPkg/SecurityPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  PeiServicesLib
+  PeimEntryPoint
+  DebugLib
+  PcdLib
+
+[Guids]
+  gEfiTpmDeviceSelectedGuid           ## PRODUCES             ## GUID    # Used as a PPI GUID
+  gEfiTpmDeviceInstanceTpm20DtpmGuid  ## CONSUMES             ## GUID    # TPM device identifier
+
+[Pcd]
+  gEfiSecurityPkgTokenSpaceGuid.PcdTpmInstanceGuid                 ## PRODUCES
+
+[Depex]
+  gEfiPeiMasterBootModePpiGuid
