@@ -1,0 +1,29 @@
+### @file
+#
+#  Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+###
+
+[Defines]
+  INF_VERSION               = 0x00010017
+  BASE_NAME                 = TestRustPkcs7Verify
+  FILE_GUID                 = D2FC5D20-2B15-4A28-A291-E195B3EDD59F
+  MODULE_TYPE               = UEFI_APPLICATION
+  ENTRY_POINT               = UEFI_Main
+
+[Sources]
+  Cargo.toml
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  UefiLib
+  PcdLib
+
+[BuildOptions]
+  MSFT:*_*_*_DLINK_FLAGS  =  /ALIGN:4096
