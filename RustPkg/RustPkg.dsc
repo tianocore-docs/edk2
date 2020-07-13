@@ -155,9 +155,15 @@
 [PcdsFixedAtBuild]
   gEfiMdeModulePkgTokenSpaceGuid.PcdImageProtectionPolicy|0x00000000
   gEfiMdeModulePkgTokenSpaceGuid.PcdResetOnMemoryTypeInformationChange|FALSE
+!if $(TARGET) == DEBUG
   gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0x80000040
   gEfiMdePkgTokenSpaceGuid.PcdReportStatusCodePropertyMask|0x0f
   gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x1f
+!else
+  gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0x00000000
+  gEfiMdePkgTokenSpaceGuid.PcdReportStatusCodePropertyMask|0x00
+  gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x00
+!endif
   gEfiMdeModulePkgTokenSpaceGuid.PcdMaxSizeNonPopulateCapsule|0x0
   gEfiMdeModulePkgTokenSpaceGuid.PcdMaxSizePopulateCapsule|0x0
 
