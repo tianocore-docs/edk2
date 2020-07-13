@@ -210,7 +210,7 @@
 
   RustPkg/External/FatDxeLibRust/Fat.inf
 
-  RustPkg/Test/TestCryptoLib/TestCryptoLib.inf
+  RustPkg/Test/TestRustCryptoLib/TestRustCryptoLib.inf
   RustPkg/Test/TestRustRsaVerify/TestRustRsaVerify.inf
   RustPkg/Test/TestRustPkcs7Verify/TestRustPkcs7Verify.inf
   RustPkg/Test/TestCryptRsaVerify/TestCryptRsaVerify.inf {
