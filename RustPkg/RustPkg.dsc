@@ -211,6 +211,16 @@
   RustPkg/External/FatDxeLibRust/Fat.inf
 
   RustPkg/Test/TestCryptoLib/TestCryptoLib.inf
+  RustPkg/Test/TestRustRsaVerify/TestRustRsaVerify.inf
+  RustPkg/Test/TestRustPkcs7Verify/TestRustPkcs7Verify.inf
+  RustPkg/Test/TestCryptRsaVerify/TestCryptRsaVerify.inf {
+  <LibraryClasses>
+    IntrinsicLib|CryptoPkg/Library/IntrinsicLib/IntrinsicLib.inf
+  }
+  RustPkg/Test/TestCryptPkcs7Verify/TestCryptPkcs7Verify.inf {
+  <LibraryClasses>
+    IntrinsicLib|CryptoPkg/Library/IntrinsicLib/IntrinsicLib.inf
+  }
 
 #[RustComponents]
 #  RustPkg/Test/HelloWorld/Cargo.toml
