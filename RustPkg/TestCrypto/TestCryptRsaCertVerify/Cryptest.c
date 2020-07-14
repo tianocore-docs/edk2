@@ -74,7 +74,7 @@ CryptestMain (
 
   RandomSeed (NULL, 0);
 
-  Status = ValidateCryptPkcs7 ();
+  Status = ValidateCryptRsa2 ();
   if (EFI_ERROR (Status)) {
     return Status;
   }

@@ -210,17 +210,35 @@
 
   RustPkg/External/FatDxeLibRust/Fat.inf
 
-  RustPkg/Test/TestRustCryptoLib/TestRustCryptoLib.inf
-  RustPkg/Test/TestRustRsaVerify/TestRustRsaVerify.inf
-  RustPkg/Test/TestRustPkcs7Verify/TestRustPkcs7Verify.inf
-  RustPkg/Test/TestCryptRsaVerify/TestCryptRsaVerify.inf {
+  RustPkg/TestCrypto/TestRustCryptoLib/TestRustCryptoLib.inf
+  RustPkg/TestCrypto/TestRustRsaVerify/TestRustRsaVerify.inf
+  RustPkg/TestCrypto/TestRustRsaCertVerify/TestRustRsaCertVerify.inf
+  RustPkg/TestCrypto/TestRustRsaVerifyPerf/TestRustRsaVerifyPerf.inf {
+  <LibraryClasses>
+    TestRustRsaVerifyLib|RustPkg/TestCrypto/TestRustRsaVerify/TestRustRsaVerifyLib.inf
+  }
+  RustPkg/TestCrypto/TestRustRsaCertVerifyPerf/TestRustRsaCertVerifyPerf.inf {
+  <LibraryClasses>
+    TestRustRsaCertVerifyLib|RustPkg/TestCrypto/TestRustRsaCertVerify/TestRustRsaCertVerifyLib.inf
+  }
+
+  RustPkg/TestCrypto/TestCryptRsaVerify/TestCryptRsaVerify.inf {
   <LibraryClasses>
     IntrinsicLib|CryptoPkg/Library/IntrinsicLib/IntrinsicLib.inf
   }
-  RustPkg/Test/TestCryptPkcs7Verify/TestCryptPkcs7Verify.inf {
+  RustPkg/TestCrypto/TestCryptRsaCertVerify/TestCryptRsaCertVerify.inf {
   <LibraryClasses>
     IntrinsicLib|CryptoPkg/Library/IntrinsicLib/IntrinsicLib.inf
   }
+  RustPkg/TestCrypto/TestCryptRsaVerifyPerf/TestCryptRsaVerifyPerf.inf {
+  <LibraryClasses>
+    IntrinsicLib|CryptoPkg/Library/IntrinsicLib/IntrinsicLib.inf
+  }
+  RustPkg/TestCrypto/TestCryptRsaCertVerifyPerf/TestCryptRsaCertVerifyPerf.inf {
+  <LibraryClasses>
+    IntrinsicLib|CryptoPkg/Library/IntrinsicLib/IntrinsicLib.inf
+  }
+
 
 #[RustComponents]
 #  RustPkg/Test/HelloWorld/Cargo.toml

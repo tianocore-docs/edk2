@@ -65,6 +65,7 @@ fn test_rsa_verify(padding_alg: &'static dyn RsaEncoding, algorithm: &'static dy
     pubkey.verify(&MESSAGE, &SIGNATURE_EXP).unwrap();
 }
 #[cfg(not(test))]
+#[export_name = "test_rsa"]
 fn test_rsa() {
     // PKCS#1 1.5 padding using SHA-256 for RSA signatures.
     test_rsa_verify(&signature::RSA_PKCS1_SHA256, &signature::RSA_PKCS1_2048_8192_SHA256);

@@ -8,7 +8,7 @@
 
 [Defines]
   INF_VERSION               = 0x00010017
-  BASE_NAME                 = TestRustPkcs7Verify
+  BASE_NAME                 = TestRustRsaCertVerify
   FILE_GUID                 = D2FC5D20-2B15-4A28-A291-E195B3EDD59F
   MODULE_TYPE               = UEFI_APPLICATION
   ENTRY_POINT               = UEFI_Main

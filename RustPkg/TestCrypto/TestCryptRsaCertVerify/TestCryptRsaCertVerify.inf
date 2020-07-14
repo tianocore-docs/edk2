@@ -16,7 +16,7 @@
 
 [Defines]
   INF_VERSION                    = 0x00010005
-  BASE_NAME                      = TestCryptPkcs7Verify
+  BASE_NAME                      = TestCryptRsaCertVerify
   FILE_GUID                      = 72C1ECC8-3394-4EE5-8722-A9243A775241
   MODULE_TYPE                    = UEFI_APPLICATION
   VERSION_STRING                 = 1.0
@@ -32,6 +32,8 @@
   Cryptest.h
   Cryptest.c
   RsaVerify2.c
+  TestRootCer.c
+  TestRootKey.c
   
 [Packages]
   MdePkg/MdePkg.dec

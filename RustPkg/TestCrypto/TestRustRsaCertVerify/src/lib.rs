@@ -26,7 +26,9 @@ use ring::signature::{self, RsaEncoding, VerificationAlgorithm};
 
 #[cfg(not(test))]
 mod pki_data;
+
 #[cfg(not(test))]
+#[export_name = "test_pki_verify_sign"]
 fn test_pki_verify_sign(){
     use webpki::EndEntityCert;
     use ring::rand;
@@ -51,6 +53,7 @@ fn test_pki_verify_sign(){
 }
 
 #[cfg(not(test))]
+#[export_name = "test_pki_verify_cert"]
 fn test_pki_verify_cert() {
     static ALL_SIGALGS: &[&webpki::SignatureAlgorithm] = &[
         &webpki::RSA_PKCS1_2048_8192_SHA256,
