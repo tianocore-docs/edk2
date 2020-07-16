@@ -39,8 +39,7 @@ unsafe fn rdrand16() -> Result<u16, Unsupported> {
         ::: "intel"
     );
     if retval == 0 {
-        randval = 10;
-        Ok(randval)
+        Err(Unsupported)
     } else {
         Ok(randval)
     }
