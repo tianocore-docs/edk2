@@ -1,0 +1,18 @@
+### @file
+#
+#  Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+###
+
+[Defines]
+  INF_VERSION     = 0x00010017
+  BASE_NAME       = TestRustRsaCertVerifyLib
+  FILE_GUID       = DCA2D70E-BB4B-423A-BB57-2AD275C3E2CA
+  VERSION_STRING  = 1.0
+  MODULE_TYPE     = BASE
+  LIBRARY_CLASS   = TestRustRsaCertVerifyLib
+
+[Sources]
+  Cargo.toml
