@@ -14,8 +14,14 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 #include "Cryperf.h"
 
-void test_pki_verify_sign ();
-void test_pki_verify_cert ();
+BOOLEAN test_pki_verify_sign ();
+BOOLEAN test_pki_verify_cert ();
+
+VOID
+main_init (
+  IN     EFI_HANDLE                 ImageHandle,
+  IN     EFI_SYSTEM_TABLE           *SystemTable
+  );
 
 /**
   Validate UEFI-OpenSSL RSA Key Retrieving & Signature Interfaces.
@@ -33,20 +39,33 @@ ValidateCryptRsa2 (
   UINT64         EndTsc;
   UINTN          Iteration = GetIteration();
   UINTN          Index;
+  BOOLEAN        Status;
+
+  main_init (gImageHandle, gST);
 
   Print (L"test_pki_verify_sign\n");
   StartTsc = AsmReadTsc ();
   for (Index = 0; Index < Iteration; Index++) {
-    test_pki_verify_sign ();
+    Status = test_pki_verify_sign ();
   }
   EndTsc = AsmReadTsc ();
+  if (!Status) {
+    Print (L"[Fail]\n");
+  } else {
+    Print (L"[Pass] - %duS\n", TscToMicrosecond((EndTsc - StartTsc) / Iteration));
+  }
 
   Print (L"test_pki_verify_cert\n");
   StartTsc = AsmReadTsc ();
   for (Index = 0; Index < Iteration; Index++) {
-    test_pki_verify_cert ();
+    Status = test_pki_verify_cert ();
   }
   EndTsc = AsmReadTsc ();
+  if (!Status) {
+    Print (L"[Fail]\n");
+  } else {
+    Print (L"[Pass] - %duS\n", TscToMicrosecond((EndTsc - StartTsc) / Iteration));
+  }
 
   return EFI_SUCCESS;
 }

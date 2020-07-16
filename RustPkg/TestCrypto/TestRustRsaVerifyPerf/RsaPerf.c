@@ -14,7 +14,13 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 #include "Cryperf.h"
 
-void test_rsa ();
+BOOLEAN test_rsa ();
+
+VOID
+main_init (
+  IN     EFI_HANDLE                 ImageHandle,
+  IN     EFI_SYSTEM_TABLE           *SystemTable
+  );
 
 /**
   Validate UEFI-OpenSSL RSA Key Retrieving & Signature Interfaces.
@@ -32,13 +38,20 @@ ValidateCryptRsa (
   UINT64         EndTsc;
   UINTN          Iteration = GetIteration();
   UINTN          Index;
+  BOOLEAN        Status;
+
+  main_init (gImageHandle, gST);
 
   Print (L"test_rsa\n");
   StartTsc = AsmReadTsc ();
   for (Index = 0; Index < Iteration; Index++) {
-    test_rsa ();
+    Status = test_rsa (gImageHandle, gST);
   }
   EndTsc = AsmReadTsc ();
-
+  if (!Status) {
+    Print (L"[Fail]\n");
+  } else {
+    Print (L"[Pass] - %duS\n", TscToMicrosecond((EndTsc - StartTsc) / Iteration));
+  }
   return EFI_SUCCESS;
 }

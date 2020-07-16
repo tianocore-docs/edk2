@@ -29,7 +29,7 @@ mod pki_data;
 
 #[cfg(not(test))]
 #[export_name = "test_pki_verify_sign"]
-fn test_pki_verify_sign(){
+fn test_pki_verify_sign() -> bool {
     use webpki::EndEntityCert;
     use ring::rand;
     let cert_der = untrusted::Input::from(&pki_data::PKI_RSA_CA_CERT_DER).as_slice_less_safe();
@@ -49,12 +49,16 @@ fn test_pki_verify_sign(){
     key_pair.sign(&signature::RSA_PKCS1_SHA256, &rng, &MESSAGE, &mut sign).unwrap();
 
     //RSA_PSS_SHA256
-    cert.verify_signature(&webpki::RSA_PKCS1_2048_8192_SHA256, &MESSAGE, &sign).unwrap();
+    if cert.verify_signature(&webpki::RSA_PKCS1_2048_8192_SHA256, &MESSAGE, &sign).is_ok() {
+        true
+    } else {
+        false
+    }
 }
 
 #[cfg(not(test))]
 #[export_name = "test_pki_verify_cert"]
-fn test_pki_verify_cert() {
+fn test_pki_verify_cert() -> bool {
     static ALL_SIGALGS: &[&webpki::SignatureAlgorithm] = &[
         &webpki::RSA_PKCS1_2048_8192_SHA256,
         &webpki::RSA_PKCS1_3072_8192_SHA384,
@@ -71,16 +75,26 @@ fn test_pki_verify_cert() {
 
     let time = webpki::Time::from_seconds_since_unix_epoch(1593482917);
     let cert = webpki::EndEntityCert::from(ee).unwrap();
-    let _ = cert
-        .verify_is_valid_tls_server_cert(ALL_SIGALGS, &anchors, &[inter], time)
-        .unwrap();
+    
+    if cert.verify_is_valid_tls_server_cert(ALL_SIGALGS, &anchors, &[inter], time).is_ok() {
+        true
+    } else {
+        false
+    }
+}
+
+#[cfg(not(test))]
+#[no_mangle]
+#[export_name = "main_init"]
+fn main_init(_h: efi::Handle, st: *mut efi::SystemTable) {
+    unsafe { efi_services::init(_h, st); };
 }
 
 #[cfg(not(test))]
 #[no_mangle]
 #[export_name = "UEFI_Main"]
 pub extern fn main(_h: efi::Handle, st: *mut efi::SystemTable) -> efi::Status {
-    unsafe { efi_services::init(_h, st); }
+    unsafe { efi_services::init(_h, st); };
 
     test_pki_verify_sign();
     test_pki_verify_cert();

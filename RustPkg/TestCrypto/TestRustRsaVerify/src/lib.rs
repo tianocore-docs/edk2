@@ -45,7 +45,7 @@ mod rsa_data;
 #[cfg(not(test))]
 use ring::signature::{self, RsaEncoding, VerificationAlgorithm};
 #[cfg(not(test))]
-fn test_rsa_verify(padding_alg: &'static dyn RsaEncoding, algorithm: &'static dyn VerificationAlgorithm) {
+fn test_rsa_verify(padding_alg: &'static dyn RsaEncoding, algorithm: &'static dyn VerificationAlgorithm) -> bool {
     // openssl.exe genpkey -algorithm rsa -pkeyopt rsa_keygen_bits:2048 -pkeyopt rsa_keygen_pubexp:65537 -outform DER > private.der
     //let key_bytes_der = untrusted::Input::from(&rsa_data::PRIVATE_DER).as_slice_less_safe();
     //let key_pair: signature::RsaKeyPair = signature::RsaKeyPair::from_der(key_bytes_der).unwrap();
@@ -62,23 +62,35 @@ fn test_rsa_verify(padding_alg: &'static dyn RsaEncoding, algorithm: &'static dy
     // openssl.exe rsa -inform DER -in private.der -outform DER -RSAPublicKey_out > public.der
     let public_key_bytes_der = untrusted::Input::from(&rsa_data::PUBLIC_DER).as_slice_less_safe();
     let pubkey = signature::UnparsedPublicKey::new(algorithm, public_key_bytes_der);
-    pubkey.verify(&MESSAGE, &SIGNATURE_EXP).unwrap();
+    //pubkey.verify(&MESSAGE, &SIGNATURE_EXP).unwrap();
+    if pubkey.verify(&MESSAGE, &SIGNATURE_EXP).is_ok() {
+        true
+    } else {
+        false
+    }
 }
 #[cfg(not(test))]
 #[export_name = "test_rsa"]
-fn test_rsa() {
+pub extern fn test_rsa() -> bool {
     // PKCS#1 1.5 padding using SHA-256 for RSA signatures.
-    test_rsa_verify(&signature::RSA_PKCS1_SHA256, &signature::RSA_PKCS1_2048_8192_SHA256);
+    test_rsa_verify(&signature::RSA_PKCS1_SHA256, &signature::RSA_PKCS1_2048_8192_SHA256)
+}
+
+#[cfg(not(test))]
+#[no_mangle]
+#[export_name = "main_init"]
+fn main_init(_h: efi::Handle, st: *mut efi::SystemTable) {
+    unsafe { efi_services::init(_h, st); };
 }
 
 #[cfg(not(test))]
 #[no_mangle]
 #[export_name = "UEFI_Main"]
 pub extern fn main(_h: efi::Handle, st: *mut efi::SystemTable) -> efi::Status {
-    unsafe { efi_services::init(_h, st); }
+    unsafe { efi_services::init(_h, st); };
 
     test_rsa();
-
+    
     efi::Status::SUCCESS
 }
 
