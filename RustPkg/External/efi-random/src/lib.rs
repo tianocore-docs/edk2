@@ -8,20 +8,7 @@
 pub struct Unsupported;
 
 #[cfg(any(target_os = "uefi"))]
-pub fn generate(dest: &mut [u8]) -> Result<(), ()> {
-    for i in 0..dest.len() {
-        unsafe{
-            match rdrand16() {
-                Err(_) => (),
-                Ok(val) => {dest[i] = val as u8}
-            };
-        }
-    }
-    Ok(())
-}
-
-#[cfg(any(target_os = "uefi"))]
-unsafe fn rdrand16() -> Result<u16, Unsupported> {
+pub unsafe fn rdrand16() -> Result<u16, Unsupported> {
     let mut retval: u16;
     let mut randval: u16;
     llvm_asm!(
@@ -36,6 +23,31 @@ unsafe fn rdrand16() -> Result<u16, Unsupported> {
     rn16_end:
         "
         : "={ax}"(retval), "={cx}"(randval)
+        ::: "intel"
+    );
+    if retval == 0 {
+        Err(Unsupported)
+    } else {
+        Ok(randval)
+    }
+}
+
+#[cfg(any(target_os = "uefi"))]
+pub unsafe fn rdseed() -> Result<u32, Unsupported> {
+    let mut retval: u16;
+    let mut randval: u32;
+    llvm_asm!(
+        "
+        rdseed eax
+        jnc    sd32_failed
+        mov    ecx, eax
+        mov    eax,  1
+        jmp    sd32_end
+    sd32_failed:
+        xor    eax, eax
+    sd32_end:
+        "
+        : "={ax}"(retval), "={ecx}"(randval)
         ::: "intel"
     );
     if retval == 0 {
