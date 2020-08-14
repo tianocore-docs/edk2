@@ -40,6 +40,12 @@ Then you should use blow command to install rust-src component
 
 ```rustup component add rust-src```
 
+It is also recommended to install clippy
+
+```rustup component add clippy```
+
+and run clippy to improve the code, see https://github.com/rust-lang/rust-clippy. 
+
 **Or** install from source this is not recommend see Appendix
 
 #### b) Install cargo-xbuild
