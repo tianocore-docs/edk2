@@ -19,7 +19,7 @@ log = "0.4.8"
 ring = { path = "../../../../ring", features = ["alloc"]}
 untrusted = "0.7.1"
 webpki =  { path = "../../../../webpki", default-features = false, features = ["trust_anchor_util"]}
-compiler_builtins = { git = "https://github.com/xiaoyuxlu/compiler-builtins.git", branch="uefi_x86_target_probestack" }
+compiler_builtins = { path = "../../../../compiler-builtins" }
 
 # the profile used for `cargo build`
 [profile.dev]
