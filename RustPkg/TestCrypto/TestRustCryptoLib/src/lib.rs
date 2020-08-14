@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: BSD-2-Clause-Patent
 #![cfg_attr(not(test), no_std)]
+#![feature(global_asm)]
 
 #[cfg(not(test))]
 use r_efi::efi;
@@ -98,8 +99,9 @@ fn test_ecdh() {
     ).unwrap();
 }
 
-
-#[cfg(target_arch = "x86_64")]
+#[cfg(not(test))]
+mod probestack;
+// #[cfg(target_arch = "x86_64")]
 #[cfg(not(test))]
 fn test_aead() {
     use ring::aead::{NonceSequence, Nonce as OldNonce, NONCE_LEN};
@@ -284,7 +286,7 @@ pub extern fn main(_h: efi::Handle, st: *mut efi::SystemTable) -> efi::Status {
     test_sha256();
     test_hmac();
 
-    #[cfg(target_arch = "x86_64")]
+    // #[cfg(target_arch = "x86_64")]
     test_aead();
 
     test_rsa();
