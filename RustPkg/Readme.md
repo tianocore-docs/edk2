@@ -65,6 +65,18 @@ cargo xbuild --release --target i686-unknown-uefi
 cargo xbuild --target i686-unknown-uefi
 ```
 
+#### d) Checkout required crate update for rust-crypto and put to the same directory as edk2.
+
+ring: https://github.com/jyao1/ring, branch: uefi_support
+
+webpki: https://github.com/jyao1/ring, branch: uefi_support
+
+cc-rs: https://github.com/jyao1/cc-rs, branch: uefi_support
+
+compiler-builtins: https://github.com/jyao1/compiler-builtins/, branch: uefi_x86_target_probestack
+
+This step is not required after all uefi support are upstreamed.
+
 ### 2. LLVM9
 
 #### 1) Install LLVM9.0.0 from
