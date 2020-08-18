@@ -17,3 +17,6 @@
 	path = BaseTools/Source/C/BrotliCompress/brotli
 	url = https://github.com/google/brotli
 	ignore = untracked
+[submodule "CryptoMbedTlsPkg/Library/MbedTlsLib/mbedtls"]
+	path = CryptoMbedTlsPkg/Library/MbedTlsLib/mbedtls
+	url = https://github.com/ARMmbed/mbedtls
