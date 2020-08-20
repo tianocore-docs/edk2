@@ -275,6 +275,28 @@ fn test_pki_verify_cert() {
 }
 
 #[cfg(not(test))]
+fn test_dh() {
+    struct M {}
+    use ring::dh::*;
+    use ring::rand;
+    let param = &DHPARAM_FFDHE2048;
+    let rng = rand::SystemRandom::new();
+    let my_private_key = DhContext::<M>::new(param, &rng);
+    let my_public_key = my_private_key.compute_public_key();
+
+    let peer_private_key = DhContext::<M>::new(param, &rng);
+    let peer_public_key = {
+        peer_private_key.compute_public_key()
+    };
+
+    let secret_key1 = my_private_key.compute_shared_key(&peer_public_key);
+    let secret_key2 = peer_private_key.compute_shared_key(&my_public_key);
+    if secret_key1 == secret_key2 {
+        log::info!("Test - {}: pass!\n", param.name);
+    }
+}
+
+#[cfg(not(test))]
 #[no_mangle]
 #[export_name = "UEFI_Main"]
 pub extern fn main(_h: efi::Handle, st: *mut efi::SystemTable) -> efi::Status {
@@ -292,6 +314,7 @@ pub extern fn main(_h: efi::Handle, st: *mut efi::SystemTable) -> efi::Status {
     test_pki_verify_sign();
     test_pki_verify_cert();
 
+    test_dh();
     efi::Status::SUCCESS
 }
 
@@ -526,5 +549,27 @@ mod test {
         let _ = cert
             .verify_is_valid_tls_server_cert(ALL_SIGALGS, &anchors, &[inter], time)
             .unwrap();
+    }
+
+    #[test]
+    fn test_dh() {
+        struct M {}
+        use ring::dh::*;
+        use ring::rand;
+        let param = &DHPARAM_FFDHE2048;
+        let rng = rand::SystemRandom::new();
+        let my_private_key = DhContext::<M>::new(param, &rng);
+        let my_public_key = my_private_key.compute_public_key();
+
+        let peer_private_key = DhContext::<M>::new(param, &rng);
+        let peer_public_key = {
+            peer_private_key.compute_public_key()
+        };
+
+        let secret_key1 = my_private_key.compute_shared_key(&peer_public_key);
+        let secret_key2 = peer_private_key.compute_shared_key(&my_public_key);
+        if secret_key1 == secret_key2 {
+            println!("Test {}: pass", param.name);
+        }
     }
 }
