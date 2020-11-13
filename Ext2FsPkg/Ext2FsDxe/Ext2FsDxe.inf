@@ -1,0 +1,75 @@
+## @file
+#
+#  Copyright (c) 2014 Intel Corporation. All rights reserved. <BR>
+#  This program and the accompanying materials are
+#  licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#  
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Ext2FsDxe
+  FILE_GUID                      = 0D857FFE-DDF8-4027-8C46-28211E745DDA
+  MODULE_TYPE                    = UEFI_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = Ext2EntryPoint
+  UNLOAD_IMAGE                   = Ext2Unload
+
+[Sources]
+  Ext2FsDxe.c
+  ComponentName.c
+  Data.c
+  Delete.c
+  DirectoryManage.c
+  FileName.c
+  FileSpace.c
+  Flush.c
+  Info.c
+  Init.c
+  Misc.c
+  Open.c
+  OpenVolume.c
+  ReadWrite.c
+  UnicodeCollation.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  Ext2FsPkg/Ext2FsPkg.dec
+
+[LibraryClasses]
+  UefiRuntimeServicesTableLib
+  UefiBootServicesTableLib
+  MemoryAllocationLib
+  BaseMemoryLib
+  BaseLib
+  UefiLib
+  UefiDriverEntryPoint
+  DebugLib
+  PcdLib
+
+[Guids]
+  gEfiFileInfoGuid
+  gEfiFileSystemInfoGuid
+  gEfiFileSystemVolumeLabelInfoIdGuid
+
+[Protocols]
+  gEfiDiskIoProtocolGuid
+  gEfiBlockIoProtocolGuid
+  gEfiSimpleFileSystemProtocolGuid
+  gEfiUnicodeCollationProtocolGuid
+  gEfiUnicodeCollation2ProtocolGuid
+
+[Pcd]
+  gEfiMdePkgTokenSpaceGuid.PcdUefiVariableDefaultLang
+  gEfiMdePkgTokenSpaceGuid.PcdUefiVariableDefaultPlatformLang
+
+[BuildOptions]
+  # warning C4389: '==' : signed/unsigned mismatch
+  # warning C4018: '>=' : signed/unsigned mismatch
+  # warning C4244: 'function' : conversion from 'daddr_t' to 'int32_t', possible loss of data
+  *_*_*_CC_FLAGS  = /D_KERNEL /wd4389 /wd4018 /wd4244
