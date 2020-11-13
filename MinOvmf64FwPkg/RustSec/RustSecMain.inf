@@ -1,0 +1,47 @@
+### @file
+#
+#  Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+###
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = SecMain
+  FILE_GUID                      = df1ccef6-f301-4a63-9661-fc6030dcc880
+  MODULE_TYPE                    = SEC
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = SecMain
+
+[Sources]
+  Cargo.toml
+
+[Sources.IA32]
+  Ia32/SecEntry.nasm
+
+[Sources.X64]
+  X64/SecEntry.nasm
+
+[Packages]
+  MdePkg/MdePkg.dec
+  OvmfPkg/OvmfPkg.dec
+
+[LibraryClasses]
+
+[Pcd]
+  gUefiOvmfPkgTokenSpaceGuid.PcdOvmfDxeMemFvBase
+  gUefiOvmfPkgTokenSpaceGuid.PcdOvmfDxeMemFvSize
+  gUefiOvmfPkgTokenSpaceGuid.PcdOvmfPeiMemFvBase
+  gUefiOvmfPkgTokenSpaceGuid.PcdOvmfPeiMemFvSize
+  gUefiOvmfPkgTokenSpaceGuid.PcdOvmfSecPageTablesBase
+  gUefiOvmfPkgTokenSpaceGuid.PcdOvmfSecPeiTempRamBase
+  gUefiOvmfPkgTokenSpaceGuid.PcdOvmfSecPeiTempRamSize
+
+[FixedPcd]
+  gEfiMdePkgTokenSpaceGuid.PcdPciExpressBaseAddress
+
+[BuildOptions]
+  MSFT:*_*_*_DLINK_FLAGS  =  /ALIGN:512
+
+  GCC: *_CLANGPDB_*_DLINK_FLAGS = /force
