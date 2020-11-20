@@ -20,6 +20,8 @@ crate-type = ["staticlib"]
 cpuio = "0.3.0"
 spin = "0.4.9"
 r-efi = {path = "r-efi"}
+x86 = "0.34.0"
+plain = { git = "https://github.com/xiaoyuxlu/plain.git", branch = "minovmf"}
 
 [dependencies.lazy_static]
 version = "1.0"
