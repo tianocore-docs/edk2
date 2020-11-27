@@ -1,0 +1,129 @@
+=============================
+  1. Summary of each module
+=============================
+Below is summary on each module included in 64K Quark firmware.
+
+1) ResetVector (uncompressed)
+   The 1st module, invoked by CPU when power on.
+   It will initialize SRAM, copy FV from flash to SRAM, and jump to SecTrempoline.
+
+2) SecTrempoline (uncompressed)
+   The 2nd module, invoked by ResetVector.
+   It will find CompressedFv in SRAM, decompress it into SRAM, and jump to DxeIpl.
+
+3) DxeIpl
+   The 3rd module, invoked by SecTrempoline.
+   It will initialize DRAM, create Hob, find DxeCore in decompressed FV, and jump to DxeCore.
+
+4) SimpleDxeCore
+   The 4th module, invoked by DxeIpl.
+   Now Quark firmware starts normal flow and dispatch UEFI/DXE drivers in FV.
+   This is simple version DxeCore, below features are excluded: 1) GuidedSection, 2) Decompress,
+   3) FVB, 4) EBC, 5) HII, 6) DebugInfoTable. Also it links a PeCoffLib instance support PE32 only,
+   no PE32+ or TE support.
+
+5) SimpleCpuArch
+   This is simple version. SetMemoryAttribute API is empty. Platform need program MTRR directly.
+
+6) Metronome
+   Unmodified.
+
+7) RuntimeDxe
+   Unmodified.
+
+8) NullVariableRuntimeDxe
+   A NULL variable runtime implementation. Assume platform does not need variable.
+   It links a NULL arch protocol for SecurityArch, WatchdogTimerArch, CapsuleArch, MonotonicCounterArch.
+
+9) ResetSystemRntimeDxe
+   Driver unmodified. It links a simple ResetSystemLib without capsule support.
+
+10) SimplePcRtc
+   This is simple version. Get/SetWakeupTime API is empty. Variable access is removed.
+
+11) PlatformInitDxe
+   This is platform initialization driver, include both init work need to be done in PEI before, and DXE.
+   Platform porting might be needed.
+
+12) PlatformFixedResource
+   This driver is to replace PciHostBridge and PciBus driver. All the PCI resources are program here, without PCI enumeration.
+   Platform porting might be needed.
+
+13) QNCInitDxe
+   This is chipset initialization driver.
+   Chipset porting might be needed.
+
+14) AcpiPlatform
+   This is platform driver to install all ACPI tables to configuration table. It does not use ACPI protocol, and use AcpiLib instead.
+   Chipset porting might be needed.
+
+15) AcpiTable
+   This is platform driver to create ACPI table at build phase.
+   Chipset porting might be needed.
+
+16) SimpleSmmIpl
+   This is SMM support without SMM core.
+   SimpleSmmIpl is DXE driver. It will find SimplePiSmmCpu and load into SMRAM.
+
+17) SimplePiSmmCpu
+   This is one and only one SMM driver in SMRAM. It links SmmPlatformLib and dispatch ALL SMI to SmmPlatformLib.
+   In this implementation, SmmPlatformLib only handles SWSMI EnableAcpi.
+
+18) IohInitDxe
+   This is chipset initialization driver.
+   Chipset porting might be needed.
+
+19) SimpleCombindedTerminalDxe
+   This is simple version of terminal and serial IO. It has no driver model, does not depend on PCI_IO.
+   It links SerialPortLib directly, and expose SIMPLE_TEXT_OUT, SIMPLE_TEXT_IN requred by EfiSystemTable.
+
+20) Legacy8259
+   Unmodified.
+
+21) TinyBds
+   A tiny BDS. It just installs ConOut/ConIn/ErrOut, then find Payload EFI image, and start it.
+
+=============================
+  2. Boot flow - Sec to DxeCore
+=============================
+
+  Flash (64K)                    SRAM (512K)                        DRAM (256M)
+
++----------------+          +----------------+                  +----------------+
+| Reset Vector   |--        | Decompressed FV|                  |   SMRAM (2M)   |
+|----------------|  |       |+--------------+|   (3) Copy & JMP +----------------+
+| Compressed FV  |  |       || DxeIpl (MRC) ||------            | Decompressed FV|
+|----------------|  |       ||--------------||<-    |           |+--------------+|
+| Sec Trempoline |  |       || Dxe Core     ||  |   |           || DxeIpl (MRC) ||
++----------------+  |       |+--------------+|  |   |           ||--------------||
+                    |       +----------------+  |    ---------->|| Dxe Core     ||
+                    |       +----------------+  |               |+--------------+|
+                    |       | Reset Vector   |  |               +----------------+
+     (1) Copy & JMP |       |----------------|  |               |                |
+                    |       | Compressed FV  |  |(2) Decompress |                |
+                    |       |----------------|  |    & JMP      |                |
+                     ------>| Sec Trempoline |--                |                |
+                            +----------------+                  |                |
+                                                                |                |
+                                                                +----------------+
+
+=============================
+  3. Boot flow - DxeCore dispatch
+=============================
+DxeCore will dispatch below modules by order:
+
+ SimpleCpuArchDxe.efi
+ Metronome.efi
+ RuntimeDxe.efi
+ NullVariableRuntimeDxe.efi
+ ResetSystemRuntimeDxe.efi
+ SimplePcRtc.efi
+ PlatformInitDxe.efi
+ PlatformFixedPciResource.efi
+ AcpiPlatform.efi (It will find AcpiTable.ffs)
+ Legacy8259.efi
+ TinyBds.efi
+ QNCInitDxe.efi
+ SimpleSmmIpl.efi (It will load SimplePiSmmCpu)
+ IohInitDxe.efi
+ SimpleCombinedTerminalDxe.efi

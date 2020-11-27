@@ -1,0 +1,605 @@
+## @file
+# FDF file of Clanton Peak CRB platform with 32-bit DXE
+#
+# This package provides QuarkNcSocId platform specific modules.
+# Copyright(c) 2013 Intel Corporation. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in
+# the documentation and/or other materials provided with the
+# distribution.
+# * Neither the name of Intel Corporation nor the names of its
+# contributors may be used to endorse or promote products derived
+# from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+##
+
+################################################################################
+#
+# FD Section
+# The [FD] Section is made up of the definition statements and a
+# description of what goes into  the Flash Device Image.  Each FD section
+# defines one flash "device" image.  A flash device image may be one of
+# the following: Removable media bootable image (like a boot floppy
+# image,) an Option ROM image (that would be "flashed" into an add-in
+# card,) a System "Flash"  image (that would be burned into a system's
+# flash) or an Update ("Capsule") image that will be used to update and
+# existing system flash.
+#
+################################################################################
+[FD.Quark]
+BaseAddress   = 0xFF800000                   #The base address of the 8MB FLASH Device.
+Size          = 0x800000                     #The size in bytes of the 8MB FLASH Device.
+ErasePolarity = 1
+BlockSize     = 0x1000
+NumBlocks     = 0x800                        #The number of blocks for 8MB FLASH Device.
+
+#
+#Flash location override based on actual flash map
+#
+SET gQuarkPlatformTokenSpaceGuid.PcdFlashAreaBaseAddress = 0xFF800000
+SET gQuarkPlatformTokenSpaceGuid.PcdFlashAreaSize = 0x800000
+
+SET gQuarkPlatformTokenSpaceGuid.PcdFlashNvStorageBase = 0xFFF30000
+SET gQuarkPlatformTokenSpaceGuid.PcdFlashNvStorageSize = 0x20000
+SET gQuarkPlatformTokenSpaceGuid.PcdFlashQNCMicrocodeSize = 0x00004000
+
+################################################################################
+#
+# Following are lists of FD Region layout which correspond to the locations of different
+# images within the flash device.
+#
+# Regions must be defined in ascending order and may not overlap.
+#
+# A Layout Region start with a eight digit hex offset (leading "0x" required) followed by
+# the pipe "|" character, followed by the size of the region, also in hex with the leading
+# "0x" characters. Like:
+# Offset|Size
+# PcdOffsetCName|PcdSizeCName
+# RegionType <FV, DATA, or FILE>
+#
+################################################################################
+
+0x00000000|0x00000400
+!if $(BOOT_LINUX_ON_FLASH) == TRUE
+FILE = QuarkPayloadBinPkg/Binary/grub.fv.hdr
+!endif
+########################################################
+# grub (Quark EDKII Payload Image)
+########################################################
+0x00000400|0x00050000
+gQuarkPlatformTokenSpaceGuid.PcdPlatformFlashFvPayloadBase|gQuarkPlatformTokenSpaceGuid.PcdPlatformFlashFvPayloadSize
+#FILE = QuarkPayloadBinPkg/Binary/grub.fv
+FV = EDKII_PAYLOAD_IMAGE
+
+0x00050500|0x00000400
+!if $(BOOT_LINUX_ON_FLASH) == TRUE
+FILE = QuarkPayloadBinPkg/Binary/grub.conf.bin.hdr
+!endif
+#########################################################
+# grub.conf
+#########################################################
+0x00050900|0x00000D00
+!if $(BOOT_LINUX_ON_FLASH) == TRUE
+FILE = QuarkPayloadBinPkg/Binary/grub.conf.bin
+!endif
+
+0x00051600|0x00000400
+!if $(BOOT_LINUX_ON_FLASH) == TRUE
+FILE = QuarkPayloadBinPkg/Binary/kernel.bin.hdr
+!endif
+#########################################################
+# Kernel
+#########################################################
+0x00051A00|0x0020E600
+!if $(BOOT_LINUX_ON_FLASH) == TRUE
+FILE = QuarkPayloadBinPkg/Binary/kernel.bin
+!endif
+
+0x00260000|0x00000400
+!if $(BOOT_LINUX_ON_FLASH) == TRUE
+FILE = QuarkPayloadBinPkg/Binary/ramdisk.bin.hdr
+!endif
+#########################################################
+# Ramdisk
+#########################################################
+0x00260400|0x0029FC00
+!if $(BOOT_LINUX_ON_FLASH) == TRUE
+FILE = QuarkPayloadBinPkg/Binary/ramdisk.bin
+!endif
+
+#########################################################
+# Quark Remote Management Unit Binary
+#########################################################
+0x00700000|0x00008000
+gQuarkPlatformTokenSpaceGuid.PcdPlatformFlashRmuPayloadBase|gQuarkPlatformTokenSpaceGuid.PcdPlatformFlashRmuPayloadSize
+!ifdef QUARK2
+  FILE = QuarkSocPkg/QuarkNorthCluster/Binary/Quark2Microcode/RMU.bin
+!else
+  FILE = QuarkSocPkg/QuarkNorthCluster/Binary/QuarkMicrocode/RMU.bin
+!endif
+
+#########################################################
+# Master Flash Header Data.
+#########################################################
+0x00708000|0x00000200
+DATA = {
+  ## This is the MFH_HEADER struct.
+  # MFH_HEADER.QuarkMFHIdentifier.
+  0x48, 0x46, 0x4D, 0x5F,
+  # MFH_HEADER.Version, MFH_HEADER.RsvdFlags & MFH_HEADER.NextHeaderBlock.
+  0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  # MFH_HEADER.FlashItemCount UINT32 LSB - MSB.
+  0x0A, 0x00, 0x00, 0x00,
+  # MFH_HEADER.BootPriorityListCount UINT32 LSB - MSB.
+  0x02, 0x00, 0x00, 0x00,
+  ## This is the BootPriorityList.
+  # 1st                 , 2nd                   
+  0x02, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00,
+  ## This is Flash Item [0] desc. 4xUINT32 LSB - MSB.
+  # Type                , FlashAddress          , LengthBytes,          ,Reserved.              #(BUILD_INFORMATION)
+  0x18, 0x00, 0x00, 0x00, 0x00, 0x82, 0xF0, 0xFF, 0xAB, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  ## This is Flash Item [1] desc. 4xUINT32 LSB - MSB.
+  # Type                , FlashAddress          , LengthBytes,          ,Reserved.              #(IMAGE_VERSION)
+  0x19, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
+  ## This is Flash Item [2] desc. 4xUINT32 LSB - MSB.
+  # Type                , FlashAddress          , LengthBytes,          ,Reserved.              #(FW_STAGE1_SIGNED)
+  0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF9, 0xFF, 0x00, 0xF4, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00,
+  ## This is Flash Item [3] desc. 4xUINT32 LSB - MSB.
+  # Type                , FlashAddress          , LengthBytes,          ,Reserved.              #(FW_STAGE1_SIGNED)
+  0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xEC, 0xFF, 0x00, 0xF4, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00,
+  ## This is Flash Item [4] desc. 4xUINT32 LSB - MSB.
+  # Type                , FlashAddress          , LengthBytes,          ,Reserved.              #(FW_STAGE1_SIGNED)
+  0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE8, 0xFF, 0x00, 0xF4, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00,
+  ## This is Flash Item [5] desc. 4xUINT32 LSB - MSB.
+  # Type                , FlashAddress          , LengthBytes,          ,Reserved.              #(FW_STAGE2_SIGNED)
+  0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0xD0, 0xFF, 0x00, 0x04, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x00,
+  ## This is Flash Item [6] desc. 4xUINT32 LSB - MSB.
+  # Type                , FlashAddress          , LengthBytes,          ,Reserved.              #(RAMDISK_SIGNED)
+  0x13, 0x00, 0x00, 0x00, 0x00, 0x00, 0xA6, 0xFF, 0x32, 0x26, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00,  
+  # Type                , FlashAddress          , LengthBytes,          ,Reserved.              #(KERNEL_SIGNED)
+  0x11, 0x00, 0x00, 0x00, 0x00, 0x16, 0x85, 0xFF, 0x30, 0x2E, 0x1F, 0x00, 0x00, 0x00, 0x00, 0x00,  
+  # Type                , FlashAddress          , LengthBytes,          ,Reserved.              #(BOOTLOADER_CFG_SIGNED)
+  0x0E, 0x00, 0x00, 0x00, 0x00, 0x05, 0x85, 0xFF, 0x09, 0x09, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  
+  # Type                , FlashAddress          , LengthBytes,          ,Reserved.              #(BOOTLOADER_SIGNED)
+  0x0C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0xFF, 0x00, 0x04, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00
+}
+
+#########################################################
+# LAYOUT.CONF_DUMP
+#########################################################
+0x00708200|0x00000E00
+!if $(BOOT_LINUX_ON_FLASH) == TRUE
+FILE = QuarkPayloadBinPkg/Binary/layout.conf_dump.bin
+!endif
+
+#########################################################
+# PlatformData Binary, default for standalone is none built-in so user selects.
+#########################################################
+0x00710000|0x00000200
+FILE = QuarkPlatformPkg/Binary/BinaryPlatformData/platform-data.bin
+
+#############################################################################
+# Quark EDKII NVRAM Area
+# Quark EDKII NVRAM Area contains: Variable + FTW Working + FTW Spare
+#############################################################################
+0x00730000|0x0000E000
+gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableBase|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableSize
+#NV_VARIABLE_STORE
+DATA = {
+  ## This is the EFI_FIRMWARE_VOLUME_HEADER
+  # ZeroVector []
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  # FileSystemGuid: gEfiSystemNvDataFvGuid         =
+  #  { 0xFFF12B8D, 0x7696, 0x4C8B, { 0xA9, 0x85, 0x27, 0x47, 0x07, 0x5B, 0x4F, 0x50 }}
+  0x8D, 0x2B, 0xF1, 0xFF, 0x96, 0x76, 0x8B, 0x4C,
+  0xA9, 0x85, 0x27, 0x47, 0x07, 0x5B, 0x4F, 0x50,
+  # FvLength: 0x20000
+  0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00,
+  #Signature "_FVH"       #Attributes
+  0x5f, 0x46, 0x56, 0x48, 0xff, 0xfe, 0x04, 0x00,
+  #HeaderLength #CheckSum #ExtHeaderOffset #Reserved #Revision
+  0x48, 0x00, 0x19, 0xF9, 0x00, 0x00, 0x00, 0x02,
+  #Blockmap[0]: 32 Blocks * 0x1000 Bytes / Block
+  0x20, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00,
+  #Blockmap[1]: End
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  ## This is the VARIABLE_STORE_HEADER
+  !ifdef SECURE_BOOT
+    # Signature: gEfiAuthenticatedVariableGuid = { 0xaaf32c78, 0x947b, 0x439a, { 0xa1, 0x80, 0x2e, 0x14, 0x4e, 0xc3, 0x77, 0x92 } }
+    0x78, 0x2c, 0xf3, 0xaa, 0x7b, 0x94, 0x9a, 0x43,
+    0xa1, 0x80, 0x2e, 0x14, 0x4e, 0xc3, 0x77, 0x92,
+  !else
+    #  Signature: gEfiVariableGuid = { 0xddcf3616, 0x3275, 0x4164, { 0x98, 0xb6, 0xfe, 0x85, 0x70, 0x7f, 0xfe, 0x7d }}
+    0x16, 0x36, 0xcf, 0xdd, 0x75, 0x32, 0x64, 0x41,
+    0x98, 0xb6, 0xfe, 0x85, 0x70, 0x7f, 0xfe, 0x7d,
+  !endif
+  #Size: 0x0E000 (gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableSize) - 0x48 (size of EFI_FIRMWARE_VOLUME_HEADER) = 0x0DFB8
+  # This can speed up the Variable Dispatch a bit.
+  0xB8, 0xDF, 0x00, 0x00,
+  #FORMATTED: 0x5A #HEALTHY: 0xFE #Reserved: UINT16 #Reserved1: UINT32
+  0x5A, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+}
+
+0x0073E000|0x00002000
+gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingBase|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingSize
+#NV_FTW_WORKING
+DATA = {
+  # EFI_FAULT_TOLERANT_WORKING_BLOCK_HEADER->Signature = gEdkiiWorkingBlockSignatureGuid         =
+  #  { 0x9e58292b, 0x7c68, 0x497d, { 0xa0, 0xce, 0x65,  0x0, 0xfd, 0x9f, 0x1b, 0x95 }}
+  0x2b, 0x29, 0x58, 0x9e, 0x68, 0x7c, 0x7d, 0x49,
+  0xa0, 0xce, 0x65,  0x0, 0xfd, 0x9f, 0x1b, 0x95,
+  # Crc:UINT32            #WorkingBlockValid:1, WorkingBlockInvalid:1, Reserved
+  0xE2, 0x33, 0xF2, 0x03, 0xFE, 0xFF, 0xFF, 0xFF,
+  # WriteQueueSize: UINT64 #Size: 0x2000 - 0x20 (FTW_WORKING_HEADER) = 0x1FE0
+  0xE0, 0x1F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+}
+
+0x00740000|0x00010000
+gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareBase|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareSize
+#NV_FTW_SPARE
+
+#######################
+# svn-area
+#######################
+0x007D0000|0x00008000
+!if $(BOOT_LINUX_ON_FLASH) == TRUE
+FILE = QuarkPayloadBinPkg/Binary/svn-area.bin
+!endif
+
+#######################
+# signed-key-module
+#######################
+0x007D8000|0x00000400
+!if $(BOOT_LINUX_ON_FLASH) == TRUE
+FILE = QuarkPayloadBinPkg/Binary/signed-key-module.bin
+!endif
+
+#######################
+# Quark BootRom Image
+#######################
+#0x007E0000|0x00020000
+!if $(SMALL_DXE_CORE) == TRUE
+0x007F0000|0x00010000
+!else
+0x007EC000|0x00014000
+!endif
+gQuarkPlatformTokenSpaceGuid.PcdPlatformFlashFvBootRomBase|gQuarkPlatformTokenSpaceGuid.PcdPlatformFlashFvBootRomSize
+FV = EDKII_BOOT_STAGE1_IMAGE1
+
+################################################################################
+#
+# FV Section
+#
+# [FV] section is used to define what components or modules are placed within a flash
+# device file.  This section also defines order the components and modules are positioned
+# within the image.  The [FV] section consists of define statements, set statements and
+# module statements.
+#
+################################################################################
+[FV.EDKII_BOOT_STAGE1_IMAGE1]
+BlockSize          = 0x1000
+FvAlignment        = 16         #FV alignment and FV attributes setting.
+ERASE_POLARITY     = 1
+MEMORY_MAPPED      = TRUE
+STICKY_WRITE       = TRUE
+LOCK_CAP           = TRUE
+LOCK_STATUS        = TRUE
+WRITE_DISABLED_CAP = TRUE
+WRITE_ENABLED_CAP  = TRUE
+WRITE_STATUS       = TRUE
+WRITE_LOCK_CAP     = TRUE
+WRITE_LOCK_STATUS  = TRUE
+READ_DISABLED_CAP  = TRUE
+READ_ENABLED_CAP   = TRUE
+READ_STATUS        = TRUE
+READ_LOCK_CAP      = TRUE
+READ_LOCK_STATUS   = TRUE
+FvNameGuid         = 18D6D9F4-2EEF-4913-AEE6-BE61C6DA6CC8
+
+################################################################################
+#
+# The INF statements point to EDK component and EDK II module INF files, which will be placed into this FV image.
+# Parsing tools will scan the INF file to determine the type of component or module.
+# The component or module type is used to reference the standard rules
+# defined elsewhere in the FDF file.
+#
+# The format for INF statements is:
+# INF $(PathAndInfFileName)
+#
+################################################################################
+  ##
+  #  SEC Phase modules
+  ##
+INF  QuarkPlatformPkg/Cpu/Sec/ResetVector/QuarkResetVector.inf
+!if $(MRC_COMPRESSION) == TRUE
+INF  QuarkPlatformPkg/Cpu/SecTrampoline/SecTrampoline.inf
+!else
+INF  QuarkPlatformPkg/Cpu/SecCore/SecCore.inf
+!endif
+
+FILE FV_IMAGE = 9E21FD93-9C72-4c15-8C4B-E77F1DB2D791 {
+        SECTION GUIDED D42AE6BD-1352-4bfb-909A-CA72A6EAE889 PROCESSING_REQUIRED = TRUE { # LzmaF86
+        SECTION FV_IMAGE = EDKII_BOOT_SLIM
+       }
+     }
+
+[FV.EDKII_BOOT_SLIM]
+BlockSize          = 0x1000
+!if $(MRC_COMPRESSION) == FALSE
+FvBaseAddress      = 0x0D000000
+!else
+!if $(SMALL_DXE_CORE) == TRUE
+FvBaseAddress      = 0x80010000
+!else
+FvBaseAddress      = 0x80014000
+!endif
+!endif
+FvForceRebase      = TRUE
+FvAlignment        = 16         #FV alignment and FV attributes setting.
+ERASE_POLARITY     = 1
+MEMORY_MAPPED      = TRUE
+STICKY_WRITE       = TRUE
+LOCK_CAP           = TRUE
+LOCK_STATUS        = TRUE
+WRITE_DISABLED_CAP = TRUE
+WRITE_ENABLED_CAP  = TRUE
+WRITE_STATUS       = TRUE
+WRITE_LOCK_CAP     = TRUE
+WRITE_LOCK_STATUS  = TRUE
+READ_DISABLED_CAP  = TRUE
+READ_ENABLED_CAP   = TRUE
+READ_STATUS        = TRUE
+READ_LOCK_CAP      = TRUE
+READ_LOCK_STATUS   = TRUE
+
+################################################################################
+#
+# The INF statements point to EDK component and EDK II module INF files, which will be placed into this FV image.
+# Parsing tools will scan the INF file to determine the type of component or module.
+# The component or module type is used to reference the standard rules
+# defined elsewhere in the FDF file.
+#
+# The format for INF statements is:
+# INF $(PathAndInfFileName)
+#
+################################################################################
+
+##
+#  DXE Phase modules
+##
+!if $(MRC_COMPRESSION) == TRUE
+INF  QuarkPlatformPkg/Cpu/SecCore/SecCore.inf
+!endif
+
+!if $(SMALL_DXE_CORE) == TRUE
+INF  TinyBootPkg/Core/SimpleDxeCore/DxeMain.inf
+!else
+INF  MdeModulePkg/Core/Dxe/DxeMain.inf
+!endif
+INF  IA32FamilyCpuBasePkg/SimpleCpuArchDxe/CpuArchDxe.inf
+INF  MdeModulePkg/Universal/Metronome/Metronome.inf
+INF  MdeModulePkg/Core/RuntimeDxe/RuntimeDxe.inf
+
+INF  TinyBootPkg/Universal/Variable/NullVariableRuntimeDxe/NullVariableRuntimeDxe.inf
+
+INF  MdeModulePkg/Universal/ResetSystemRuntimeDxe/ResetSystemRuntimeDxe.inf
+INF  TinyBootPkg/PcAtChipset/SimplePcatRealTimeClockRuntimeDxe/PcatRealTimeClockRuntimeDxe.inf
+
+INF  QuarkPlatformPkg/Platform/Dxe/PlatformInit/PlatformInitDxe.inf
+
+INF  QuarkPlatformPkg/Pci/PlatformFixedPciResource/PlatformFixedPciResource.inf
+
+INF  QuarkSocPkg/QuarkNorthCluster/QNCInit/Dxe/QNCInitDxe.inf 
+
+#
+# ACPI
+#
+INF  QuarkPlatformPkg/Acpi/Dxe/AcpiPlatform/AcpiPlatform.inf
+INF  RuleOverride = ACPITABLE QuarkPlatformPkg/Acpi/AcpiTables/AcpiTables.inf
+
+#
+# SMM
+#
+INF  IA32FamilyCpuBasePkg/SimplePiSmmCpuDxeSmm/SmmIpl.inf
+INF  IA32FamilyCpuBasePkg/SimplePiSmmCpuDxeSmm/PiSmmCpuDxeSmm.inf
+
+INF  QuarkSocPkg/QuarkSouthCluster/IohInit/Dxe/IohInitDxe.inf 
+
+INF  TinyBootPkg/Universal/Console/SimpleCombinedTerminalDxe/TerminalDxe.inf
+
+#
+# SDIO
+#
+#INF  QuarkSocPkg/QuarkSouthCluster/Sdio/Dxe/SDControllerDxe/SDControllerDxe.inf
+#INF  QuarkSocPkg/QuarkSouthCluster/Sdio/Dxe/SDMediaDeviceDxe/SDMediaDeviceDxe.inf
+
+#
+# IDE
+#
+#INF  MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
+#INF  MdeModulePkg/Universal/Disk/PartitionDxe/PartitionDxe.inf
+
+#
+# Legacy Modules
+#
+INF  PcAtChipsetPkg/8259InterruptControllerDxe/8259.inf
+
+#       
+# File System Modules
+#        
+#INF  MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
+#INF FatPkg/EnhancedFatDxe/Fat.inf
+
+#
+# Boot loader
+#
+INF QuarkPlatformPkg/Bds/TinyBootLoader/TinyBds.inf
+
+
+################################################################################
+#
+# FV Section
+#
+# [FV] section is used to define what components or modules are placed within a flash
+# device file.  This section also defines order the components and modules are positioned
+# within the image.  The [FV] section consists of define statements, set statements and
+# module statements.
+#
+################################################################################
+[FV.EDKII_PAYLOAD_IMAGE]
+BlockSize          = 0x8000
+FvAlignment        = 16         #FV alignment and FV attributes setting.
+ERASE_POLARITY     = 1
+MEMORY_MAPPED      = TRUE
+STICKY_WRITE       = TRUE
+LOCK_CAP           = TRUE
+LOCK_STATUS        = TRUE
+WRITE_DISABLED_CAP = TRUE
+WRITE_ENABLED_CAP  = TRUE
+WRITE_STATUS       = TRUE
+WRITE_LOCK_CAP     = TRUE
+WRITE_LOCK_STATUS  = TRUE
+READ_DISABLED_CAP  = TRUE
+READ_ENABLED_CAP   = TRUE
+READ_STATUS        = TRUE
+READ_LOCK_CAP      = TRUE
+READ_LOCK_STATUS   = TRUE
+
+!if $(BOOT_LINUX_ON_FLASH) == TRUE
+FILE APPLICATION = b43bd3e1-64d1-4744-9394-d0e1c4de8c87 {
+     SECTION PE32 = QuarkPayloadBinPkg/Binary/grub.efi
+     }
+!else
+INF USE=IA32 EdkShellBinPkg/MinimumShell/MinimumShell.inf
+!endif
+
+################################################################################
+#
+# Rules are use with the [FV] section's module INF type to define
+# how an FFS file is created for a given INF file. The following Rule are the default
+# rules for the different module type. User can add the customized rules to define the
+# content of the FFS file.
+#
+################################################################################
+[Rule.Common.SEC]
+  FILE SEC = $(NAMED_GUID) RELOCS_STRIPPED {
+    TE  TE    Align = 8       $(INF_OUTPUT)/$(MODULE_NAME).efi
+    RAW BIN   Align = 16      |.com
+  }
+
+[Rule.Common.PEI_CORE]
+  FILE PEI_CORE = $(NAMED_GUID)            {
+    TE       TE               $(INF_OUTPUT)/$(MODULE_NAME).efi
+#    UI       STRING="$(MODULE_NAME)" Optional
+#    VERSION  STRING="$(INF_VERSION)" Optional BUILD_NUM=$(BUILD_NUMBER)
+  }
+
+[Rule.Common.PEIM.NORELOC]
+  FILE PEIM = $(NAMED_GUID) RELOCS_STRIPPED  {
+     PEI_DEPEX PEI_DEPEX Optional        $(INF_OUTPUT)/$(MODULE_NAME).depex
+     TE        TE                        $(INF_OUTPUT)/$(MODULE_NAME).efi
+#     UI        STRING="$(MODULE_NAME)" Optional
+#     VERSION   STRING="$(INF_VERSION)" Optional BUILD_NUM=$(BUILD_NUMBER)
+  }
+
+[Rule.Common.PEIM]
+  FILE PEIM = $(NAMED_GUID)               {
+     PEI_DEPEX PEI_DEPEX Optional        $(INF_OUTPUT)/$(MODULE_NAME).depex
+     TE        TE                        $(INF_OUTPUT)/$(MODULE_NAME).efi
+#     UI        STRING="$(MODULE_NAME)" Optional
+#     VERSION   STRING="$(INF_VERSION)" Optional BUILD_NUM=$(BUILD_NUMBER)
+  }
+
+[Rule.Common.DXE_CORE]
+  FILE DXE_CORE = $(NAMED_GUID) {
+    PE32      PE32                     $(INF_OUTPUT)/$(MODULE_NAME).efi
+#    UI        STRING="$(MODULE_NAME)" Optional
+#    VERSION   STRING="$(INF_VERSION)" Optional BUILD_NUM=$(BUILD_NUMBER)
+  }
+
+[Rule.Common.UEFI_DRIVER]
+  FILE DRIVER = $(NAMED_GUID) {
+    DXE_DEPEX DXE_DEPEX Optional       $(INF_OUTPUT)/$(MODULE_NAME).depex
+    PE32      PE32                     $(INF_OUTPUT)/$(MODULE_NAME).efi
+#    UI        STRING="$(MODULE_NAME)" Optional
+#    VERSION   STRING="$(INF_VERSION)" Optional BUILD_NUM=$(BUILD_NUMBER)
+  }
+
+[Rule.Common.DXE_DRIVER]
+  FILE DRIVER = $(NAMED_GUID) {
+    DXE_DEPEX DXE_DEPEX Optional       $(INF_OUTPUT)/$(MODULE_NAME).depex
+    PE32      PE32                     $(INF_OUTPUT)/$(MODULE_NAME).efi
+#    UI        STRING="$(MODULE_NAME)" Optional
+#    VERSION   STRING="$(INF_VERSION)" Optional BUILD_NUM=$(BUILD_NUMBER)
+  }
+
+[Rule.Common.DXE_RUNTIME_DRIVER]
+  FILE DRIVER = $(NAMED_GUID) {
+    DXE_DEPEX DXE_DEPEX Optional       $(INF_OUTPUT)/$(MODULE_NAME).depex
+    PE32      PE32                     $(INF_OUTPUT)/$(MODULE_NAME).efi
+#    UI        STRING="$(MODULE_NAME)" Optional
+#    VERSION   STRING="$(INF_VERSION)" Optional BUILD_NUM=$(BUILD_NUMBER)
+  }
+
+[Rule.Common.DXE_SMM_DRIVER]
+  FILE SMM = $(NAMED_GUID) {
+    SMM_DEPEX SMM_DEPEX Optional       $(INF_OUTPUT)/$(MODULE_NAME).depex
+    PE32      PE32                     $(INF_OUTPUT)/$(MODULE_NAME).efi
+#    UI        STRING="$(MODULE_NAME)" Optional
+#    VERSION   STRING="$(INF_VERSION)" Optional BUILD_NUM=$(BUILD_NUMBER)
+  }
+
+[Rule.Common.SMM_CORE]
+  FILE SMM_CORE = $(NAMED_GUID) {
+    PE32      PE32                     $(INF_OUTPUT)/$(MODULE_NAME).efi
+#    UI        STRING="$(MODULE_NAME)" Optional
+#    VERSION   STRING="$(INF_VERSION)" Optional BUILD_NUM=$(BUILD_NUMBER)
+  }
+
+[Rule.Common.UEFI_APPLICATION]
+  FILE APPLICATION = $(NAMED_GUID) {
+    PE32      PE32                     $(INF_OUTPUT)/$(MODULE_NAME).efi
+#    UI        STRING="$(MODULE_NAME)" Optional
+#    VERSION   STRING="$(INF_VERSION)" Optional BUILD_NUM=$(BUILD_NUMBER)
+  }
+
+[Rule.Common.UEFI_APPLICATION.UI]
+  FILE APPLICATION = $(NAMED_GUID) {
+    PE32      PE32                     $(INF_OUTPUT)/$(MODULE_NAME).efi
+#    UI        STRING="Enter Setup"
+#    VERSION   STRING="$(INF_VERSION)" Optional BUILD_NUM=$(BUILD_NUMBER)
+  }
+
+[Rule.Common.UEFI_APPLICATION.BINARY]
+  FILE APPLICATION = $(NAMED_GUID) {
+    PE32      PE32                    |.efi
+#    UI        STRING="$(MODULE_NAME)" Optional
+#    VERSION   STRING="$(INF_VERSION)" Optional BUILD_NUM=$(BUILD_NUMBER)
+  }
+
+[Rule.Common.USER_DEFINED.ACPITABLE]
+  FILE FREEFORM = $(NAMED_GUID) {
+    RAW ACPI               |.acpi
+    RAW ASL                |.aml
+  }
+

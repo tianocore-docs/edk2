@@ -1,0 +1,202 @@
+/*++
+
+Copyright(c) 2014 Intel Corporation. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+* Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in
+the documentation and/or other materials provided with the
+distribution.
+* Neither the name of Intel Corporation nor the names of its
+contributors may be used to endorse or promote products derived
+from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Module Name:
+
+  Madt.aslc
+
+Abstract:
+
+  This file contains a structure definition for the ACPI 2.0 Multiple APIC 
+  Description Table (MADT).  Any changes to the MADT table require updating the
+  respective structure count in Madt.h and then adding the structure to the 
+  MADT defined in this file.  The table layout is defined in Madt.h and the 
+  table contents are defined in Acpi2_0.h and Madt.h.
+
+--*/
+
+//
+// Statements that include other files
+//
+
+#include "Madt.h"
+
+//
+// Multiple APIC Description Table
+//
+
+EFI_ACPI_2_0_MULTIPLE_APIC_DESCRIPTION_TABLE Madt = {
+  EFI_ACPI_2_0_MULTIPLE_SAPIC_DESCRIPTION_TABLE_SIGNATURE,
+  sizeof (EFI_ACPI_2_0_MULTIPLE_APIC_DESCRIPTION_TABLE),
+  EFI_ACPI_2_0_MULTIPLE_APIC_DESCRIPTION_TABLE_REVISION,
+
+  //
+  // Checksum will be updated at runtime
+  //
+  0x00,
+  
+  //
+  // It is expected that these values will be programmed at runtime
+  //
+  ' ', ' ', ' ', ' ', ' ', ' ',
+  
+  0,
+  EFI_ACPI_OEM_MADT_REVISION,
+  0,
+  0,
+
+  //
+  // MADT specific fields
+  //
+  0xFEE00000,
+  EFI_ACPI_2_0_MULTIPLE_APIC_FLAGS,
+  
+  //
+  // Sample Processor Local APIC Structure
+  //
+  //EFI_ACPI_2_0_PROCESSOR_LOCAL_APIC,                        // Type
+  //sizeof (EFI_ACPI_2_0_PROCESSOR_LOCAL_APIC_STRUCTURE),     // Length
+  //0x00                                                      // Processor ID
+  //0x00                                                      // Local APIC ID
+  //0x00000000,                                               // Flags - Disabled (until initialized by platform driver)
+
+  EFI_ACPI_2_0_PROCESSOR_LOCAL_APIC,                        // Type
+  sizeof (EFI_ACPI_2_0_PROCESSOR_LOCAL_APIC_STRUCTURE),     // Length
+  0x01,                                                     // Processor ID
+  0x00,                                                     // Local APIC ID
+  0x00000001,                                               // Flags - Enabled
+
+  //
+  // Sample IO APIC Structure
+  //
+  //EFI_ACPI_2_0_IO_APIC,                                     // Type
+  //sizeof (EFI_ACPI_2_0_IO_APIC_STRUCTURE),                  // Length
+  //0x00,                                                     // IO APIC ID
+  //EFI_ACPI_RESERVED_BYTE,                                   // Reserved
+  //0x00000000,                                               // IO APIC Address (physical)
+  //0x00000000,                                               // Global System Interrupt Base
+
+  //
+  // I/O SAPIC (ICH)
+  // 
+  EFI_ACPI_2_0_IO_APIC,                                     // Type
+  sizeof (EFI_ACPI_2_0_IO_APIC_STRUCTURE),                  // Length
+  0x01,                                                     // IO APIC ID
+  EFI_ACPI_RESERVED_BYTE,                                   // Reserved
+  0xFEC00000,                                               // IO APIC Address (physical)
+  0x18 * 0,                                                 // Global System Interrupt Base
+
+  //
+  // Sample Interrupt Source Override Structure
+  //
+  //EFI_ACPI_2_0_INTERRUPT_SOURCE_OVERRIDE,                   // Type
+  //sizeof (EFI_ACPI_2_0_INTERRUPT_SOURCE_OVERRIDE_STRUCTURE),// Length
+  //0x00,                                                     // Bus
+  //0x00,                                                     // Source
+  //0x00000000,                                               // Global System Interrupt
+  //0x0000,                                                   // Flags
+
+  //
+  // IRQ0=>IRQ2 Interrupt Source Override Structure
+  //
+  EFI_ACPI_2_0_INTERRUPT_SOURCE_OVERRIDE,                   // Type
+  sizeof (EFI_ACPI_2_0_INTERRUPT_SOURCE_OVERRIDE_STRUCTURE),// Length
+  0x00,                                                     // Bus - ISA
+  0x00,                                                     // Source - IRQ0
+  0x00000002,                                               // Global System Interrupt - IRQ2
+  0x0000,                                                   // Flags - Conforms to specifications of the bus
+
+  //
+  // ISO (SCI Active High) Interrupt Source Override Structure
+  //
+  EFI_ACPI_2_0_INTERRUPT_SOURCE_OVERRIDE,                   // Type
+  sizeof (EFI_ACPI_2_0_INTERRUPT_SOURCE_OVERRIDE_STRUCTURE),// Length
+  0x00,                                                     // Bus - ISA
+  0x09,                                                     // Source - IRQ9
+  0x00000009,                                               // Global System Interrupt - IRQ9
+  0x000D,                                                   // Flags - Level-tiggered, Active High
+
+  //
+  // Sample Non-Maskable Interrupt Source Structure
+  //
+  //EFI_ACPI_2_0_NON_MASKABLE_INTERRUPT_SOURCE,                     // Type
+  //sizeof (EFI_ACPI_2_0_NON_MASKABLE_INTERRUPT_SOURCE_STRUCTURE),  // Length
+  //0x0000,                                                         // Flags
+  //0x00000000,                                                     // Global System Interrupt
+
+  //
+  // Sample Local APIC NMI Structure
+  //
+  //EFI_ACPI_2_0_LOCAL_APIC_NMI,                              // Type
+  //sizeof (EFI_ACPI_2_0_LOCAL_APIC_NMI_STRUCTURE),           // Length
+  //0x00,                                                     // ACPI Processor ID
+  //0x0000,                                                   // Flags
+  //0x00,                                                     // Local APIC LINT#
+
+  EFI_ACPI_2_0_LOCAL_APIC_NMI,                              // Type
+  sizeof (EFI_ACPI_2_0_LOCAL_APIC_NMI_STRUCTURE),           // Length
+  0x01,                                                     // ACPI Processor ID
+  0x0005,                                                   // Flags - Edge-tiggered, Active High
+  0x01,                                                     // Local APIC LINT#
+
+  //
+  // Sample Local APIC Address Override Structure
+  //
+  //EFI_ACPI_2_0_LOCAL_APIC_ADDRESS_OVERRIDE,                     // Type
+  //sizeof (EFI_ACPI_2_0_LOCAL_APIC_ADDRESS_OVERRIDE_STRUCTURE),  // Length
+  //EFI_ACPI_RESERVED_WORD,                                       // Reserved
+  //0x0000000000000000,                                           // Local APIC Address
+
+  //
+  // Sample Platform Interrupt Sources Structure
+  //
+  //EFI_ACPI_2_0_PLATFORM_INTERRUPT_SOURCES,                      // Type
+  //sizeof (EFI_ACPI_2_0_PLATFORM_INTERRUPT_SOURCES_STRUCTURE),   // Length
+  //0x0000,                                                       // Flags
+  //0x00,                                                         // Interrupt Type
+  //0x00,                                                         // Processor ID
+  //0x00,                                                         // Processor EID
+  //0x00,                                                         // IO SAPIC Vector
+  //0x00000000,                                                   // Global System Interrupt
+  //EFI_ACPI_RESERVED_DWORD,                                      // Reserved
+
+};
+
+VOID*
+ReferenceAcpiTable (
+  VOID
+  )
+{
+  //
+  // Reference the table being generated to prevent the optimizer from removing the
+  // data structure from the exeutable
+  //
+  return (VOID*)&Madt;
+}
