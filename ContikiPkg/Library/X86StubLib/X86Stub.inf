@@ -1,0 +1,59 @@
+## @file
+#  Intrinsic Routines Wrapper Library Instance.
+#
+# Copyright (c) 2014, Intel Corporation. All rights reserved.
+# This program and the accompanying materials
+# are licensed and made available under the terms and conditions of the BSD License
+# which accompanies this distribution.  The full text of the license may be found at
+# http://opensource.org/licenses/bsd-license.php
+# 
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = X86StubLib
+  FILE_GUID                      = 3A2E7666-A4BC-4e65-BA77-00A0E6ABFC40
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = PlatformStubLib
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64 IPF
+#
+
+[Sources]
+  x86.c
+
+[Sources.IA32]
+  ia32\Cpu.asm
+
+[Sources.X64]
+  x64\Cpu.asm
+
+[Packages]
+  MdePkg/MdePkg.dec
+  IntelFrameworkPkg/IntelFrameworkPkg.dec
+  PcAtChipsetPkg/PcAtChipsetPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  PrintLib
+  DebugLib
+
+[Pcd]
+  gPcAtChipsetPkgTokenSpaceGuid.PcdHpetBaseAddress
+  gPcAtChipsetPkgTokenSpaceGuid.PcdHpetLocalApicVector
+
+[Protocols]
+  gEfiTimerArchProtocolGuid
+  gEfiCpuArchProtocolGuid
+  gEfiLegacy8259ProtocolGuid
+
+[Depex]
+  gEfiCpuArchProtocolGuid AND gEfiTimerArchProtocolGuid

@@ -1,0 +1,55 @@
+## @file
+#
+# Copyright (c) 2014, Intel Corporation. All rights reserved.
+# This program and the accompanying materials
+# are licensed and made available under the terms and conditions of the BSD License
+# which accompanies this distribution.  The full text of the license may be found at
+# http://opensource.org/licenses/bsd-license.php
+# 
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = ContikiUdpIp4Server
+  FILE_GUID                      = A7D0231A-CE10-4824-83CA-0016449AB497
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = ContikiMainEntryPoint
+
+[Sources]
+    server.c
+    ping4.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  ContikiPkg/ContikiPkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+  MemoryAllocationLib
+  PrintLib
+  ContikiLib
+  UefiLib
+
+[Depex]
+  TRUE
+
+[BuildOptions]
+  # warning C4819: The file contains a character that cannot be represented in the current code page (936).
+  # warning C4244: '=' : conversion from 'int' to 'uint8_t', possible loss of data
+  # warning C4310: cast truncates constant value
+  # warning C4702: unreachable code
+  # warning C4101: 'ans': unreferenced local variable
+  # warning C4267: 'function' : conversion from 'size_t' to 'int', possible loss of data
+  # warning C4200: nonstandard extension used : zero-sized array in struct/union
+  # warning C4189: 'is_fragment' : local variable is initialized but not referenced
+  # warning C4706: assignment within conditional expression
+  *_*_*_CC_FLAGS  = /X /wd4819 /wd4244 /wd4310 /wd4702 /wd4101 /wd4267 /wd4200 /wd4189 /wd4706 /wd4005 /D_CRT_SECURE_NO_WARNINGS /DAUTOSTART_ENABLE=1

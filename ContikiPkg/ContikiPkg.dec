@@ -1,0 +1,29 @@
+##  @file  ContikiPkg.dec
+#
+# Copyright (c) 2014, Intel Corporation. All rights reserved.
+# This program and the accompanying materials
+# are licensed and made available under the terms and conditions of the BSD License
+# which accompanies this distribution.  The full text of the license may be found at
+# http://opensource.org/licenses/bsd-license.php
+# 
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = ContikiPkg
+  PACKAGE_GUID                   = 5FA3312E-44B8-42eb-8C64-006043172E43
+  PACKAGE_VERSION                = 0.1
+
+[Includes]
+  Contiki\UefiSupport\Include
+  Contiki\core
+  Contiki\X86Support\platform
+  Contiki\X86Support\cpu
+  Contiki\UefiSupport\net\ethernet
+  Contiki\UefiSupport\examples\udp-ipv6
+
+[Guids]
+  gEfiContikiPkgTokenSpaceGuid       = { 0x7519fc7a, 0x39c2, 0x49d7, { 0x82, 0xe0, 0x28, 0xe9, 0x2f, 0x6c, 0x88, 0xa3 }}
