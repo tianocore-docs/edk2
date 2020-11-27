@@ -370,6 +370,18 @@ ASM_PFX(GasketSecEmuThunkAddress):
   leave
   ret
 
+ASM_GLOBAL ASM_PFX(GasketSecSocketEmuThunkAddress)
+ASM_PFX(GasketSecEmuSocketThunkAddress):
+  pushl %ebp
+  movl  %esp, %ebp
+  subl  $24, %esp      // sub extra 16 from the stack for alignment
+  and   $-16, %esp    // stack needs to end in 0xFFFFFFF0 before call
+
+  call    ASM_PFX(SecEmuSocketThunkAddress)
+
+  leave
+  ret
+
 //
 // Gasket functions for EFI_EMU_UGA_IO_PROTOCOL
 //

@@ -426,6 +426,21 @@ ASM_PFX(GasketSecEmuThunkAddress):
   popq    %rbp
   ret
 
+ASM_GLOBAL ASM_PFX(GasketSecEmuSocketThunkAddress)
+ASM_PFX(GasketSecEmuSocketThunkAddress):
+  pushq   %rbp            // stack frame is for the debugger
+  movq    %rsp, %rbp
+
+  pushq   %rsi          // %rsi & %rdi are volatile in Unix and callee-save in EFI ABI
+  pushq   %rdi
+
+  call    ASM_PFX(SecEmuSocketThunkAddress)
+
+  popq    %rdi          // restore state
+  popq    %rsi
+  popq    %rbp
+  ret
+
 //
 // Gasket functions for EFI_EMU_UGA_IO_PROTOCOL
 //

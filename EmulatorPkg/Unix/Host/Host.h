@@ -110,6 +110,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Protocol/SimpleFileSystem.h>
 
 #include <Protocol/EmuThunk.h>
+#include <Protocol/EmuSocket.h>
 #include <Protocol/EmuIoThunk.h>
 #include <Protocol/EmuGraphicsWindow.h>
 #include <Protocol/EmuThread.h>
@@ -345,6 +346,7 @@ BOOLEAN SecInterruptEanbled (VOID);
 
 
 extern EMU_THUNK_PROTOCOL    gEmuThunkProtocol;
+extern EMU_SOCKET_THUNK_PROTOCOL    gEmuSocketThunkProtocol;
 extern EMU_IO_THUNK_PROTOCOL gX11ThunkIo;
 extern EMU_IO_THUNK_PROTOCOL gPosixFileSystemThunkIo;
 extern EMU_IO_THUNK_PROTOCOL gPthreadThunkIo;

@@ -20,7 +20,8 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 EMU_THUNK_PPI mSecEmuThunkPpi = {
   GasketSecUnixPeiAutoScan,
   GasketSecUnixFdAddress,
-  GasketSecEmuThunkAddress
+  GasketSecEmuThunkAddress,
+  GasketSecEmuSocketThunkAddress,
 };
 
 char *gGdbWorkingFileName = NULL;
@@ -715,6 +716,13 @@ SecEmuThunkAddress (
   return &gEmuThunkProtocol;
 }
 
+VOID *
+SecEmuSocketThunkAddress (
+  VOID
+  )
+{
+  return &gEmuSocketThunkProtocol;
+}
 
 
 RETURN_STATUS

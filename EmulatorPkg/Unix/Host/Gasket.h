@@ -173,6 +173,12 @@ GasketSecEmuThunkAddress (
   VOID
   );
 
+VOID *
+EFIAPI
+GasketSecEmuSocketThunkAddress (
+  VOID
+  );
+
 
 EFI_STATUS
 EFIAPI
