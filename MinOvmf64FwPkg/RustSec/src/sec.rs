@@ -11,6 +11,7 @@ use crate::pi::hob;
 use crate::pi::fv;
 use crate::pi::fv_lib;
 use crate::elf;
+use crate::pci;
 
 use r_efi::efi;
 use core::panic::PanicInfo;
@@ -21,20 +22,37 @@ pub const SIZE_4KB  :u64 = 0x00001000u64;
 pub const SIZE_1MB  :u64 = 0x00100000u64;
 pub const SIZE_16MB :u64 = 0x01000000u64;
 
+fn cmos_read8(index: u8) -> u8
+{
+    let mut res: u8 = 0;
+    unsafe {
+        x86::io::outb(0x70, index);
+        res = x86::io::inb(0x71);
+    }
+    res
+}
+
+fn cmos_write8(index: u8, value: u8) -> u8
+{
+    let mut res: u8 = 0;
+    unsafe {
+        x86::io::outb(0x70, index);
+        x86::io::outb(0x71, value);
+    }
+    res
+}
+
 #[allow(non_snake_case)]
 #[cfg(not(test))]
-pub fn GetSystemMemorySizeBelow4Gb() -> (u64, u64) {
+pub fn GetSystemMemorySizeBelow4Gb() -> u64 {
     let mut cmos0x34: u8 = 0u8;
     let mut cmos0x35: u8 = 0u8;
 
-    unsafe {
-        cmos0x34 = x86::io::inb(0x34u16);
-        cmos0x35 = x86::io::inb(0x35u16);
-    }
-
+    cmos0x34 = cmos_read8(0x34u8);
+    cmos0x35 = cmos_read8(0x35u8);
     let mut res: u64 = 0;
-    res = ((cmos0x35 as u64) << 8 + (cmos0x34 as u64) << 16) + SIZE_16MB;
-    (res, res-SIZE_16MB)
+    res = (((cmos0x35 as u64) << 8 + (cmos0x34 as u64)) << 16) + SIZE_16MB;
+    res
 }
 
 #[allow(non_snake_case)]
@@ -169,4 +187,51 @@ fn FindAndReportEntryPointElf32(image: *const c_void, data_slice: &[u8]) -> u64 
         }
     }
     elf_header.e_entry as u64
+}
+
+
+#[allow(non_snake_case)]
+#[cfg(not(test))]
+pub fn PciExBarInitialization()
+{
+    let pci_exbar_base = pcd::pcd_get_PcdPciExpressBaseAddress();
+
+    //
+    // Clear the PCIEXBAREN bit first, before programming the high register.
+    //
+    pci::PciCf8Write32(0, 0, 0, 0x60, 0);
+
+    //
+    // Program the high register. Then program the low register, setting the
+    // MMCONFIG area size and enabling decoding at once.
+    //
+    log!("pci_exbar_base {:x}\n", pci_exbar_base);
+    log!("pci_exbar_base {:x}, {:x}\n", (pci_exbar_base >> 32) as u32, (pci_exbar_base << 32 >> 32 | 0x1) as u32);
+    pci::PciCf8Write32(0, 0, 0, 0x64, (pci_exbar_base >> 32) as u32);
+    pci::PciCf8Write32(0, 0, 0, 0x60, (pci_exbar_base << 32 >> 32 | 0x1) as u32);
+}
+
+#[allow(non_snake_case)]
+#[cfg(not(test))]
+pub fn InitPci()
+{
+    pci::PciCf8Write32(0, 3, 0, 0x14, 0xC1085000);
+    pci::PciCf8Write32(0, 3, 0, 0x20, 0xC200000C);
+    pci::PciCf8Write32(0, 3, 0, 0x24, 0x00000000);
+    pci::PciCf8Write8(0, 3, 0, 0x4, 0x07);
+}
+
+#[allow(non_snake_case)]
+#[cfg(not(test))]
+pub fn VirtIoBlk()
+{
+    let base: usize = 0xC2000000usize;
+    use core::intrinsics::volatile_store;
+
+    log!("VIRTIO_STATUS_RESET\n");
+    unsafe{volatile_store((base + 0x14usize) as *mut u32, 0u32);}
+    log!("VIRTIO_STATUS_ACKNOWLEDGE\n");
+    unsafe{volatile_store((base + 0x14usize) as *mut u32, 1u32);}
+    log!("VIRTIO_STATUS_DRIVER\n");
+    unsafe{volatile_store((base + 0x14usize) as *mut u32, 2u32);}
 }

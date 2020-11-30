@@ -5,6 +5,7 @@
 #![allow(unused)]
 
 #![feature(llvm_asm)]
+#![feature(core_intrinsics)]
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(not(test), no_main)]
 #![cfg_attr(test, allow(unused_imports))]
@@ -14,6 +15,7 @@ mod logger;
 mod pcd;
 mod pi;
 mod sec;
+mod pci;
 
 extern crate plain;
 mod elf;
@@ -54,7 +56,7 @@ fn panic(_info: &PanicInfo) -> ! {
 #[no_mangle]
 #[export_name = "SecCoreStartupWithStack"]
 pub extern "win64" fn _start(boot_fv: *const c_void, top_of_stack: *const c_void) -> ! {
-    log!("Starting SEC boot_fv - {:p}, Top of stack - {:p} \n", boot_fv, top_of_stack);
+    log!("Starting RUST Based SEC boot_fv - {:p}, Top of stack - {:p} \n", boot_fv, top_of_stack);
 
     log!(" EfiTop: {:p}\n",((top_of_stack as u64) - (pcd::pcd_get_PcdOvmfSecPeiTempRamSize() as u64)) as *const c_void);
 
@@ -72,7 +74,8 @@ pub extern "win64" fn _start(boot_fv: *const c_void, top_of_stack: *const c_void
         reserved: 0
     };
 
-    let (memory_top, memory_bottom) = sec::GetSystemMemorySizeBelow4Gb();
+    let memory_top = sec::GetSystemMemorySizeBelow4Gb();
+    let memory_bottom = memory_top - sec::SIZE_16MB;
     #[allow(non_snake_case)]
     let mut handoffInfoTable = hob::HandoffInfoTable {
         header: hob::Header {
@@ -233,6 +236,12 @@ pub extern "win64" fn _start(boot_fv: *const c_void, top_of_stack: *const c_void
         }
     };
     log!( " Hob prepare\n");
+
+    log!("memory top: {:x}\n", sec::GetSystemMemorySizeBelow4Gb());
+
+    sec::PciExBarInitialization();
+    sec::InitPci();
+    sec::VirtIoBlk();
 
     let mut entry: usize = 0usize;
     entry = sec::FindAndReportEntryPoint(pcd::pcd_get_PcdOvmfDxeMemFvBase() as u64 as * const pi::fv::FirmwareVolumeHeader) as usize;
