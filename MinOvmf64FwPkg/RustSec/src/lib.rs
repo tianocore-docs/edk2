@@ -93,26 +93,26 @@ pub extern "win64" fn _start(boot_fv: *const c_void, top_of_stack: *const c_void
     };
 
     #[allow(non_snake_case)]
-    let mut firmwareVolume = hob::FirmwareVolume {
-        header: hob::Header {
-            r#type: hob::HOB_TYPE_FV,
-            length: core::mem::size_of::<hob::FirmwareVolume>() as u16,
-            reserved: 0
-        },
-        base_address: boot_fv as u64 - pcd::pcd_get_PcdOvmfDxeMemFvBase() as u64,
-        length: pcd::pcd_get_PcdOvmfDxeMemFvSize() as u64,
-    };
-
-    #[allow(non_snake_case)]
     let mut cpu = hob::Cpu {
         header: hob::Header {
             r#type: hob::HOB_TYPE_CPU,
             length: core::mem::size_of::<hob::Cpu>() as u16,
             reserved: 0
         },
-        size_of_memory_space: 36u8, // TBD asmcpuid
+        size_of_memory_space: sec::CpuGetMemorySpaceSize(), // TBD asmcpuid
         size_of_io_space: 16u8,
         reserved: [0u8; 6]
+    };
+
+    #[allow(non_snake_case)]
+    let mut firmwareVolume = hob::FirmwareVolume {
+        header: hob::Header {
+            r#type: hob::HOB_TYPE_FV,
+            length: core::mem::size_of::<hob::FirmwareVolume>() as u16,
+            reserved: 0
+        },
+        base_address: boot_fv as u64 - pcd::pcd_get_PcdOvmfDxeMemFvSize() as u64,
+        length: pcd::pcd_get_PcdOvmfDxeMemFvSize() as u64,
     };
 
     const MEMORY_ALLOCATION_STACK_GUID: efi::Guid = efi::Guid::from_fields(
@@ -133,11 +133,12 @@ pub extern "win64" fn _start(boot_fv: *const c_void, top_of_stack: *const c_void
         }
     };
 
-    // Enable host Paging //TBD
+    // Enable host Paging
     const PAGE_TABLE_NAME_GUID: efi::Guid = efi::Guid::from_fields(
         0xF8E21975, 0x0899, 0x4F58, 0xA4, 0xBE, &[0x55, 0x25, 0xA9, 0xC6, 0xD7, 0x7A]
     );
 
+    let page_total_size = sec::CreateHostPaging((pcd::pcd_get_PcdOvmfSecPeiTempRamBase() + pcd::pcd_get_PcdOvmfSecPeiTempRamSize()) as u64);
     #[allow(non_snake_case)]
     let mut pageTable = hob::MemoryAllocation {
         header: hob::Header {
@@ -147,8 +148,8 @@ pub extern "win64" fn _start(boot_fv: *const c_void, top_of_stack: *const c_void
         },
         alloc_descriptor: hob::MemoryAllocationHeader {
             name: PAGE_TABLE_NAME_GUID,
-            memory_base_address: 0u64,  // TBD
-            memory_length: 0u64,        // TBD
+            memory_base_address:  unsafe{x86::controlregs::cr3()},  // TBD
+            memory_length: page_total_size as u64,
             memory_type: efi::MemoryType::BootServicesData,
             reserved: [0u8; 4]
         }
@@ -157,6 +158,7 @@ pub extern "win64" fn _start(boot_fv: *const c_void, top_of_stack: *const c_void
     const DEFAULT_GUID: efi::Guid = efi::Guid::from_fields(
         0x4ED4BF27, 0x4092, 0x42E9, 0x80, 0x7D, &[0x52, 0x7B, 0x1D, 0x00, 0xC9, 0xBD]
     );
+    let lowmemory = sec::GetSystemMemorySizeBelow4Gb();
     #[allow(non_snake_case)]
     let mut memoryAbove1M = hob::ResourceDescription {
         header: hob::Header {
@@ -175,8 +177,8 @@ pub extern "win64" fn _start(boot_fv: *const c_void, top_of_stack: *const c_void
             hob::RESOURCE_ATTRIBUTE_WRITE_THROUGH_CACHEABLE |
             hob::RESOURCE_ATTRIBUTE_WRITE_BACK_CACHEABLE |
             hob::RESOURCE_ATTRIBUTE_TESTED,
-        physical_start: 0x100000u64,  // TBD
-        resource_length: 0u64   // TBD
+        physical_start: 0x100000u64,
+        resource_length: lowmemory - 0x100000u64
     };
 
     #[allow(non_snake_case)]
@@ -197,9 +199,16 @@ pub extern "win64" fn _start(boot_fv: *const c_void, top_of_stack: *const c_void
             hob::RESOURCE_ATTRIBUTE_WRITE_THROUGH_CACHEABLE |
             hob::RESOURCE_ATTRIBUTE_WRITE_BACK_CACHEABLE |
             hob::RESOURCE_ATTRIBUTE_TESTED,
-        physical_start: 0u64,  // TBD
-        resource_length: 0x8000u64 + 0x2000u64  // TBD
+        physical_start: 0u64,
+        resource_length: 0x8000u64 + 0x2000u64
     };
+
+    let (entry, basefw, basefwsize) = sec::FindAndReportEntryPoint(pcd::pcd_get_PcdOvmfDxeMemFvBase() as u64 as * const pi::fv::FirmwareVolumeHeader);
+    let entry = entry as usize;
+
+    const HYPERVISORFW_NAME_GUID: efi::Guid = efi::Guid::from_fields(
+        0x6948d4a, 0xd359, 0x4721, 0xad, 0xf6, &[0x52, 0x25, 0x48, 0x5a, 0x6a, 0x3a]
+    );
 
     #[allow(non_snake_case)]
     let mut hypervisorFw = hob::MemoryAllocation {
@@ -210,16 +219,14 @@ pub extern "win64" fn _start(boot_fv: *const c_void, top_of_stack: *const c_void
         },
         alloc_descriptor: hob::MemoryAllocationHeader {
             name: HYPERVISORFW_NAME_GUID,
-            memory_base_address: 0u64,  // TBD
-            memory_length: 0u64,        // TBD
+            memory_base_address: basefw,
+            memory_length: sec::EfiPageToSize(sec::EfiSizeToPage(basefwsize)),
             memory_type: efi::MemoryType::BootServicesCode,
             reserved: [0u8; 4]
         }
     };
 
-    const HYPERVISORFW_NAME_GUID: efi::Guid = efi::Guid::from_fields(
-        0x6948d4a, 0xd359, 0x4721, 0xad, 0xf6, &[0x52, 0x25, 0x48, 0x5a, 0x6a, 0x3a]
-    );
+
     let mut hob_template = HobTemplate {
         handoffInfoTable: handoffInfoTable,
         firmwareVolume: firmwareVolume,
@@ -237,14 +244,10 @@ pub extern "win64" fn _start(boot_fv: *const c_void, top_of_stack: *const c_void
     };
     log!( " Hob prepare\n");
 
-    log!("memory top: {:x}\n", sec::GetSystemMemorySizeBelow4Gb());
-
     sec::PciExBarInitialization();
     sec::InitPci();
     sec::VirtIoBlk();
 
-    let mut entry: usize = 0usize;
-    entry = sec::FindAndReportEntryPoint(pcd::pcd_get_PcdOvmfDxeMemFvBase() as u64 as * const pi::fv::FirmwareVolumeHeader) as usize;
     let mut code: extern "win64" fn(* mut HobTemplate) = unsafe {core::mem::transmute(entry)};
     code(&hob_template as *const HobTemplate as *mut HobTemplate);
 

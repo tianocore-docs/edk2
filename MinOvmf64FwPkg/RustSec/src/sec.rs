@@ -17,9 +17,13 @@ use r_efi::efi;
 use core::panic::PanicInfo;
 use core::ffi::c_void;
 use core::convert::TryInto;
+use core::slice;
+
+use x86::bits64::paging;
 
 pub const SIZE_4KB  :u64 = 0x00001000u64;
 pub const SIZE_1MB  :u64 = 0x00100000u64;
+pub const SIZE_2MB  :u64 = 0x00200000u64;
 pub const SIZE_16MB :u64 = 0x01000000u64;
 
 fn cmos_read8(index: u8) -> u8
@@ -82,7 +86,7 @@ fn AlignValue(value: u64, align: u64, flag: bool) -> u64
 
 #[allow(non_snake_case)]
 #[cfg(not(test))]
-pub fn FindAndReportEntryPoint(firmwareVolumePtr: * const fv::FirmwareVolumeHeader) -> u64
+pub fn FindAndReportEntryPoint(firmwareVolumePtr: * const fv::FirmwareVolumeHeader) -> (u64, u64, u64)
 {
     let firmwareVolume = unsafe{&(*firmwareVolumePtr)};
     log!("FirmwareVolumeHeader: \n fv_length: {:x}\n signature: {:x}\n", firmwareVolume.fv_length, firmwareVolume.signature);
@@ -99,19 +103,19 @@ pub fn FindAndReportEntryPoint(firmwareVolumePtr: * const fv::FirmwareVolumeHead
             match data_slice[elf::EI_CLASS] {
                 elf::ELFCLASS32 => FindAndReportEntryPointElf32(image, data_slice),
                 elf::ELFCLASS64 => FindAndReportEntryPointElf64(image, data_slice),
-                _ => {log!("Invalid EI class"); 0u64}
+                _ => {log!("Invalid EI class"); (0u64,0u64,0u64)}
             }
         }
         _ =>{
             log!("Not support\n");
-            0u64
+            (0u64,0u64,0u64)
         }
     }
 }
 
 #[allow(non_snake_case)]
 #[cfg(not(test))]
-fn FindAndReportEntryPointElf64(image: *const c_void, data_slice: &[u8]) -> u64 {
+fn FindAndReportEntryPointElf64(image: *const c_void, data_slice: &[u8]) -> (u64, u64, u64) {
     let elf_header = elf::ELFHeader64::from_bytes(data_slice);
     log!("--Elf: {:?}", elf_header);
     let phdr_slice = unsafe {core::slice::from_raw_parts((image as u64 + elf_header.e_phoff as u64) as *const u8 , (elf_header.e_ehsize * elf_header.e_phnum) as usize)};
@@ -146,12 +150,12 @@ fn FindAndReportEntryPointElf64(image: *const c_void, data_slice: &[u8]) -> u64 
             };
         }
     }
-    elf_header.e_entry as u64
+    (elf_header.e_entry as u64, bottom, top-bottom)
 }
 
 #[allow(non_snake_case)]
 #[cfg(not(test))]
-fn FindAndReportEntryPointElf32(image: *const c_void, data_slice: &[u8]) -> u64 {
+fn FindAndReportEntryPointElf32(image: *const c_void, data_slice: &[u8]) ->(u64, u64, u64)  {
     let elf_header = elf::ELFHeader32::from_bytes(data_slice);
     log!("--Elf: {:?}", elf_header);
     let phdr_slice = unsafe {core::slice::from_raw_parts((image as u64 + elf_header.e_phoff as u64) as *const u8 , (elf_header.e_ehsize * elf_header.e_phnum) as usize)};
@@ -186,7 +190,7 @@ fn FindAndReportEntryPointElf32(image: *const c_void, data_slice: &[u8]) -> u64 
             };
         }
     }
-    elf_header.e_entry as u64
+    (elf_header.e_entry as u64, bottom as u64, (bottom-top) as u64)
 }
 
 
@@ -217,7 +221,7 @@ pub fn InitPci()
 {
     pci::PciCf8Write32(0, 3, 0, 0x14, 0xC1085000);
     pci::PciCf8Write32(0, 3, 0, 0x20, 0xC200000C);
-    pci::PciCf8Write32(0, 3, 0, 0x24, 0x00000000);
+    pci::PciCf8Write32(0, 3, 0, 0x24, 0x00000008);
     pci::PciCf8Write8(0, 3, 0, 0x4, 0x07);
 }
 
@@ -225,7 +229,7 @@ pub fn InitPci()
 #[cfg(not(test))]
 pub fn VirtIoBlk()
 {
-    let base: usize = 0xC2000000usize;
+    let base: usize = 0x8C2000000usize;
     use core::intrinsics::volatile_store;
 
     log!("VIRTIO_STATUS_RESET\n");
@@ -234,4 +238,68 @@ pub fn VirtIoBlk()
     unsafe{volatile_store((base + 0x14usize) as *mut u32, 1u32);}
     log!("VIRTIO_STATUS_DRIVER\n");
     unsafe{volatile_store((base + 0x14usize) as *mut u32, 2u32);}
+}
+
+
+#[allow(non_snake_case)]
+#[cfg(not(test))]
+pub fn CreateHostPaging(PageTableAddressStart: u64) -> u64
+{
+    // Assume 2MB page, PhysicalAddressBits is 36
+    // Use 4 level paging.
+    let mut PageTableAddress: u64 = paging::PAddr::from(PageTableAddressStart as u64).align_up_to_base_page().into();
+
+    let mut BaseAddress = paging::PAddr::from(0x0);
+
+    let Pml4= unsafe {
+        slice::from_raw_parts_mut(
+            PageTableAddress as *mut c_void as *mut paging::PML4Entry, 1)
+        };
+    PageTableAddress += SIZE_4KB;
+    let plm4 = paging::PML4Entry::new(paging::PAddr::from(PageTableAddress), paging::PML4Flags::RW|paging::PML4Flags::P);
+    (Pml4[0]).clone_from(&plm4);
+
+    // move to pdpte
+    let Pdpte =  unsafe {
+        slice::from_raw_parts_mut(
+            PageTableAddress as *mut c_void as *mut paging::PDPTEntry, 64)
+        };
+    PageTableAddress += SIZE_4KB;
+
+    for pdpte_index in 0..64 {
+        Pdpte[pdpte_index].clone_from(&paging::PDPTEntry::new(paging::PAddr::from(PageTableAddress), paging::PDPTFlags::RW | paging::PDPTFlags::P));
+
+        // move to pde
+        let pde =  unsafe {
+            slice::from_raw_parts_mut(
+                PageTableAddress as *mut c_void as *mut paging::PDEntry, 512)
+            };
+        PageTableAddress += SIZE_4KB;
+        for pde_index in 0..512 {
+            pde[pde_index].clone_from(&paging::PDEntry::new(BaseAddress, paging::PDFlags::RW|paging::PDFlags::P|paging::PDFlags::PS));
+            BaseAddress += SIZE_2MB;
+        }
+    }
+
+    log!("FinalAddress - {:x}\n", BaseAddress);
+    log!("PageTable - {:x}\n", PageTableAddressStart as u64);
+    log!("PageTable size - {:x}\n", PageTableAddress - PageTableAddressStart as u64);
+
+    unsafe{x86::controlregs::cr3_write(PageTableAddressStart);}
+    log!("Cr3 - {:x}\n", unsafe{x86::controlregs::cr3()});
+    PageTableAddress - PageTableAddressStart as u64
+}
+
+#[allow(non_snake_case)]
+#[cfg(not(test))]
+pub fn CpuGetMemorySpaceSize() -> u8
+{
+    let res = x86::cpuid::cpuid!(0x80000000u32);
+    if res.eax > 0x80000008u32 {
+        let res = x86::cpuid::cpuid!(0x80000008u32);
+        let sizeofmemoryspace = (res.eax & 0xffu32) as u8;
+        sizeofmemoryspace
+    }else {
+        0u8
+    }
 }
