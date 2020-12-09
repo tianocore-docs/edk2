@@ -267,6 +267,7 @@ pub extern "win64" fn _start(boot_fv: *const c_void, top_of_stack: *const c_void
         x86::io::outb(0x92u16, res | 0b10 as u8);
     }
 
+    pci::InitializeAcpiPm();
     sec::PciExBarInitialization();
     sec::InitPci();
     sec::VirtIoBlk();
