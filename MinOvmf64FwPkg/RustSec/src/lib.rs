@@ -71,6 +71,8 @@ pub extern "win64" fn _start(boot_fv: *const c_void, top_of_stack: *const c_void
     log!(" PcdOvmfSecPeiTempRamSize: 0x{:X}\n", pcd::pcd_get_PcdOvmfSecPeiTempRamSize());
 
     sec::SetApicMode(sec::LOCAL_APIC_MODE_X2APIC);
+    sec::InitializeApicTimer(sec::TimerDivide::Div2, 0xffffffffu32, sec::TimerMode::Periodic, 5u8);
+    sec::DisableApicTimerInterrupt();
     log!(" SetApicMode: Done\n");
 
     let mut hob_header = hob::Header {
@@ -248,6 +250,22 @@ pub extern "win64" fn _start(boot_fv: *const c_void, top_of_stack: *const c_void
         }
     };
     log!( " Hob prepare\n");
+
+    //
+    // Clear 8259 interrupt
+    //
+    unsafe {
+        x86::io::outb(0x21u16, 0xffu8);
+        x86::io::outb(0xA1u16, 0xffu8);
+    }
+
+    //
+    // Disable A20 Mask
+    //
+    unsafe {
+        let res = x86::io::inb(0x92u16);
+        x86::io::outb(0x92u16, res | 0b10 as u8);
+    }
 
     sec::PciExBarInitialization();
     sec::InitPci();

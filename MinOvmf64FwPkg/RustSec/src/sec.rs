@@ -316,7 +316,7 @@ pub fn CpuGetMemorySpaceSize() -> u8
 pub fn LocalApicBaseAddressMsrSupported() -> bool
 {
     let res = x86::cpuid::cpuid!(1u32);
-    let res: u32 = res.eax.bit_range(8,11);
+    let res: u32 = res.eax.bit_range(11, 8);
     if res == 0x4 || res == 0x05 {
         false
     } else {
@@ -373,6 +373,111 @@ pub fn SetApicMode(mode: u64) {
             msr::wrmsr(msr::IA32_APIC_BASE, base);
             base.set_bit(11, true);
             msr::wrmsr(msr::IA32_APIC_BASE, base);
+        }
+    }
+}
+
+/// Local APIC timer divide configurations.
+///
+/// Defines the APIC timer frequency as the processor frequency divided by a
+/// specified value.
+#[allow(non_snake_case)]
+#[cfg(not(test))]
+#[derive(Debug, Copy, Clone)]
+#[repr(u8)]
+pub enum TimerDivide {
+    /// Divide by 2.
+    Div2 = 0b0000,
+    /// Divide by 4.
+    Div4 = 0b0001,
+    /// Divide by 8.
+    Div8 = 0b0010,
+    /// Divide by 16.
+    Div16 = 0b0011,
+    /// Divide by 32.
+    Div32 = 0b1000,
+    /// Divide by 64.
+    Div64 = 0b1001,
+    /// Divide by 128.
+    Div128 = 0b1010,
+    /// Divide by 256.
+    Div256 = 0b1011,
+}
+
+/// Local APIC timer modes.
+#[allow(non_snake_case)]
+#[cfg(not(test))]
+#[derive(Debug, Copy, Clone)]
+#[repr(u8)]
+pub enum TimerMode {
+    /// Timer only fires once.
+    OneShot = 0b00,
+    /// Timer fires periodically.
+    Periodic = 0b01,
+    /// Timer fires at an absolute time.
+    TscDeadline = 0b10,
+}
+
+#[allow(non_snake_case)]
+#[cfg(not(test))]
+pub fn InitializeApicTimer(DivideValue: TimerDivide, InitCount: u32, PeriodicMode: TimerMode, Vector: u8)
+{
+    //
+    // Ensure local APIC is in software-enabled state.
+    //
+    InitializeLocalApicSoftwareEnable(true);
+
+    //
+    // Program init-count register.
+    //
+    unsafe {
+        msr::wrmsr(msr::IA32_X2APIC_INIT_COUNT, InitCount as u64);
+    }
+
+    //
+    // Enable APIC timer interrupt with specified timer mode.
+    //
+    unsafe {
+        let mut div_register = msr::rdmsr(msr::IA32_X2APIC_DIV_CONF);
+        msr::wrmsr(msr::IA32_X2APIC_DIV_CONF, DivideValue as u64);
+
+        let mut lvt_timer_register = msr::rdmsr(msr::IA32_X2APIC_LVT_TIMER);
+
+        lvt_timer_register.set_bit_range(18, 17, PeriodicMode as u8);
+
+        lvt_timer_register.set_bit_range(7, 0, Vector);
+
+        msr::wrmsr(msr::IA32_X2APIC_LVT_TIMER, lvt_timer_register);
+    }
+
+}
+
+#[allow(non_snake_case)]
+#[cfg(not(test))]
+pub fn DisableApicTimerInterrupt()
+{
+    unsafe {
+        let mut lvt_timer_register = msr::rdmsr(msr::IA32_X2APIC_LVT_TIMER);
+        lvt_timer_register.set_bit(16, true);
+
+        msr::wrmsr(msr::IA32_X2APIC_LVT_TIMER, lvt_timer_register);
+    }
+}
+
+#[allow(non_snake_case)]
+#[cfg(not(test))]
+fn InitializeLocalApicSoftwareEnable(b: bool)
+{
+    let mut srv = unsafe {msr::rdmsr(msr::IA32_X2APIC_SIVR)};
+    if b {
+        if srv.bit(8) == false {
+            srv.set_bit(8, true);
+            unsafe { msr::wrmsr(msr::IA32_X2APIC_SIVR, srv)}
+        }
+    } else {
+        if srv.bit(8) == true {
+            srv.set_bit(8, false);
+            unsafe { msr::wrmsr(msr::IA32_X2APIC_SIVR, srv)}
         }
     }
 }
