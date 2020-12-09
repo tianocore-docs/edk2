@@ -20,11 +20,17 @@ use core::convert::TryInto;
 use core::slice;
 
 use x86::bits64::paging;
+use x86::msr;
+use bitfield::BitRange;
+use bitfield::Bit;
 
 pub const SIZE_4KB  :u64 = 0x00001000u64;
 pub const SIZE_1MB  :u64 = 0x00100000u64;
 pub const SIZE_2MB  :u64 = 0x00200000u64;
 pub const SIZE_16MB :u64 = 0x01000000u64;
+
+pub const LOCAL_APIC_MODE_XAPIC :u64 = 0x1;
+pub const LOCAL_APIC_MODE_X2APIC :u64 = 0x2;
 
 fn cmos_read8(index: u8) -> u8
 {
@@ -301,5 +307,72 @@ pub fn CpuGetMemorySpaceSize() -> u8
         sizeofmemoryspace
     }else {
         0u8
+    }
+}
+
+
+#[allow(non_snake_case)]
+#[cfg(not(test))]
+pub fn LocalApicBaseAddressMsrSupported() -> bool
+{
+    let res = x86::cpuid::cpuid!(1u32);
+    let res: u32 = res.eax.bit_range(8,11);
+    if res == 0x4 || res == 0x05 {
+        false
+    } else {
+        true
+    }
+}
+
+#[allow(non_snake_case)]
+#[cfg(not(test))]
+pub fn GetApicMode() -> u64
+{
+    use x86::msr;
+    match LocalApicBaseAddressMsrSupported() {
+        false => LOCAL_APIC_MODE_XAPIC,
+        true => {
+            let base = unsafe{msr::rdmsr(msr::IA32_APIC_BASE)};
+
+            //
+            // [Bit 10] Enable x2APIC mode. Introduced at Display Family / Display
+            // Model 06_1AH.
+            //
+            let ret: bool = base.bit(10);
+            if ret {
+                LOCAL_APIC_MODE_X2APIC
+            } else {
+                LOCAL_APIC_MODE_XAPIC
+            }
+        }
+    }
+}
+
+#[allow(non_snake_case)]
+#[cfg(not(test))]
+pub fn SetApicMode(mode: u64) {
+    let CurrentMode = GetApicMode();
+    if CurrentMode == LOCAL_APIC_MODE_XAPIC && mode == LOCAL_APIC_MODE_X2APIC {
+        unsafe {
+            let mut base = msr::rdmsr(msr::IA32_APIC_BASE);
+            base.set_bit(10, true);
+            msr::wrmsr(msr::IA32_APIC_BASE, base);
+        }
+
+    }
+
+    if CurrentMode == LOCAL_APIC_MODE_X2APIC && mode == LOCAL_APIC_MODE_XAPIC {
+        //
+        //  Transition from x2APIC mode to xAPIC mode is a two-step process:
+        //    x2APIC -> Local APIC disabled -> xAPIC
+        //
+        unsafe {
+            let mut base = msr::rdmsr(msr::IA32_APIC_BASE);
+            base.set_bit(10, false);
+            base.set_bit(11, false);
+            msr::wrmsr(msr::IA32_APIC_BASE, base);
+            base.set_bit(11, true);
+            msr::wrmsr(msr::IA32_APIC_BASE, base);
+        }
     }
 }

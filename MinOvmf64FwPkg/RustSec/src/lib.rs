@@ -18,6 +18,8 @@ mod sec;
 mod pci;
 
 extern crate plain;
+extern crate bitfield;
+
 mod elf;
 
 use r_efi::efi;
@@ -67,6 +69,9 @@ pub extern "win64" fn _start(boot_fv: *const c_void, top_of_stack: *const c_void
     log!(" PcdOvmfSecPageTablesBase: 0x{:X}\n", pcd::pcd_get_PcdOvmfSecPageTablesBase());
     log!(" PcdOvmfSecPeiTempRamBase: 0x{:X}\n", pcd::pcd_get_PcdOvmfSecPeiTempRamBase());
     log!(" PcdOvmfSecPeiTempRamSize: 0x{:X}\n", pcd::pcd_get_PcdOvmfSecPeiTempRamSize());
+
+    sec::SetApicMode(sec::LOCAL_APIC_MODE_X2APIC);
+    log!(" SetApicMode: Done\n");
 
     let mut hob_header = hob::Header {
         r#type: hob::HOB_TYPE_END_OF_HOB_LIST,
