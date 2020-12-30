@@ -27,6 +27,7 @@
   For.c
   Shift.c
   Stall.c
+  MemMap.c
 
 [Packages]
   MdePkg/MdePkg.dec

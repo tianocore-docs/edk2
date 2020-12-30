@@ -60,6 +60,7 @@ ShellLevel1CommandsLibConstructor (
   // install our shell command handlers that are always installed
   //
   ShellCommandRegisterCommandName(L"stall",  ShellCommandRunStall   , ShellCommandGetManFileNameLevel1, 1, L"", FALSE, gShellLevel1HiiHandle, (EFI_STRING_ID)(PcdGet8(PcdShellSupportLevel) < 3 ? 0 : STRING_TOKEN(STR_GET_HELP_STALL) ));
+  ShellCommandRegisterCommandName(L"memmap", ShellCommandRunMemMap  , ShellCommandGetManFileNameLevel1, 0, L"Debug1", TRUE, gShellLevel1HiiHandle, STRING_TOKEN(STR_GET_HELP_MEMMAP) );
   ShellCommandRegisterCommandName(L"for",    ShellCommandRunFor     , ShellCommandGetManFileNameLevel1, 1, L"", FALSE, gShellLevel1HiiHandle, (EFI_STRING_ID)(PcdGet8(PcdShellSupportLevel) < 3 ? 0 : STRING_TOKEN(STR_GET_HELP_FOR)   ));
   ShellCommandRegisterCommandName(L"goto",   ShellCommandRunGoto    , ShellCommandGetManFileNameLevel1, 1, L"", FALSE, gShellLevel1HiiHandle, (EFI_STRING_ID)(PcdGet8(PcdShellSupportLevel) < 3 ? 0 : STRING_TOKEN(STR_GET_HELP_GOTO)  ));
   ShellCommandRegisterCommandName(L"if",     ShellCommandRunIf      , ShellCommandGetManFileNameLevel1, 1, L"", FALSE, gShellLevel1HiiHandle, (EFI_STRING_ID)(PcdGet8(PcdShellSupportLevel) < 3 ? 0 : STRING_TOKEN(STR_GET_HELP_IF)    ));

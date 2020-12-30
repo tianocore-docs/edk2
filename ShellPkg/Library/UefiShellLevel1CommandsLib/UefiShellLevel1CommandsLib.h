@@ -199,5 +199,18 @@ MoveToTag (
   IN CONST BOOLEAN              WrapAroundScript
   );
 
+/**
+  Function for 'memmap' command.
+
+  @param[in] ImageHandle  Handle to the Image (NULL if Internal).
+  @param[in] SystemTable  Pointer to the System Table (NULL if Internal).
+**/
+SHELL_STATUS
+EFIAPI
+ShellCommandRunMemMap (
+  IN EFI_HANDLE        ImageHandle,
+  IN EFI_SYSTEM_TABLE  *SystemTable
+  );
+
 #endif
 
