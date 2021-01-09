@@ -10,8 +10,6 @@ Checkout required crate update for rust-crypto and put to the same directory as 
 
 r-efi: https://github.com/jyao1/edk2/tree/edkii-rust/RustPkg/External/r-efi
 
-plain: https://github.com/jyao1/plain/tree/minovmf
-
 ## Build
 
 Open Visual Studio 2019 X64 command windows.

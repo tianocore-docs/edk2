@@ -18,7 +18,7 @@ pub const ELFCLASS32: u8 = 1;
 /// 64-bit objects.
 pub const ELFCLASS64: u8 = 2;
 
-#[repr(C)]
+#[repr(packed)]
 #[derive(Default, Debug)]
 pub struct ELFHeader64 {
     /// Magic number and other info
@@ -60,7 +60,7 @@ impl ELFHeader64 {
     }
 }
 
-#[repr(C)]
+#[repr(packed)]
 #[derive(Default, Debug)]
 pub struct ELFHeader32 {
     /// Magic number and other info
@@ -101,7 +101,7 @@ impl ELFHeader32 {
     }
 }
 
-#[repr(C)]
+#[repr(packed)]
 #[derive(Default, Debug)]
 pub struct ProgramHeader32 {
     /// Segment type
@@ -130,7 +130,7 @@ impl ProgramHeader32 {
     }
 }
 
-#[repr(C)]
+#[repr(packed)]
 #[derive(Default, Debug)]
 pub struct ProgramHeader64 {
     /// Segment type
