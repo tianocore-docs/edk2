@@ -198,6 +198,10 @@ DEFINE CRYPT_LIB = OPENSSL
   ReportStatusCodeLib|MdeModulePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib.inf
 !endif
   DebugPrintErrorLevelLib|MdePkg/Library/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib.inf
+  ShellLib|ShellPkg/Library/UefiShellLib/UefiShellLib.inf
+  FileHandleLib|MdePkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
+  ShellCEntryLib|ShellPkg/Library/UefiShellCEntryLib/UefiShellCEntryLib.inf
+  SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
 
 [PcdsFixedAtBuild]
 !if $(TARGET) == DEBUG
@@ -232,7 +236,13 @@ DEFINE CRYPT_LIB = OPENSSL
 [Components]
   DeviceSecurityPkg/SpdmDeviceSecurityDxe/SpdmDeviceSecurityDxe.inf
   DeviceSecurityPkg/Test/DeviceSecurityPolicyStub/DeviceSecurityPolicyStub.inf
-  DeviceSecurityPkg/Test/Tcg2Stub/Tcg2Stub.inf
+  DeviceSecurityPkg/Test/Tcg2Stub/Tcg2Stub.inf {
+  <LibraryClasses>
+    Tpm2CommandLib|SecurityPkg/Library/Tpm2CommandLib/Tpm2CommandLib.inf
+    Tpm2DeviceLib|DeviceSecurityPkg/Test/Tpm2DeviceLibTestStub/Tpm2DeviceLibTestStub.inf
+    HashLib|DeviceSecurityPkg/Test/HashLibBaseCryptoRouterTestStub/HashLibBaseCryptoRouterTestStub.inf
+    NULL|SecurityPkg/Library/HashInstanceLibSha384/HashInstanceLibSha384.inf
+  }
   DeviceSecurityPkg/Test/PciIoStub/PciIoStub.inf
   DeviceSecurityPkg/Test/SpdmStub/SpdmStub.inf {
   <LibraryClasses>
@@ -262,6 +272,12 @@ DEFINE CRYPT_LIB = OPENSSL
   DeviceSecurityPkg/Test/Cryptest/Cryptest.inf
 !endif
   DeviceSecurityPkg/Test/Cryperf/Cryperf.inf
+
+  DeviceSecurityPkg/Test/Tcg2DumpLog/Tcg2DumpLog.inf {
+  <LibraryClasses>
+    Tpm2CommandLib|SecurityPkg/Library/Tpm2CommandLib/Tpm2CommandLib.inf
+    Tpm2DeviceLib|SecurityPkg/Library/Tpm2DeviceLibTcg2/Tpm2DeviceLibTcg2.inf
+  }
 
 [BuildOptions]
   *_*_*_CC_FLAGS = -D DISABLE_NEW_DEPRECATED_INTERFACES

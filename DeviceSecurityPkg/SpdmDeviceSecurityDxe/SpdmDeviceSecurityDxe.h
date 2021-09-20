@@ -16,6 +16,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <IndustryStandard/Pci.h>
 #include <IndustryStandard/Tpm20.h>
 #include <IndustryStandard/UefiTcgPlatform.h>
+#include <IndustryStandard/TcgSpdm.h>
 #include <Library/BaseLib.h>
 #include <Library/DebugLib.h>
 #include <Library/BaseMemoryLib.h>
@@ -37,6 +38,9 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Protocol/DeviceSecurity.h>
 #include <Protocol/DeviceSecurityPolicy.h>
 
+//#define TCG_DEVICE_SECURITY_EVENT_DATA_VERSION_SELECTION TCG_DEVICE_SECURITY_EVENT_DATA_VERSION_1
+#define TCG_DEVICE_SECURITY_EVENT_DATA_VERSION_SELECTION TCG_DEVICE_SECURITY_EVENT_DATA_VERSION_2
+
 typedef struct {
   UINTN                                           Signature;
   EDKII_DEVICE_IDENTIFIER                         DeviceId;
@@ -50,6 +54,7 @@ typedef struct {
   //
   BOOLEAN                                         IsDeviceMeasured;
   BOOLEAN                                         IsDeviceAuthenticated;
+  UINT64                                          DeviceUID;
 
   VOID                                            *SpdmContext;
 } SPDM_DRIVER_DEVICE_CONTEXT;

@@ -9,8 +9,6 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "SpdmDeviceSecurityPei.h"
 
-#define TCG_DEVICE_SECURITY_EVENT_DATA_VERSION_1 1
-
 /**
 
   This function dump raw data.

@@ -293,6 +293,9 @@ CreateSpdmDriverContext (
     goto Error;
   }
 
+#define SPDM_UID  1 // TBD - hardcoded
+  SpdmDriverContext->DeviceUID = SPDM_UID;
+
   Status = gBS->HandleProtocol (
                   DeviceId->DeviceHandle,
                   &DeviceId->DeviceType,

@@ -410,9 +410,12 @@ typedef enum {
 #define		SpdmInitConnection		spdm_init_connection
 #define		SpdmGetDigest		spdm_get_digest
 #define		SpdmGetCertificate		spdm_get_certificate
+#define		SpdmGetCertificateEx		spdm_get_certificate_ex
 #define		SpdmGetCertificateChooseLength		spdm_get_certificate_choose_length
 #define		SpdmChallenge		spdm_challenge
+#define		SpdmChallengeEx		spdm_challenge_ex
 #define		SpdmGetMeasurement		spdm_get_measurement
+#define		SpdmGetMeasurementEx		spdm_get_measurement_ex
 #define		SpdmStartSession		spdm_start_session
 #define		SpdmStopSession		spdm_stop_session
 #define		SpdmSendReceiveData		spdm_send_receive_data
