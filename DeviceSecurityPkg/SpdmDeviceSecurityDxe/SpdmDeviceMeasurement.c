@@ -9,8 +9,6 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "SpdmDeviceSecurityDxe.h"
 
-#define TCG_DEVICE_SECURITY_EVENT_DATA_VERSION_1 1
-
 /**
 
   This function dump raw data.
@@ -155,7 +153,9 @@ EFI_STATUS
 ExtendMeasurement (
   IN  SPDM_DRIVER_DEVICE_CONTEXT  *SpdmDriverContext,
   IN UINT32                       MeasurementRecordLength,
-  IN UINT8                        *MeasurementRecord
+  IN UINT8                        *MeasurementRecord,
+  IN UINT8                        *RequesterNonce,
+  IN UINT8                        *ResponderNonce
   )
 {
   UINT32                                                   PcrIndex;
@@ -163,7 +163,12 @@ ExtendMeasurement (
   VOID                                                     *EventLog;
   UINT32                                                   EventLogSize;
   UINT8                                                    *EventLogPtr;
+#if (TCG_DEVICE_SECURITY_EVENT_DATA_VERSION_SELECTION == TCG_DEVICE_SECURITY_EVENT_DATA_VERSION_1)
   TCG_DEVICE_SECURITY_EVENT_DATA_HEADER                    *EventData;
+#else
+  TCG_DEVICE_SECURITY_EVENT_DATA_HEADER2                   *EventData2;
+  TCG_DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK  *TcgSpdmMeasurementBlock;
+#endif
   VOID                                                     *DeviceContext;
   UINTN                                                    DeviceContextSize;
   EFI_STATUS                                               Status;
@@ -219,6 +224,7 @@ ExtendMeasurement (
   switch (SpdmMeasurementBlockDmtfHeader->dmtf_spec_measurement_value_type & 0x7F) {
   case SPDM_MEASUREMENT_BLOCK_MEASUREMENT_TYPE_IMMUTABLE_ROM:
   case SPDM_MEASUREMENT_BLOCK_MEASUREMENT_TYPE_MUTABLE_FIRMWARE:
+  case 7: // SVN
     PcrIndex = 2;
     EventType = EV_EFI_SPDM_FIRMWARE_BLOB;
     break;
@@ -228,21 +234,30 @@ ExtendMeasurement (
     EventType = EV_EFI_SPDM_FIRMWARE_CONFIG;
     break;
   default:
-    return EFI_SECURITY_VIOLATION;
+    return EFI_SUCCESS;
   }
 
   DeviceContextSize = GetDeviceMeasurementContextSize (SpdmDriverContext);
   DevicePathSize = GetDevicePathSize (SpdmDriverContext->DevicePath);
+#if (TCG_DEVICE_SECURITY_EVENT_DATA_VERSION_SELECTION == TCG_DEVICE_SECURITY_EVENT_DATA_VERSION_1)
   EventLogSize = (UINT32)(sizeof(TCG_DEVICE_SECURITY_EVENT_DATA_HEADER) +
                           MeasurementRecordLength +
-                          sizeof(UINT32) + DevicePathSize +
+                          sizeof(UINT64) + DevicePathSize +
                           DeviceContextSize);
+#else
+  EventLogSize = (UINT32)(sizeof(TCG_DEVICE_SECURITY_EVENT_DATA_HEADER2) +
+                          sizeof(UINT64) + DevicePathSize +
+                          sizeof(TCG_DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK) +
+                          MeasurementRecordLength +
+                          DeviceContextSize);
+#endif
   EventLog = AllocatePool (EventLogSize);
   if (EventLog == NULL) {
     return EFI_OUT_OF_RESOURCES;
   }
   EventLogPtr = EventLog;
 
+#if (TCG_DEVICE_SECURITY_EVENT_DATA_VERSION_SELECTION == TCG_DEVICE_SECURITY_EVENT_DATA_VERSION_1)
   EventData = (VOID *)EventLogPtr;
   CopyMem (EventData->Signature, TCG_DEVICE_SECURITY_EVENT_DATA_SIGNATURE, sizeof(EventData->Signature));
   EventData->Version                  = TCG_DEVICE_SECURITY_EVENT_DATA_VERSION_1;
@@ -251,13 +266,41 @@ ExtendMeasurement (
   EventData->DeviceType               = GetSpdmDeviceType (SpdmDriverContext);
 
   EventLogPtr = (VOID *)(EventData + 1);
+
   CopyMem (EventLogPtr, MeasurementRecord, MeasurementRecordLength);
   EventLogPtr += MeasurementRecordLength;
 
-  *(UINT32 *)EventLogPtr = (UINT32)DevicePathSize;
-  EventLogPtr += sizeof(UINT32);
+  *(UINT64 *)EventLogPtr = (UINT64)DevicePathSize;
+  EventLogPtr += sizeof(UINT64);
   CopyMem (EventLogPtr, SpdmDriverContext->DevicePath, DevicePathSize);
   EventLogPtr += DevicePathSize;
+#else
+  EventData2 = (VOID *)EventLogPtr;
+  CopyMem (EventData2->Signature, TCG_DEVICE_SECURITY_EVENT_DATA_SIGNATURE_2, sizeof(EventData2->Signature));
+  EventData2->Version                  = TCG_DEVICE_SECURITY_EVENT_DATA_VERSION_2;
+  EventData2->Reserved                 = 0;
+  EventData2->Length                   = (UINT32)EventLogSize;
+  EventData2->DeviceType               = GetSpdmDeviceType (SpdmDriverContext);
+
+  EventData2->SubHeaderType            = TCG_DEVICE_SECURITY_EVENT_DATA_DEVICE_SUB_HEADER_TYPE_SPDM_MEASUREMENT_BLOCK;
+  EventData2->SubHeaderLength          = sizeof(TCG_DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK) + MeasurementRecordLength;
+  EventData2->SubHeaderUID             = SpdmDriverContext->DeviceUID;
+
+  EventLogPtr = (VOID *)(EventData2 + 1);
+
+  *(UINT64 *)EventLogPtr = (UINT64)DevicePathSize;
+  EventLogPtr += sizeof(UINT64);
+  CopyMem (EventLogPtr, SpdmDriverContext->DevicePath, DevicePathSize);
+  EventLogPtr += DevicePathSize;
+
+  TcgSpdmMeasurementBlock = (VOID *)EventLogPtr;
+  TcgSpdmMeasurementBlock->SpdmVersion = SPDM_MESSAGE_VERSION_11; // TBD - hardcoded
+  TcgSpdmMeasurementBlock->SpdmMeasurementHashAlgo = MeasurementHashAlgo;
+  EventLogPtr += sizeof(TCG_DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK);
+
+  CopyMem (EventLogPtr, MeasurementRecord, MeasurementRecordLength);
+  EventLogPtr += MeasurementRecordLength;
+#endif
 
   if (DeviceContextSize != 0) {
     DeviceContext = (VOID *)EventLogPtr;
@@ -272,10 +315,55 @@ ExtendMeasurement (
              EventType,
              EventLog,
              EventLogSize,
-             Digest,
-             DigestSize
+             EventLog,
+             EventLogSize
              );
-  DEBUG((DEBUG_INFO, "TpmMeasureAndLogData - %r\n", Status));
+  DEBUG((DEBUG_INFO, "TpmMeasureAndLogData (Measurement) - %r\n", Status));
+
+#if (TCG_DEVICE_SECURITY_EVENT_DATA_VERSION_SELECTION > TCG_DEVICE_SECURITY_EVENT_DATA_VERSION_1)
+  {
+    TCG_NV_INDEX_DYNAMIC_EVENT_LOG_STRUCT_SPDM_GET_MEASUREMENTS  DynamicEventLogSpdmGetMeasurementsEvent;
+    TCG_NV_INDEX_DYNAMIC_EVENT_LOG_STRUCT_SPDM_MEASUREMENTS      DynamicEventLogSpdmMeasurementsEvent;
+
+    CopyMem (DynamicEventLogSpdmGetMeasurementsEvent.Header.Signature, TCG_NV_EXTEND_INDEX_FOR_DYNAMIC_SIGNATURE, sizeof(TCG_NV_EXTEND_INDEX_FOR_DYNAMIC_SIGNATURE));
+    DynamicEventLogSpdmGetMeasurementsEvent.Header.Version = TCG_NV_INDEX_DYNAMIC_EVENT_LOG_STRUCT_VERSION;
+    ZeroMem (DynamicEventLogSpdmGetMeasurementsEvent.Header.Reserved, sizeof(DynamicEventLogSpdmGetMeasurementsEvent.Header.Reserved));
+    DynamicEventLogSpdmGetMeasurementsEvent.Header.Uid = SpdmDriverContext->DeviceUID;
+    DynamicEventLogSpdmGetMeasurementsEvent.DescriptionSize = sizeof(TCG_SPDM_GET_MEASUREMENTS_DESCRIPTION);
+    CopyMem (DynamicEventLogSpdmGetMeasurementsEvent.Description, TCG_SPDM_GET_MEASUREMENTS_DESCRIPTION, sizeof(TCG_SPDM_GET_MEASUREMENTS_DESCRIPTION));
+    DynamicEventLogSpdmGetMeasurementsEvent.DataSize = SPDM_NONCE_SIZE;
+    CopyMem (DynamicEventLogSpdmGetMeasurementsEvent.Data, RequesterNonce, SPDM_NONCE_SIZE);
+
+    Status = TpmMeasureAndLogData (
+              TCG_NV_EXTEND_INDEX_FOR_DYNAMIC,
+              EV_NO_ACTION,
+              &DynamicEventLogSpdmGetMeasurementsEvent,
+              sizeof(DynamicEventLogSpdmGetMeasurementsEvent),
+              &DynamicEventLogSpdmGetMeasurementsEvent,
+              sizeof(DynamicEventLogSpdmGetMeasurementsEvent)
+              );
+    DEBUG((DEBUG_INFO, "TpmMeasureAndLogData (Dynamic) - %r\n", Status));
+
+    CopyMem (DynamicEventLogSpdmMeasurementsEvent.Header.Signature, TCG_NV_EXTEND_INDEX_FOR_DYNAMIC_SIGNATURE, sizeof(TCG_NV_EXTEND_INDEX_FOR_DYNAMIC_SIGNATURE));
+    DynamicEventLogSpdmMeasurementsEvent.Header.Version = TCG_NV_INDEX_DYNAMIC_EVENT_LOG_STRUCT_VERSION;
+    ZeroMem (DynamicEventLogSpdmMeasurementsEvent.Header.Reserved, sizeof(DynamicEventLogSpdmMeasurementsEvent.Header.Reserved));
+    DynamicEventLogSpdmMeasurementsEvent.Header.Uid = SpdmDriverContext->DeviceUID;
+    DynamicEventLogSpdmMeasurementsEvent.DescriptionSize = sizeof(TCG_SPDM_MEASUREMENTS_DESCRIPTION);
+    CopyMem (DynamicEventLogSpdmMeasurementsEvent.Description, TCG_SPDM_MEASUREMENTS_DESCRIPTION, sizeof(TCG_SPDM_MEASUREMENTS_DESCRIPTION));
+    DynamicEventLogSpdmMeasurementsEvent.DataSize = SPDM_NONCE_SIZE;
+    CopyMem (DynamicEventLogSpdmMeasurementsEvent.Data, ResponderNonce, SPDM_NONCE_SIZE);
+
+    Status = TpmMeasureAndLogData (
+              TCG_NV_EXTEND_INDEX_FOR_DYNAMIC,
+              EV_NO_ACTION,
+              &DynamicEventLogSpdmMeasurementsEvent,
+              sizeof(DynamicEventLogSpdmMeasurementsEvent),
+              &DynamicEventLogSpdmMeasurementsEvent,
+              sizeof(DynamicEventLogSpdmMeasurementsEvent)
+              );
+    DEBUG((DEBUG_INFO, "TpmMeasureAndLogData (Dynamic) - %r\n", Status));
+  }
+#endif
 
   return Status;
 }
@@ -298,6 +386,8 @@ SpdmSendReceiveGetMeasurement (
   UINT8                                     MeasurementRecord[MAX_SPDM_MEASUREMENT_RECORD_SIZE];
   UINT8                                     Index;
   VOID                                      *SpdmContext;
+  UINT8                                     RequesterNonce[SPDM_NONCE_SIZE];
+  UINT8                                     ResponderNonce[SPDM_NONCE_SIZE];
 
   SpdmContext = SpdmDriverContext->SpdmContext;
 
@@ -326,7 +416,9 @@ SpdmSendReceiveGetMeasurement (
     // TBD get signature in last message only.
     //
     MeasurementRecordLength = sizeof(MeasurementRecord);
-    Status = SpdmGetMeasurement (
+    ZeroMem (RequesterNonce, sizeof(RequesterNonce));
+    ZeroMem (ResponderNonce, sizeof(ResponderNonce));
+    Status = SpdmGetMeasurementEx (
               SpdmContext,
               NULL,
               SPDM_GET_MEASUREMENTS_REQUEST_ATTRIBUTES_GENERATE_SIGNATURE,
@@ -334,17 +426,29 @@ SpdmSendReceiveGetMeasurement (
               0,
               &NumberOfBlock,
               &MeasurementRecordLength,
-              MeasurementRecord
+              MeasurementRecord,
+              RequesterNonce,
+              ResponderNonce
               );
     if (EFI_ERROR(Status)) {
       return Status;
     }
 
     DEBUG((DEBUG_INFO, "ExtendMeasurement...\n", ExtendMeasurement));
-    Status = ExtendMeasurement (SpdmDriverContext, MeasurementRecordLength, MeasurementRecord);
+    Status = ExtendMeasurement (SpdmDriverContext, MeasurementRecordLength, MeasurementRecord, RequesterNonce, ResponderNonce);
     if (Status != EFI_SUCCESS) {
       return Status;
     }
+  }
+
+  {
+    // BUGBUG: Add SVN for test purpose.
+    UINT8   SvnMeasurementRecord[] = {0x01, 0x01, 0x0b, 0x00, // measurement block header
+                                      0x87, 0x08, 0x00,       // DMTF measurement block header
+                                      0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; // SVN
+    RandomBytes (RequesterNonce, 32);
+    RandomBytes (ResponderNonce, 32);
+    ExtendMeasurement (SpdmDriverContext, sizeof(SvnMeasurementRecord), SvnMeasurementRecord, RequesterNonce, ResponderNonce);
   }
 
   return EFI_SUCCESS;

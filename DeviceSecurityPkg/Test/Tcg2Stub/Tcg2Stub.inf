@@ -19,19 +19,29 @@
 
 [Packages]
   MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  SecurityPkg/SecurityPkg.dec
 
 [LibraryClasses]
-  UefiRuntimeServicesTableLib
+  MemoryAllocationLib
+  BaseLib
   UefiBootServicesTableLib
   UefiDriverEntryPoint
-  MemoryAllocationLib
-  DevicePathLib
+  UefiRuntimeServicesTableLib
   BaseMemoryLib
-  PrintLib
   DebugLib
+  Tpm2CommandLib
+  PrintLib
+  HashLib
 
 [Protocols]
-  gEfiTcg2ProtocolGuid  ## PRODUCES
+  gEfiTcg2ProtocolGuid                               ## PRODUCES
+
+[Pcd]
+  gEfiSecurityPkgTokenSpaceGuid.PcdTpmPlatformClass                         ## SOMETIMES_CONSUMES
+  gEfiSecurityPkgTokenSpaceGuid.PcdTcgLogAreaMinLen                         ## CONSUMES
+  gEfiSecurityPkgTokenSpaceGuid.PcdTpm2AcpiTableRev                         ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdTcgPfpMeasurementRevision               ## CONSUMES
 
 [Depex]
   TRUE
