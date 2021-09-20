@@ -122,7 +122,7 @@
 !endif
   LockBoxLib|MdeModulePkg/Library/LockBoxNullLib/LockBoxNullLib.inf
   CpuExceptionHandlerLib|MdeModulePkg/Library/CpuExceptionHandlerLibNull/CpuExceptionHandlerLibNull.inf
-  TpmMeasurementLib|MdeModulePkg/Library/TpmMeasurementLibNull/TpmMeasurementLibNull.inf
+  TpmMeasurementLib|SecurityPkg/Library/DxeTpmMeasurementLib/DxeTpmMeasurementLib.inf
   VarCheckLib|MdeModulePkg/Library/VarCheckLib/VarCheckLib.inf
   VariablePolicyLib|MdeModulePkg/Library/VariablePolicyLib/VariablePolicyLibRuntimeDxe.inf
   VariablePolicyHelperLib|MdeModulePkg/Library/VariablePolicyHelperLib/VariablePolicyHelperLib.inf
@@ -234,6 +234,11 @@
   PeCoffExtraActionLib|EmulatorPkg/Library/DxeEmuPeCoffExtraActionLib/DxeEmuPeCoffExtraActionLib.inf
   TimerLib|EmulatorPkg/Library/DxeTimerLib/DxeTimerLib.inf
   BaseCryptLib|CryptoPkg/Library/BaseCryptLib/BaseCryptLib.inf
+
+  ShellLib|ShellPkg/Library/UefiShellLib/UefiShellLib.inf
+  FileHandleLib|MdePkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
+  ShellCEntryLib|ShellPkg/Library/UefiShellCEntryLib/UefiShellCEntryLib.inf
+  SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
 
 [PcdsFeatureFlag]
   gEfiMdeModulePkgTokenSpaceGuid.PcdDxeIplSwitchToLongMode|FALSE
@@ -491,7 +496,13 @@
 
   DeviceSecurityPkg/SpdmDeviceSecurityDxe/SpdmDeviceSecurityDxe.inf
   DeviceSecurityPkg/Test/DeviceSecurityPolicyStub/DeviceSecurityPolicyStub.inf
-  DeviceSecurityPkg/Test/Tcg2Stub/Tcg2Stub.inf
+  DeviceSecurityPkg/Test/Tcg2Stub/Tcg2Stub.inf {
+  <LibraryClasses>
+    Tpm2CommandLib|SecurityPkg/Library/Tpm2CommandLib/Tpm2CommandLib.inf
+    Tpm2DeviceLib|DeviceSecurityPkg/Test/Tpm2DeviceLibTestStub/Tpm2DeviceLibTestStub.inf
+    HashLib|DeviceSecurityPkg/Test/HashLibBaseCryptoRouterTestStub/HashLibBaseCryptoRouterTestStub.inf
+    NULL|SecurityPkg/Library/HashInstanceLibSha384/HashInstanceLibSha384.inf
+  }
   DeviceSecurityPkg/Test/PciIoStub/PciIoStub.inf
   DeviceSecurityPkg/Test/SpdmStub/SpdmStub.inf {
   <LibraryClasses>
@@ -505,6 +516,12 @@
     SpdmDeviceSecretLib|DeviceSecurityPkg/Test/SpdmDeviceSecretLibTestStub/SpdmDeviceSecretLibTestStub.inf
   }
   DeviceSecurityPkg/Test/SpdmPciDoeStub/SpdmPciDoeStub.inf
+
+  DeviceSecurityPkg/Test/Tcg2DumpLog/Tcg2DumpLog.inf {
+  <LibraryClasses>
+    Tpm2CommandLib|SecurityPkg/Library/Tpm2CommandLib/Tpm2CommandLib.inf
+    Tpm2DeviceLib|SecurityPkg/Library/Tpm2DeviceLibTcg2/Tpm2DeviceLibTcg2.inf
+  }
 
 !if "XCODE5" not in $(TOOL_CHAIN_TAG)
   ShellPkg/DynamicCommand/TftpDynamicCommand/TftpDynamicCommand.inf {
