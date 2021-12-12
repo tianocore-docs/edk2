@@ -1256,5 +1256,7 @@ InitializeCpu (
 
   InitializeMpSupport ();
 
+  InstallEfiMemoryAttributeProtocol ();
+
   return Status;
 }
