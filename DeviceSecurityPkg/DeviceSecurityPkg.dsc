@@ -96,6 +96,8 @@ DEFINE CRYPT_LIB = OPENSSL
   RngLib|MdePkg/Library/BaseRngLib/BaseRngLib.inf
   MbedTlsLib|CryptoMbedTlsPkg/Library/MbedTlsLib/MbedTlsLib.inf
 
+  RegisterFilterLib|MdePkg/Library/RegisterFilterLibNull/RegisterFilterLibNull.inf
+
   SpdmDeviceSecretLib|DeviceSecurityPkg/Library/SpdmLib/SpdmDeviceSecretLibNull.inf
   SpdmCryptLib|DeviceSecurityPkg/Library/SpdmLib/SpdmCryptLib.inf
   SpdmCommonLib|DeviceSecurityPkg/Library/SpdmLib/SpdmCommonLib.inf

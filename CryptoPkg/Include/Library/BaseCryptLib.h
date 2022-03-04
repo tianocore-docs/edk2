@@ -3123,10 +3123,9 @@ BOOLEAN
 EFIAPI
 RsaPssSign (
   IN      VOID         *RsaContext,
-  IN      CONST UINT8  *Message,
-  IN      UINTN        MsgSize,
-  IN      UINT16       DigestLen,
-  IN      UINT16       SaltLen,
+  IN      UINTN        HashNid,
+  IN      CONST UINT8  *MessageHash,
+  IN      UINTN        HashSize,
   OUT     UINT8        *Signature,
   IN OUT  UINTN        *SigSize
   );
@@ -3153,12 +3152,11 @@ BOOLEAN
 EFIAPI
 RsaPssVerify (
   IN  VOID         *RsaContext,
-  IN  CONST UINT8  *Message,
-  IN  UINTN        MsgSize,
+  IN  UINTN        HashNid,
+  IN  CONST UINT8  *MessageHash,
+  IN  UINTN        HashSize,
   IN  CONST UINT8  *Signature,
-  IN  UINTN        SigSize,
-  IN  UINT16       DigestLen,
-  IN  UINT16       SaltLen
+  IN  UINTN        SigSize
   );
 
 /**
@@ -3444,7 +3442,7 @@ EFIAPI
 X509GetCommonName (
   IN      CONST UINT8  *Cert,
   IN      UINTN        CertSize,
-  OUT     CHAR8        *CommonName   OPTIONAL,
+  OUT     CHAR8        *CommonName,  OPTIONAL
   IN OUT  UINTN        *CommonNameSize
   );
 
@@ -3479,7 +3477,7 @@ EFIAPI
 X509GetOrganizationName (
   IN      CONST UINT8   *Cert,
   IN      UINTN         CertSize,
-  OUT     CHAR8         *NameBuffer OPTIONAL,
+  OUT     CHAR8         *NameBuffer,  OPTIONAL
   IN OUT  UINTN         *NameBufferSize
   );
 
@@ -4115,8 +4113,8 @@ Pkcs1v2Encrypt (
   IN   UINTN        PublicKeySize,
   IN   UINT8        *InData,
   IN   UINTN        InDataSize,
-  IN   CONST UINT8  *PrngSeed   OPTIONAL,
-  IN   UINTN        PrngSeedSize   OPTIONAL,
+  IN   CONST UINT8  *PrngSeed,  OPTIONAL
+  IN   UINTN        PrngSeedSize,  OPTIONAL
   OUT  UINT8        **EncryptedData,
   OUT  UINTN        *EncryptedDataSize
   );
