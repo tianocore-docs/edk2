@@ -18,7 +18,7 @@ EFIAPI
 SpdmIoSendMessage (
   IN     SPDM_IO_PROTOCOL                       *This,
   IN     UINTN                                  MessageSize,
-  IN     VOID                                   *Message,
+  IN CONST VOID                                 *Message,
   IN     UINT64                                 Timeout
   )
 {
@@ -184,6 +184,8 @@ MainEntryPoint (
   SpdmSetData (SpdmContext, SpdmDataAEADCipherSuite, &Parameter, &Data16, sizeof(Data16));
   Data16 = SPDM_ALGORITHMS_KEY_SCHEDULE_HMAC_HASH;
   SpdmSetData (SpdmContext, SpdmDataKeySchedule, &Parameter, &Data16, sizeof(Data16));
+  Data8 = SPDM_ALGORITHMS_OPAQUE_DATA_FORMAT_1;
+  SpdmSetData (SpdmContext, SpdmDataOtherParamsSsupport, &Parameter, &Data8, sizeof(Data8));
 
   Status = gBS->InstallProtocolInterface (
                   &mSpdmTestDeviceContext.SpdmHandle,

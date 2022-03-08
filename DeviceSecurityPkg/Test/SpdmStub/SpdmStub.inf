@@ -41,6 +41,7 @@
   SpdmResponderLib
   SpdmTransportMctpLib
   SpdmTransportPciDoeLib
+  LibspdmCryptlibStub
   
 [Guids]
   gEdkiiDeviceSignatureDatabaseGuid  ## CONSUMES

@@ -385,6 +385,8 @@ CreateSpdmDriverContext (
   SpdmSetData (SpdmContext, SpdmDataAEADCipherSuite, &Parameter, &Data16, sizeof(Data16));
   Data16 = SPDM_ALGORITHMS_KEY_SCHEDULE_HMAC_HASH;
   SpdmSetData (SpdmContext, SpdmDataKeySchedule, &Parameter, &Data16, sizeof(Data16));
+  Data8 = SPDM_ALGORITHMS_OPAQUE_DATA_FORMAT_1;
+  SpdmSetData (SpdmContext, SpdmDataOtherParamsSsupport, &Parameter, &Data8, sizeof(Data8));
 
   Status = SpdmInitConnection (SpdmContext, FALSE);
   if (EFI_ERROR(Status)) {

@@ -27,7 +27,7 @@ EFIAPI
 SpdmIoSendRequest (
   IN     SPDM_IO_PROTOCOL               *This,
   IN     UINTN                          RequestSize,
-  IN     VOID                           *Request,
+  IN     CONST VOID                     *Request,
   IN     UINT64                         Timeout
   );
 

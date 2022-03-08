@@ -18,7 +18,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 VOID
-internal_dump_data(
+libspdm_internal_dump_data(
   IN UINT8  *Data,
   IN UINTN  Size
   );
@@ -383,9 +383,10 @@ SpdmSendReceiveGetMeasurement (
   UINT8                                     NumberOfBlocks;
   UINT8                                     NumberOfBlock;
   UINT32                                    MeasurementRecordLength;
-  UINT8                                     MeasurementRecord[MAX_SPDM_MEASUREMENT_RECORD_SIZE];
+  UINT8                                     MeasurementRecord[LIBSPDM_MAX_MEASUREMENT_RECORD_SIZE];
   UINT8                                     Index;
   VOID                                      *SpdmContext;
+  UINT8                                     RequesterNonceIn[SPDM_NONCE_SIZE];
   UINT8                                     RequesterNonce[SPDM_NONCE_SIZE];
   UINT8                                     ResponderNonce[SPDM_NONCE_SIZE];
 
@@ -400,6 +401,7 @@ SpdmSendReceiveGetMeasurement (
              SPDM_GET_MEASUREMENTS_REQUEST_ATTRIBUTES_GENERATE_SIGNATURE,
              SPDM_GET_MEASUREMENTS_REQUEST_MEASUREMENT_OPERATION_TOTAL_NUMBER_OF_MEASUREMENTS,
              0,
+             NULL,
              &NumberOfBlocks,
              NULL,
              NULL
@@ -416,6 +418,7 @@ SpdmSendReceiveGetMeasurement (
     // TBD get signature in last message only.
     //
     MeasurementRecordLength = sizeof(MeasurementRecord);
+    ZeroMem (RequesterNonceIn, sizeof(RequesterNonceIn));
     ZeroMem (RequesterNonce, sizeof(RequesterNonce));
     ZeroMem (ResponderNonce, sizeof(ResponderNonce));
     Status = SpdmGetMeasurementEx (
@@ -424,9 +427,11 @@ SpdmSendReceiveGetMeasurement (
               SPDM_GET_MEASUREMENTS_REQUEST_ATTRIBUTES_GENERATE_SIGNATURE,
               Index,
               0,
+              NULL,
               &NumberOfBlock,
               &MeasurementRecordLength,
               MeasurementRecord,
+              RequesterNonceIn,
               RequesterNonce,
               ResponderNonce
               );

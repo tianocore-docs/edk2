@@ -19,7 +19,7 @@
 #include <Library/TpmMeasurementLib.h>
 #include <Guid/DeviceAuthentication.h>
 #include <Guid/ImageAuthentication.h>
-#include <library/LibspdmStub.h>
+#include <hal/library/LibspdmStub.h>
 #include <industry_standard/spdm.h>
 #define SHA256_HASH_SIZE  32
 

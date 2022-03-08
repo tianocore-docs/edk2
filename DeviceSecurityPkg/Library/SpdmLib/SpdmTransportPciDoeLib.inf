@@ -22,8 +22,8 @@
 #
 
 [Sources]
-  libspdm/library/spdm_transport_pcidoe_lib/common.c
-  libspdm/library/spdm_transport_pcidoe_lib/pcidoe.c
+  libspdm/library/spdm_transport_pcidoe_lib/libspdm_doe_common.c
+  libspdm/library/spdm_transport_pcidoe_lib/libspdm_doe_pcidoe.c
 
 [Packages]
   MdePkg/MdePkg.dec

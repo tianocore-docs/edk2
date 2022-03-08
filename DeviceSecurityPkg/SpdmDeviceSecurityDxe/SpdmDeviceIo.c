@@ -14,7 +14,7 @@ EFIAPI
 SpdmDeviceSendMessage (
   IN     VOID                                   *SpdmContext,
   IN     UINTN                                  MessageSize,
-  IN     VOID                                   *Message,
+  IN     CONST VOID                             *Message,
   IN     UINT64                                 Timeout
   )
 {

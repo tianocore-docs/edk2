@@ -10,7 +10,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #ifndef __SPDM_DEVICE_SECURTY_DXE_H__
 
 #include <Uefi.h>
-#include <library/LibspdmStub.h>
+#include <hal/library/LibspdmStub.h>
 #include <industry_standard/spdm.h>
 #include <industry_standard/spdm_secured_message.h>
 #include <IndustryStandard/Pci.h>
@@ -190,7 +190,7 @@ EFIAPI
 SpdmDeviceSendMessage (
   IN     VOID                                   *SpdmContext,
   IN     UINTN                                  MessageSize,
-  IN     VOID                                   *Message,
+  IN CONST VOID                                   *Message,
   IN     UINT64                                 Timeout
   );
 

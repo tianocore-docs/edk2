@@ -52,14 +52,14 @@ typedef struct {
 //
 // mMailboxDataIn
 //
-UINT8                   mRequestDataBuffer[MAX_SPDM_MESSAGE_BUFFER_SIZE];
+UINT8                   mRequestDataBuffer[LIBSPDM_MAX_MESSAGE_BUFFER_SIZE];
 UINTN                   mRequestDataSize = 0;
 UINTN                   mRequestDataWriteIndex = 0;
 
 //
 // mMailboxDataOut
 //
-UINT8                   mResponseDataBuffer[MAX_SPDM_MESSAGE_BUFFER_SIZE];
+UINT8                   mResponseDataBuffer[LIBSPDM_MAX_MESSAGE_BUFFER_SIZE];
 UINTN                   mResponseDataSize = 0;
 UINTN                   mResponseDataReadIndex = 0;
 //
@@ -920,6 +920,8 @@ MainEntryPoint (
   SpdmSetData (SpdmContext, SpdmDataAEADCipherSuite, &Parameter, &Data16, sizeof(Data16));
   Data16 = SPDM_ALGORITHMS_KEY_SCHEDULE_HMAC_HASH;
   SpdmSetData (SpdmContext, SpdmDataKeySchedule, &Parameter, &Data16, sizeof(Data16));
+  Data8 = SPDM_ALGORITHMS_OPAQUE_DATA_FORMAT_1;
+  SpdmSetData (SpdmContext, SpdmDataOtherParamsSsupport, &Parameter, &Data8, sizeof(Data8));
 
   InitializeSpdmTest (&mSpdmTestDeviceContext);
 

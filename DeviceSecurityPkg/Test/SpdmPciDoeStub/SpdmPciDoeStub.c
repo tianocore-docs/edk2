@@ -225,7 +225,7 @@ EFIAPI
 SpdmIoSendRequest (
   IN     SPDM_IO_PROTOCOL       *This,
   IN     UINTN                  RequestSize,
-  IN     VOID                   *Request,
+  IN     CONST VOID             *Request,
   IN     UINT64                 Timeout
   )
 {
@@ -252,7 +252,7 @@ SpdmIoSendRequest (
   SpdmPrivateData = SPDM_PRIVATE_DATA_FROM_SPDM_IO(This);
 
   DataObjectSize = (UINT32)RequestSize;
-  DataObjectBuffer = Request;
+  DataObjectBuffer = (UINT8 *)Request;
 
   DEBUG((DEBUG_ERROR, "[SpdmIoSendData] Start ... \n"));
 

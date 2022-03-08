@@ -405,11 +405,12 @@ DoAuthenticationViaSpdm (
   UINT32                CapabilityFlags;
   UINTN                 DataSize;
   UINT8                 SlotMask;
-  UINT8                 TotalDigestBuffer[MAX_HASH_SIZE * MAX_SPDM_SLOT_COUNT];
-  UINT8                 MeasurementHash[MAX_HASH_SIZE];
+  UINT8                 TotalDigestBuffer[LIBSPDM_MAX_HASH_SIZE * SPDM_MAX_SLOT_COUNT];
+  UINT8                 MeasurementHash[LIBSPDM_MAX_HASH_SIZE];
   UINTN                 CertChainSize;
-  UINT8                 CertChain[MAX_SPDM_CERT_CHAIN_SIZE];
+  UINT8                 CertChain[LIBSPDM_MAX_CERT_CHAIN_SIZE];
   SPDM_DATA_PARAMETER   Parameter;
+  UINT8                 RequesterNonceIn[SPDM_NONCE_SIZE];
   UINT8                 RequesterNonce[SPDM_NONCE_SIZE];
   UINT8                 ResponderNonce[SPDM_NONCE_SIZE];
   VOID                  *TrustAnchor;
@@ -445,7 +446,8 @@ DoAuthenticationViaSpdm (
   ZeroMem (MeasurementHash, sizeof(MeasurementHash));
   ZeroMem (RequesterNonce, sizeof(RequesterNonce));
   ZeroMem (ResponderNonce, sizeof(ResponderNonce));
-  Status = SpdmChallengeEx (SpdmContext, 0, SPDM_CHALLENGE_REQUEST_TCB_COMPONENT_MEASUREMENT_HASH, MeasurementHash, RequesterNonce, ResponderNonce);
+  ZeroMem (RequesterNonceIn, sizeof(RequesterNonceIn));
+  Status = SpdmChallengeEx (SpdmContext, 0, SPDM_CHALLENGE_REQUEST_TCB_COMPONENT_MEASUREMENT_HASH, MeasurementHash, NULL, RequesterNonceIn, RequesterNonce, ResponderNonce);
   DeviceSecurityState->AuthenticationState = SpdmGetLastError (SpdmContext);
   if (EFI_ERROR(Status)) {
     return Status;

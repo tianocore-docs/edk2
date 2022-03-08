@@ -44,7 +44,7 @@ RETURN_STATUS
 (EFIAPI *SPDM_IO_SECURE_SEND_MESSAGE_FUNC) (
   IN     SPDM_IO_PROTOCOL                       *This,
   IN     UINTN                                  MessageSize,
-  IN     VOID                                   *Message,
+  IN CONST VOID                                   *Message,
   IN     UINT64                                 Timeout
   );
 

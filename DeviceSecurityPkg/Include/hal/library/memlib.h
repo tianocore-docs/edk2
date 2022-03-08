@@ -17,10 +17,10 @@
 
 #include <Library/BaseMemoryLib.h>
 
-#define copy_mem    CopyMem
-#define zero_mem    ZeroMem
-#define const_compare_mem   CompareMem
-#define set_mem     SetMem
-#define random_bytes        RandomBytes
+#define libspdm_copy_mem(_a_, _b_, _c_, _d_)    CopyMem(_a_, _c_, _d_)
+#define libspdm_zero_mem    ZeroMem
+#define libspdm_const_compare_mem   CompareMem
+#define libspdm_set_mem     SetMem
+#define libspdm_random_bytes        RandomBytes
 
 #endif

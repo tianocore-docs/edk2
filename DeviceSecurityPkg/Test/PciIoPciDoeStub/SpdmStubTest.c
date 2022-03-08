@@ -10,16 +10,15 @@
 
 extern SPDM_TEST_DEVICE_CONTEXT  mSpdmTestDeviceContext;
 
-EFI_STATUS
-EFIAPI
+UINTN
 SpdmGetResponseVendorDefinedRequest (
   IN     VOID                 *SpdmContext,
-  IN     UINT32               *SessionId,
+  IN     CONST UINT32         *SessionId,
   IN     BOOLEAN              IsAppMessage,
   IN     UINTN                RequestSize,
-  IN     VOID                 *Request,
+  IN     CONST VOID           *Request,
   IN OUT UINTN                *ResponseSize,
-     OUT VOID                 *Response
+  OUT    VOID                  *Response
   )
 {
   EFI_STATUS               Status;
@@ -33,7 +32,7 @@ SpdmGetResponseVendorDefinedRequest (
   }
 
   Status = SpdmTestContext->ProcessPacketCallback (
-                                Request,
+                                (VOID*)Request,
                                 RequestSize,
                                 Response,
                                 ResponseSize

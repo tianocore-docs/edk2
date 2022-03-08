@@ -22,8 +22,8 @@
 #
 
 [Sources]
-  libspdm/library/spdm_transport_mctp_lib/common.c
-  libspdm/library/spdm_transport_mctp_lib/mctp.c
+  libspdm/library/spdm_transport_mctp_lib/libspdm_mctp_common.c
+  libspdm/library/spdm_transport_mctp_lib/libspdm_mctp_mctp.c
 
 [Packages]
   MdePkg/MdePkg.dec

@@ -172,7 +172,7 @@ SpdmProtocolChallenge (
   IN     SPDM_PROTOCOL        *This,
   IN     UINT8                SlotNum,
   IN     UINT8                MeasurementHashType,
-     OUT VOID                 *MeasurementHash
+  OUT    VOID                 *MeasurementHash
   )
 {
   SPDM_DRIVER_DEVICE_CONTEXT *SpdmDriverDeviceContext;
@@ -184,7 +184,7 @@ SpdmProtocolChallenge (
   }
   SpdmContext = SpdmDriverDeviceContext->SpdmContext;
   
-  return SpdmChallenge (SpdmContext, SlotNum, MeasurementHashType, MeasurementHash);
+  return SpdmChallenge (SpdmContext, SlotNum, MeasurementHashType, MeasurementHash, NULL);
 }
 
 /*
@@ -217,6 +217,7 @@ SpdmProtocolGetMeasurement (
            RequestAttribute,
            MeasurementOperation,
            SlotNum,
+           NULL,
            NumberOfBlocks,
            MeasurementRecordLength,
            MeasurementRecord
@@ -271,6 +272,7 @@ SpdmProtocolStartSession (
 {
   SPDM_DRIVER_DEVICE_CONTEXT *SpdmDriverDeviceContext;
   VOID                       *SpdmContext;
+  UINT8                      SessionPolicy;
 
   SpdmDriverDeviceContext = GetSpdmDriverContextViaSpdmProtocol (This);
   if (SpdmDriverDeviceContext == NULL) {
@@ -278,11 +280,13 @@ SpdmProtocolStartSession (
   }
   SpdmContext = SpdmDriverDeviceContext->SpdmContext;
 
+  SessionPolicy = SPDM_KEY_EXCHANGE_REQUEST_SESSION_POLICY_TERMINATION_POLICY_RUNTIME_UPDATE;
   return SpdmStartSession (
            SpdmContext,
            UsePsk,
            MeasurementHashType,
            SlotNum,
+           SessionPolicy,
            SessionId,
            HeartbeatPeriod,
            MeasurementHash
