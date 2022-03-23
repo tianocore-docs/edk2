@@ -35,7 +35,7 @@ EFIAPI
 SpdmDeviceReceiveMessage (
   IN     VOID                                   *SpdmContext,
   IN OUT UINTN                                  *MessageSize,
-  IN OUT VOID                                   *Message,
+  IN OUT VOID                                   **Message,
   IN     UINT64                                 Timeout
   )
 {

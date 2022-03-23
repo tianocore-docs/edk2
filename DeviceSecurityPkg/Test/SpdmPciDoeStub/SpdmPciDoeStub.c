@@ -312,7 +312,7 @@ EFIAPI
 SpdmIoReceiveResponse (
   IN     SPDM_IO_PROTOCOL       *This,
   IN OUT UINTN                  *ResponseSize,
-  IN OUT VOID                   *Response,
+  IN OUT VOID                   **Response,
   IN     UINT64                 Timeout
   )
 {
@@ -330,7 +330,7 @@ SpdmIoReceiveResponse (
   DEBUG((DEBUG_ERROR, "[SpdmIoReceiveResponse] Start ... \n"));
   DEBUG((DEBUG_ERROR, "[SpdmIoReceiveResponse] ResponseSize = 0x%x \n", *ResponseSize));
 
-  if (Response == NULL) {
+  if (*Response == NULL) {
     return EFI_INVALID_PARAMETER;
   }
 
@@ -345,7 +345,7 @@ SpdmIoReceiveResponse (
   }
   Delay = DivU64x32(Timeout, 30) + 1;
 
-  DataObjectHeader = Response;
+  DataObjectHeader = (PCI_DOE_DATA_OBJECT_HEADER *)*Response;
   if (*ResponseSize < sizeof(PCI_DOE_DATA_OBJECT_HEADER)) {
     *ResponseSize = sizeof(PCI_DOE_DATA_OBJECT_HEADER);
     return EFI_BUFFER_TOO_SMALL;
@@ -363,7 +363,7 @@ SpdmIoReceiveResponse (
       //
       // Get DataObjectHeader1.
       //
-      PcieDoeReadMailboxRead32(SpdmPrivateData, (UINT32*)Response);
+      PcieDoeReadMailboxRead32(SpdmPrivateData, (UINT32*)*Response);
       //
       // Write to the DOE Read Data Mailbox to indicate a successful read.
       //
@@ -372,7 +372,7 @@ SpdmIoReceiveResponse (
       //
       // Get DataObjectHeader2.
       //
-      PcieDoeReadMailboxRead32(SpdmPrivateData, (UINT32*)Response + 1);
+      PcieDoeReadMailboxRead32(SpdmPrivateData, (UINT32*)*Response + 1);
       //
       // Write to the DOE Read Data Mailbox to indicate a successful read.
       //
@@ -387,7 +387,7 @@ SpdmIoReceiveResponse (
       }
 
       ResponseDataObjectSize = DataObjectSize - sizeof(PCI_DOE_DATA_OBJECT_HEADER);
-      ResponseDataObjectBuffer = (UINT8 *)Response + sizeof(PCI_DOE_DATA_OBJECT_HEADER);
+      ResponseDataObjectBuffer = (UINT8 *)*Response + sizeof(PCI_DOE_DATA_OBJECT_HEADER);
       Index = 0;
       do {
         //

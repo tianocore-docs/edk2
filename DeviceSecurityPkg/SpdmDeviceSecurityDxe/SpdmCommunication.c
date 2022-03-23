@@ -135,7 +135,7 @@ SpdmProtocolGetDigest (
     return EFI_UNSUPPORTED;
   }
   SpdmContext = SpdmDriverDeviceContext->SpdmContext;
-  
+
   return SpdmGetDigest (SpdmContext, SlotMask, TotalDigestBuffer);
 }
 
@@ -159,7 +159,7 @@ SpdmProtocolGetCertificate (
     return EFI_UNSUPPORTED;
   }
   SpdmContext = SpdmDriverDeviceContext->SpdmContext;
-  
+
   return SpdmGetCertificate (SpdmContext, SlotNum, CertChainSize, CertChain);
 }
 
@@ -183,7 +183,7 @@ SpdmProtocolChallenge (
     return EFI_UNSUPPORTED;
   }
   SpdmContext = SpdmDriverDeviceContext->SpdmContext;
-  
+
   return SpdmChallenge (SpdmContext, SlotNum, MeasurementHashType, MeasurementHash, NULL);
 }
 
@@ -210,7 +210,7 @@ SpdmProtocolGetMeasurement (
     return EFI_UNSUPPORTED;
   }
   SpdmContext = SpdmDriverDeviceContext->SpdmContext;
-  
+
   return SpdmGetMeasurement (
            SpdmContext,
            NULL,
@@ -316,7 +316,7 @@ SpdmProtocolStopSession (
     return EFI_UNSUPPORTED;
   }
   SpdmContext = SpdmDriverDeviceContext->SpdmContext;
-  
+
   return SpdmStopSession (SpdmContext, SessionId, EndSessionAttributes);
 }
 
@@ -349,7 +349,7 @@ SpdmIoProtocolCallback (
 
   while (TRUE) {
     BufferSize = sizeof (EFI_HANDLE);
-    Handle = NULL;  
+    Handle = NULL;
     Status = gBS->LocateHandle (
                     ByRegisterNotify,
                     NULL,
@@ -360,7 +360,7 @@ SpdmIoProtocolCallback (
     if (EFI_ERROR(Status)) {
       return ;
     }
-    
+
     //
     // TBD: Need create SPDM context here.
     //

@@ -15,7 +15,7 @@
 [Includes]
   Include
   Library/SpdmLib/libspdm/include
-  
+
 [Includes.Common.Private]
   Include/PrivateTest
 
@@ -64,19 +64,19 @@
   ## PCD to indicate the BaseAsymAlgo in negotiate algorithm message.
   # Please refer to MdePkg\Include\IndustryStandard\Spdm.h, SPDM_ALGORITHMS_BASE_ASYM_ALGO_TPM_ALG_xxx.
   gEfiDeviceSecurityPkgTokenSpaceGuid.PcdSpdmBaseAsymAlgo|0x01|UINT32|0x00000001
-  
+
   ## PCD to indicate the BaseHashAlgo in negotiate algorithm message.
   # Please refer to MdePkg\Include\IndustryStandard\Spdm.h, SPDM_ALGORITHMS_BASE_HASH_ALGO_TPM_ALG_xxx.
   gEfiDeviceSecurityPkgTokenSpaceGuid.PcdSpdmBaseHashAlgo|0x01|UINT32|0x00000002
-  
+
   ## PCD to indicate the DHENamedGroup in negotiate algorithm message.
   # Please refer to MdePkg\Include\IndustryStandard\Spdm.h, SPDM_ALGORITHMS_DHE_NAMED_GROUP_xxx.
   gEfiDeviceSecurityPkgTokenSpaceGuid.PcdSpdmDHENamedGroup|0x01|UINT16|0x00000003
-  
+
   ## PCD to indicate the AEADCipherSuite in negotiate algorithm message.
   # Please refer to MdePkg\Include\IndustryStandard\Spdm.h, SPDM_ALGORITHMS_AEAD_CIPHER_SUITE_xxx.
   gEfiDeviceSecurityPkgTokenSpaceGuid.PcdSpdmAEADCipherSuite|0x01|UINT16|0x00000004
-  
+
   ## PCD to indicate the KeySchedule in negotiate algorithm message.
   # Please refer to MdePkg\Include\IndustryStandard\Spdm.h, SPDM_ALGORITHMS_KEY_SCHEDULE_xxx.
   gEfiDeviceSecurityPkgTokenSpaceGuid.PcdSpdmKeySchedule|0x01|UINT16|0x00000005

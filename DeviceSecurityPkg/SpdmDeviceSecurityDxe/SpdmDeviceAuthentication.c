@@ -13,7 +13,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
   This function returns the SPDM device type for TCG SPDM event.
 
   @param[in]  SpdmContext             The SPDM context for the device.
-  
+
   @return TCG SPDM device type
 **/
 UINT32
@@ -25,7 +25,7 @@ GetSpdmDeviceType (
   This function returns the SPDM device measurement context size for TCG SPDM event.
 
   @param[in]  SpdmContext             The SPDM context for the device.
-  
+
   @return TCG SPDM device measurement context size
 **/
 UINTN
@@ -39,7 +39,7 @@ GetDeviceMeasurementContextSize (
   @param[in]       SpdmContext             The SPDM context for the device.
   @param[in, OUT]  DeviceContext           The TCG SPDM device measurement context.
   @param[in]       DeviceContextSize       The size of TCG SPDM device measurement context.
-  
+
   @retval EFI_SUCCESS      The TCG SPDM device measurement context is returned.
   @retval EFI_UNSUPPORTED  The TCG SPDM device measurement context is unsupported.
 **/
@@ -390,7 +390,7 @@ ExtendAuthentication (
 
 /**
   This function executes SPDM authentication.
-  
+
   @param[in]  SpdmContext            The SPDM context for the device.
   @param[out] DeviceSecurityState    The Device Security state associated with the device.
 **/
@@ -442,7 +442,7 @@ DoAuthenticationViaSpdm (
     }
     ExtendCertificate (SpdmDriverContext, CertChainSize, CertChain, TrustAnchor, TrustAnchorSize);
   }
-  
+
   ZeroMem (MeasurementHash, sizeof(MeasurementHash));
   ZeroMem (RequesterNonce, sizeof(RequesterNonce));
   ZeroMem (ResponderNonce, sizeof(ResponderNonce));
@@ -458,7 +458,7 @@ DoAuthenticationViaSpdm (
 
 /**
   The device driver uses this service to verify an SPDM device.
-  
+
   @param[in]  SpdmContext            The SPDM context for the device.
   @param[out] DeviceSecurityState    The Device Security state associated with the device.
 **/

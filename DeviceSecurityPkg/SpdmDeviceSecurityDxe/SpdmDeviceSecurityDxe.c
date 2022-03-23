@@ -13,6 +13,11 @@ LIST_ENTRY mSpdmDeviceList = INITIALIZE_LIST_HEAD_VARIABLE(mSpdmDeviceList);
 
 EDKII_DEVICE_SECURITY_POLICY_PROTOCOL  *mDeviceSecurityPolicy;
 
+BOOLEAN mSendReceiveBufferAcquired = FALSE;
+UINT8 mSendReceiveBuffer[LIBSPDM_MAX_MESSAGE_BUFFER_SIZE];
+UINTN mSendReceiveBufferSize;
+VOID *mScratchBuffer;
+
 /**
   Compare two device paths to check if they are exactly same.
 
@@ -48,7 +53,7 @@ CompareDevicePath (
 
 /**
   Record an SPDM device into device list.
-  
+
   @param[in]  SpdmContext       The SPDM context for the device.
 **/
 VOID
@@ -72,7 +77,7 @@ RecordSpdmDeviceInList (
 
 /**
   Return the SPDM device via DeviceId.
-  
+
   @param[in]  DeviceId          The Identifier for the device.
 
   @return The SPDM device context.
@@ -87,7 +92,7 @@ GetSpdmDriverContextViaDeviceId (
   LIST_ENTRY            *SpdmDeviceList;
 
   SpdmDeviceList = &mSpdmDeviceList;
-  
+
   Link = GetFirstNode(SpdmDeviceList);
   while (!IsNull(SpdmDeviceList, Link)) {
     CurrentSpdmDevice = SPDM_DEVICE_INSTANCE_FROM_LINK(Link);
@@ -104,7 +109,7 @@ GetSpdmDriverContextViaDeviceId (
 
 /**
   Return the SPDM device via Spdm protocol.
-  
+
   @param[in]  Spdm          The SPDM protocol instance.
 
   @return The SPDM device context.
@@ -119,7 +124,7 @@ GetSpdmDriverContextViaSpdmProtocol (
   LIST_ENTRY            *SpdmDeviceList;
 
   SpdmDeviceList = &mSpdmDeviceList;
-  
+
   Link = GetFirstNode(SpdmDeviceList);
   while (!IsNull(SpdmDeviceList, Link)) {
     CurrentSpdmDevice = SPDM_DEVICE_INSTANCE_FROM_LINK(Link);
@@ -136,7 +141,7 @@ GetSpdmDriverContextViaSpdmProtocol (
 
 /**
   Return the SPDM device via Spdm Context.
-  
+
   @param[in]  Spdm          The SPDM context instance.
 
   @return The SPDM device context.
@@ -151,7 +156,7 @@ GetSpdmDriverContextViaSpdmContext (
   LIST_ENTRY            *SpdmDeviceList;
 
   SpdmDeviceList = &mSpdmDeviceList;
-  
+
   Link = GetFirstNode(SpdmDeviceList);
   while (!IsNull(SpdmDeviceList, Link)) {
     CurrentSpdmDevice = SPDM_DEVICE_INSTANCE_FROM_LINK(Link);
@@ -168,7 +173,7 @@ GetSpdmDriverContextViaSpdmContext (
 
 /**
   Record an SPDM device into device list.
-  
+
   @param[in]  SpdmContext       The SPDM context for the device.
 **/
 VOID
@@ -181,7 +186,7 @@ RecordSpdmDeviceInMeasurementList (
 
 /**
   Check if an SPDM device is recorded in device list.
-  
+
   @param[in]  SpdmContext       The SPDM context for the device.
 
   @retval TRUE  The SPDM device is in the list.
@@ -197,7 +202,7 @@ IsSpdmDeviceInMeasurementList (
 
 /**
   Record an SPDM device into device list.
-  
+
   @param[in]  SpdmContext       The SPDM context for the device.
 **/
 VOID
@@ -210,7 +215,7 @@ RecordSpdmDeviceInAuthenticationList (
 
 /**
   Check if an SPDM device is recorded in device list.
-  
+
   @param[in]  SpdmContext       The SPDM context for the device.
 
   @retval TRUE  The SPDM device is in the list.
@@ -224,9 +229,54 @@ IsSpdmDeviceInAuthenticationList (
   return SpdmDriverContext->IsDeviceAuthenticated;
 }
 
+RETURN_STATUS
+SpdmDeviceAcquireSenderBuffer (
+    VOID *Context, UINTN *MaxMsgSize, VOID **MsgBufPtr)
+{
+    ASSERT (!mSendReceiveBufferAcquired);
+    *MaxMsgSize = sizeof(mSendReceiveBuffer);
+    *MsgBufPtr = mSendReceiveBuffer;
+    ZeroMem (mSendReceiveBuffer, sizeof(mSendReceiveBuffer));
+    mSendReceiveBufferAcquired = TRUE;
+
+    return RETURN_SUCCESS;
+}
+
+VOID SpdmDeviceReleaseSenderBuffer (
+    VOID *Context, CONST VOID *MsgBufPtr)
+{
+    ASSERT (mSendReceiveBufferAcquired);
+    ASSERT (MsgBufPtr == mSendReceiveBuffer);
+    mSendReceiveBufferAcquired = FALSE;
+
+    return;
+}
+
+RETURN_STATUS SpdmDeviceAcquireReceiverBuffer (
+    VOID *Context, UINTN *MaxMsgSize, VOID **MsgBufPtr)
+{
+    ASSERT (!mSendReceiveBufferAcquired);
+    *MaxMsgSize = sizeof(mSendReceiveBuffer);
+    *MsgBufPtr = mSendReceiveBuffer;
+    ZeroMem (mSendReceiveBuffer, sizeof(mSendReceiveBuffer));
+    mSendReceiveBufferAcquired = TRUE;
+
+    return RETURN_SUCCESS;
+}
+
+VOID SpdmDeviceReleaseReceiverBuffer (
+    VOID *context, CONST VOID *MsgBufPtr)
+{
+    ASSERT (mSendReceiveBufferAcquired);
+    ASSERT (MsgBufPtr == mSendReceiveBuffer);
+    mSendReceiveBufferAcquired = FALSE;
+
+    return ;
+}
+
 /**
   This function creates the SPDM device contenxt.
-  
+
   @param[in]  DeviceId               The Identifier for the device.
 
   @return SPDM device context
@@ -248,15 +298,25 @@ CreateSpdmDriverContext (
   UINT16                            Data16;
   UINT32                            Data32;
   BOOLEAN                           HasRspPubCert;
+  UINTN                             ScratchBufferSize;
 
   SpdmDriverContext = AllocateZeroPool (sizeof(*SpdmDriverContext));
   ASSERT(SpdmDriverContext != NULL);
   SpdmContext = AllocateZeroPool (SpdmGetContextSize());
   ASSERT(SpdmContext != NULL);
   SpdmInitContext (SpdmContext);
+
+  ScratchBufferSize = SpdmGetSizeofRequiredScratchBuffer(SpdmContext);
+  mScratchBuffer = AllocateZeroPool(ScratchBufferSize);
+  ASSERT(mScratchBuffer != NULL);
+
   SpdmRegisterDeviceIoFunc (SpdmContext, SpdmDeviceSendMessage, SpdmDeviceReceiveMessage);
 //  SpdmRegisterTransportLayerFunc (SpdmContext, SpdmTransportMctpEncodeMessage, SpdmTransportMctpDecodeMessage);
-  SpdmRegisterTransportLayerFunc (SpdmContext, SpdmTransportPciDoeEncodeMessage, SpdmTransportPciDoeDecodeMessage);
+  SpdmRegisterTransportLayerFunc (SpdmContext, SpdmTransportPciDoeEncodeMessage,
+                                  SpdmTransportPciDoeDecodeMessage, SpdmTransportPciDoeGetHeaderSize);
+  SpdmRegisterDeviceBufferFunc (SpdmContext, SpdmDeviceAcquireSenderBuffer, SpdmDeviceReleaseSenderBuffer,
+                                SpdmDeviceAcquireReceiverBuffer, SpdmDeviceReleaseReceiverBuffer);
+  SpdmGetScratchBuffer (SpdmContext, mScratchBuffer, ScratchBufferSize);
 
   SpdmDriverContext->SpdmContext = SpdmContext;
 
@@ -313,7 +373,7 @@ CreateSpdmDriverContext (
       goto Error;
     }
   }
-  
+
   //
   // Record list before any transaction
   //
@@ -338,7 +398,7 @@ CreateSpdmDriverContext (
                              SignatureList->SignatureHeaderSize +
                              sizeof(EFI_GUID));
     DataSize = SignatureList->SignatureSize - sizeof(EFI_GUID);
-    
+
     ZeroMem (&Parameter, sizeof(Parameter));
     Parameter.location = SpdmDataLocationLocal;
     SpdmSetData (SpdmContext, SpdmDataPeerPublicCertChains, &Parameter, Data, DataSize);

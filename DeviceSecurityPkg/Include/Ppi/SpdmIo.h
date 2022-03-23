@@ -66,7 +66,7 @@ RETURN_STATUS
                                        than zero, then this function will return RETURN_TIMEOUT if the
                                        time required to execute the message is greater
                                        than Timeout.
-                                       
+
   @retval RETURN_SUCCESS               The SPDM message is received successfully.
   @retval RETURN_DEVICE_ERROR          A device error occurs when the SPDM message is received from the device.
   @retval RETURN_INVALID_PARAMETER     The Message is NULL, MessageSize is NULL or

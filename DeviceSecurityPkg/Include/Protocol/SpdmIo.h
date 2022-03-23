@@ -32,7 +32,7 @@ typedef struct _SPDM_IO_PROTOCOL SPDM_IO_PROTOCOL;
                                        than zero, then this function will return RETURN_TIMEOUT if the
                                        time required to execute the message is greater
                                        than Timeout.
-                                       
+
   @retval RETURN_SUCCESS               The SPDM message is sent successfully.
   @retval RETURN_DEVICE_ERROR          A device error occurs when the SPDM message is sent to the device.
   @retval RETURN_INVALID_PARAMETER     The Message is NULL or the MessageSize is zero.
@@ -66,7 +66,7 @@ RETURN_STATUS
                                        than zero, then this function will return RETURN_TIMEOUT if the
                                        time required to execute the message is greater
                                        than Timeout.
-                                       
+
   @retval RETURN_SUCCESS               The SPDM message is received successfully.
   @retval RETURN_DEVICE_ERROR          A device error occurs when the SPDM message is received from the device.
   @retval RETURN_INVALID_PARAMETER     The Message is NULL, MessageSize is NULL or
@@ -79,7 +79,7 @@ RETURN_STATUS
 (EFIAPI *SPDM_IO_SECURE_RECEIVE_MESSAGE_FUNC) (
   IN     SPDM_IO_PROTOCOL                       *This,
   IN OUT UINTN                                  *MessageSize,
-     OUT VOID                                   *Message,
+     OUT VOID                                   **Message,
   IN     UINT64                                 Timeout
   );
 

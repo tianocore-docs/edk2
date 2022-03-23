@@ -285,6 +285,9 @@ typedef enum {
 #define        SpdmGetContextSize        libspdm_get_context_size
 #define        SpdmRegisterDeviceIoFunc        libspdm_register_device_io_func
 #define        SpdmRegisterTransportLayerFunc        libspdm_register_transport_layer_func
+#define        SpdmGetSizeofRequiredScratchBuffer    libspdm_get_sizeof_required_scratch_buffer
+#define        SpdmRegisterDeviceBufferFunc          libspdm_register_device_buffer_func
+#define        SpdmGetScratchBuffer                  libspdm_set_scratch_buffer
 #define        SpdmResetMessageA        spdm_reset_message_a
 #define        SpdmResetMessageB        spdm_reset_message_b
 #define        SpdmResetMessageC        spdm_reset_message_c
@@ -433,9 +436,8 @@ typedef enum {
 #define        SpdmGenerateEncapExtendedErrorResponse        libspdm_generate_encap_extended_error_response
 /*Interface of spdm_responder_lib.h*/
 #define        SpdmRegisterGetResponseFunc        libspdm_register_get_response_func
-#define        SpdmProcessRequest        libspdm_process_request
-#define        SpdmBuildResponse        libspdm_build_response
-#define        SpdmProcessMessage        libspdm_process_message
+#define        SpdmProcessRequest                 libspdm_process_request
+#define        SpdmBuildResponse                  libspdm_build_response
 #define        SpdmResponderDispatchMessage        libspdm_responder_dispatch_message
 #define        SpdmGenerateErrorResponse        libspdm_generate_error_response
 #define        SpdmGenerateExtendedErrorResponse        libspdm_generate_extended_error_response
@@ -479,6 +481,7 @@ typedef enum {
 /*Interface of spdm_transport_pcidoe_lib.h*/
 #define        SpdmTransportPciDoeEncodeMessage        libspdm_transport_pci_doe_encode_message
 #define        SpdmTransportPciDoeDecodeMessage        libspdm_transport_pci_doe_decode_message
+#define        SpdmTransportPciDoeGetHeaderSize        libspdm_transport_pci_doe_get_header_size
 #define        SpdmPciDoeGetSequenceNumber             libspdm_pci_doe_get_sequence_number
 #define        SpdmPciDoeGetMaxRandomNumberCount       libspdm_pci_doe_get_max_random_number_count
 

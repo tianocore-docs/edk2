@@ -27,7 +27,7 @@ libspdm_internal_dump_data(
   This function returns the SPDM device type for TCG SPDM event.
 
   @param[in]  SpdmContext             The SPDM context for the device.
-  
+
   @return TCG SPDM device type
 **/
 UINT32
@@ -49,7 +49,7 @@ GetSpdmDeviceType (
   This function returns the SPDM device measurement context size for TCG SPDM event.
 
   @param[in]  SpdmContext             The SPDM context for the device.
-  
+
   @return TCG SPDM device measurement context size
 **/
 UINTN
@@ -73,7 +73,7 @@ GetDeviceMeasurementContextSize (
   @param[in]       SpdmContext             The SPDM context for the device.
   @param[in, OUT]  DeviceContext           The TCG SPDM PCI device measurement context.
   @param[in]       DeviceContextSize       The size of TCG SPDM PCI device measurement context.
-  
+
   @retval EFI_SUCCESS      The TCG SPDM PCI device measurement context is returned.
 **/
 EFI_STATUS
@@ -90,7 +90,7 @@ CreatePciDeviceMeasurementContext (
   if (DeviceContextSize != sizeof(*PciContext)) {
     return EFI_BUFFER_TOO_SMALL;
   }
-  
+
   PciIo = SpdmDriverContext->DeviceIo;
   Status = PciIo->Pci.Read (PciIo, EfiPciIoWidthUint8, 0, sizeof(PciData), &PciData);
   ASSERT_EFI_ERROR(Status);
@@ -121,7 +121,7 @@ CreatePciDeviceMeasurementContext (
   @param[in]       SpdmContext             The SPDM context for the device.
   @param[in, OUT]  DeviceContext           The TCG SPDM device measurement context.
   @param[in]       DeviceContextSize       The size of TCG SPDM device measurement context.
-  
+
   @retval EFI_SUCCESS      The TCG SPDM device measurement context is returned.
   @retval EFI_UNSUPPORTED  The TCG SPDM device measurement context is unsupported.
 **/
@@ -143,7 +143,7 @@ CreateDeviceMeasurementContext (
 
 /**
   This function extend the PCI digest from the DvSec register.
-  
+
   @param[in]  SpdmContext             The SPDM context for the device.
   @param[in]  MeasurementRecordLength The length of the SPDM measurement record
   @param[in]  MeasurementRecord       The SPDM measurement record
@@ -194,7 +194,7 @@ ExtendMeasurement (
   SpdmMeasurementBlockDmtfHeader = (VOID *)(SpdmMeasurementBlockCommonHeader + 1);
   Digest = (SpdmMeasurementBlockDmtfHeader + 1);
   DigestSize = MeasurementRecordLength - sizeof(SPDM_MEASUREMENT_BLOCK_DMTF);
-  
+
   DEBUG((DEBUG_INFO, "SpdmMeasurementBlockCommonHeader\n"));
   DEBUG((DEBUG_INFO, "  Index                        - 0x%02x\n", SpdmMeasurementBlockCommonHeader->index));
   DEBUG((DEBUG_INFO, "  MeasurementSpecification     - 0x%02x\n", SpdmMeasurementBlockCommonHeader->measurement_specification));
@@ -370,7 +370,7 @@ ExtendMeasurement (
 
 /**
   This function executes SPDM measurement and extend to TPM.
-  
+
   @param[in]  SpdmContext            The SPDM context for the device.
   @param[out] DeviceSecurityState    The Device Security state associated with the device.
 **/
@@ -410,7 +410,7 @@ SpdmSendReceiveGetMeasurement (
     return Status;
   }
   DEBUG((DEBUG_INFO, "NumberOfBlocks - 0x%x\n", NumberOfBlocks));
-  
+
   for (Index = 1; Index <= NumberOfBlocks; Index++) {
     DEBUG((DEBUG_INFO, "Index - 0x%x\n", Index));
     //
@@ -461,7 +461,7 @@ SpdmSendReceiveGetMeasurement (
 
 /**
   This function executes SPDM measurement and extend to TPM.
-  
+
   @param[in]  SpdmContext            The SPDM context for the device.
   @param[out] DeviceSecurityState    The Device Security state associated with the device.
 **/
@@ -486,7 +486,7 @@ DoMeasurementViaSpdm (
 
 /**
   The device driver uses this service to measure an SPDM device.
-  
+
   @param[in]  SpdmContext            The SPDM context for the device.
   @param[out] DeviceSecurityState    The Device Security state associated with the device.
 **/

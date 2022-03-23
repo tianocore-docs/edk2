@@ -34,6 +34,11 @@ SPDM_TEST_DEVICE_CONTEXT  mSpdmTestDeviceContext = {
 
 VOID                    *mSpdmContext = NULL;
 
+BOOLEAN mSendReceiveBufferAcquired = FALSE;
+UINT8 mSendReceiveBuffer[LIBSPDM_MAX_MESSAGE_BUFFER_SIZE];
+UINTN mSendReceiveBufferSize;
+VOID *mScratchBuffer;
+
 #pragma pack(1)
 typedef struct {
   UINT32 VendorID                         : 16; // bit 0:15
@@ -60,6 +65,7 @@ UINTN                   mRequestDataWriteIndex = 0;
 // mMailboxDataOut
 //
 UINT8                   mResponseDataBuffer[LIBSPDM_MAX_MESSAGE_BUFFER_SIZE];
+UINT8                   *mResponseDataBufferPtr;
 UINTN                   mResponseDataSize = 0;
 UINTN                   mResponseDataReadIndex = 0;
 //
@@ -112,7 +118,6 @@ typedef struct {
 TEST_PCI_DEVICE_PATH        mTestPciDevicePath = {gPciRootBridge(0), gPci(0, 0), gEndEntire};
 
 UINT8 *mPciDeviceBuffer;
-
 
 EFI_STATUS
 EFIAPI
@@ -256,7 +261,7 @@ PciIoStubConfigRead (
         return EFI_DEVICE_ERROR;
       }
 
-      CopyMem((UINT8*)Buffer, mResponseDataBuffer + mResponseDataReadIndex, Size * Count);
+      CopyMem((UINT8*)Buffer, mResponseDataBufferPtr + mResponseDataReadIndex, Size * Count);
       mResponseDataReadIndex += Size * Count;
 
       if (mResponseDataReadIndex >= mResponseDataSize) {
@@ -296,6 +301,9 @@ PciIoStubConfigWrite (
   UINTN             Size;
   EFI_STATUS        Status;
   UINT32            *SessionId;
+  BOOLEAN           IsAppMessage;
+  UINT32            TmpSessionId;
+  UINT32            *SessionIdPtr;
 
   switch (Width) {
   case EfiPciIoWidthUint8:
@@ -339,9 +347,30 @@ PciIoStubConfigWrite (
       //
       mRequestDataSize = mRequestDataWriteIndex;
       mResponseDataSize = sizeof(mResponseDataBuffer);
-      DEBUG((DEBUG_ERROR, " [PciIoCfg] Get ResponseData via SpdmProcessMessage.\n"));
-      Status = SpdmProcessMessage(mSpdmContext, &SessionId, mRequestDataBuffer, mRequestDataSize, mResponseDataBuffer, &mResponseDataSize);
-      DEBUG((DEBUG_ERROR, " [PciIoCfg] SpdmProcessMessage - %r, ResponseDataSize = 0x%x\n", Status, mResponseDataSize));
+      DEBUG((DEBUG_ERROR, " [PciIoCfg] Get ResponseData via SpdmProcessRequest and SpdmBuildResponse.\n"));
+
+      SessionId = NULL;
+      Status = SpdmProcessRequest (mSpdmContext, &SessionId, &IsAppMessage,
+                                   mRequestDataSize, mRequestDataBuffer);
+      if (EFI_ERROR(Status)) {
+        DEBUG ((DEBUG_ERROR, "SpdmProcessRequest - %r\n", Status));
+        return Status;
+      }
+      if(SessionId != NULL) {
+        TmpSessionId = *SessionId;
+        SessionIdPtr = &TmpSessionId;
+      } else {
+        SessionIdPtr = NULL;
+      }
+
+      mResponseDataBufferPtr = mResponseDataBuffer;
+      Status = SpdmBuildResponse (mSpdmContext, SessionIdPtr, IsAppMessage, &mResponseDataSize, (VOID **)&mResponseDataBufferPtr);
+      if (EFI_ERROR(Status)) {
+        DEBUG ((DEBUG_ERROR, "SpdmBuildResponse - %r\n", Status));
+        return Status;
+      }
+
+      DEBUG((DEBUG_ERROR, " [PciIoCfg] SpdmBuildResponse - %r, ResponseDataSize = 0x%x\n", Status, mResponseDataSize));
 
       if (!EFI_ERROR(Status)) {
         //
@@ -793,6 +822,51 @@ UINT8 mPciConfigTemplate[]= {
 
 EFI_HANDLE  mPciIoHandle;
 
+RETURN_STATUS
+SpdmDeviceAcquireSenderBuffer (
+    VOID *Context, UINTN *MaxMsgSize, VOID **MsgBufPtr)
+{
+    ASSERT (!mSendReceiveBufferAcquired);
+    *MaxMsgSize = sizeof(mSendReceiveBuffer);
+    *MsgBufPtr = mSendReceiveBuffer;
+    ZeroMem (mSendReceiveBuffer, sizeof(mSendReceiveBuffer));
+    mSendReceiveBufferAcquired = TRUE;
+
+    return RETURN_SUCCESS;
+}
+
+VOID SpdmDeviceReleaseSenderBuffer (
+    VOID *Context, CONST VOID *MsgBufPtr)
+{
+    ASSERT (mSendReceiveBufferAcquired);
+    ASSERT (MsgBufPtr == mSendReceiveBuffer);
+    mSendReceiveBufferAcquired = FALSE;
+
+    return;
+}
+
+RETURN_STATUS SpdmDeviceAcquireReceiverBuffer (
+    VOID *Context, UINTN *MaxMsgSize, VOID **MsgBufPtr)
+{
+    ASSERT (!mSendReceiveBufferAcquired);
+    *MaxMsgSize = sizeof(mSendReceiveBuffer);
+    *MsgBufPtr = mSendReceiveBuffer;
+    ZeroMem (mSendReceiveBuffer, sizeof(mSendReceiveBuffer));
+    mSendReceiveBufferAcquired = TRUE;
+
+    return RETURN_SUCCESS;
+}
+
+VOID SpdmDeviceReleaseReceiverBuffer (
+    VOID *context, CONST VOID *MsgBufPtr)
+{
+    ASSERT (mSendReceiveBufferAcquired);
+    ASSERT (MsgBufPtr == mSendReceiveBuffer);
+    mSendReceiveBufferAcquired = FALSE;
+
+    return ;
+}
+
 EFI_STATUS
 EFIAPI
 MainEntryPoint (
@@ -813,6 +887,7 @@ MainEntryPoint (
   UINT32                            Data32;
   BOOLEAN                           HasRspPubCert;
   BOOLEAN                           HasRspPrivKey;
+  UINTN                             ScratchBufferSize;
 
   mPciDeviceBuffer = AllocateZeroPool (0x1000);
   ASSERT(mPciDeviceBuffer != NULL);
@@ -834,10 +909,19 @@ MainEntryPoint (
   mSpdmContext = SpdmContext;
   ASSERT(SpdmContext != NULL);
   SpdmInitContext (SpdmContext);
+
+  ScratchBufferSize = SpdmGetSizeofRequiredScratchBuffer(SpdmContext);
+  mScratchBuffer = AllocateZeroPool(ScratchBufferSize);
+  ASSERT(mScratchBuffer != NULL);
+
   mSpdmTestDeviceContext.SpdmContext = SpdmContext;
   SpdmRegisterDeviceIoFunc (SpdmContext, SpdmDeviceSendMessage, SpdmDeviceReceiveMessage);
 //  SpdmRegisterTransportLayerFunc (SpdmContext, SpdmTransportMctpEncodeMessage, SpdmTransportMctpDecodeMessage);
-  SpdmRegisterTransportLayerFunc (SpdmContext, SpdmTransportPciDoeEncodeMessage, SpdmTransportPciDoeDecodeMessage);
+  SpdmRegisterTransportLayerFunc (SpdmContext, SpdmTransportPciDoeEncodeMessage,
+                                  SpdmTransportPciDoeDecodeMessage, SpdmTransportPciDoeGetHeaderSize);
+  SpdmRegisterDeviceBufferFunc (SpdmContext, SpdmDeviceAcquireSenderBuffer, SpdmDeviceReleaseSenderBuffer,
+                                SpdmDeviceAcquireReceiverBuffer, SpdmDeviceReleaseReceiverBuffer);
+  SpdmGetScratchBuffer (SpdmContext, mScratchBuffer, ScratchBufferSize);
 
   Status = GetVariable2 (
              EDKII_DEVICE_SECURITY_DATABASE,

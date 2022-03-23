@@ -145,11 +145,11 @@ VOID LibspdmSm2KeyExchangeFreeStub (VOID *sm2_context) {
     return;
 }
 
-RETURN_STATUS
+INT32
 EFIAPI
 LibspdmX509CompareDateTimeStub (CONST VOID *date_time1, CONST VOID *date_time2) {
 
-  return X509CompareDateTime ((VOID *) date_time1, (VOID *) date_time2);
+  return (INT32) X509CompareDateTime ((VOID *) date_time1, (VOID *) date_time2);
 }
 
 VOID LibspdmEcdFreeStub (VOID *ecd_context) {

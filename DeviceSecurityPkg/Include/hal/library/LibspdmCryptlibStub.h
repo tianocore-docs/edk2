@@ -63,7 +63,7 @@ LibspdmSm2KeyExchangeInitStub (
 
 VOID LibspdmSm2KeyExchangeFreeStub (VOID *sm2_context);
 
-RETURN_STATUS
+INT32
 EFIAPI
 LibspdmX509CompareDateTimeStub (CONST VOID *date_time1, CONST VOID *date_time2);
 

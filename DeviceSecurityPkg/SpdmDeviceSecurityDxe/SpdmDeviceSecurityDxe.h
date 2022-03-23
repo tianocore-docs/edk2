@@ -88,7 +88,7 @@ CompareDevicePath (
 
 /**
   Record an SPDM device into device list.
-  
+
   @param[in]  SpdmContext       The SPDM context for the device.
 **/
 VOID
@@ -98,7 +98,7 @@ RecordSpdmDeviceInMeasurementList (
 
 /**
   Check if an SPDM device is recorded in device list.
-  
+
   @param[in]  SpdmContext       The SPDM context for the device.
 
   @retval TRUE  The SPDM device is in the list.
@@ -111,7 +111,7 @@ IsSpdmDeviceInMeasurementList (
 
 /**
   Record an SPDM device into device list.
-  
+
   @param[in]  SpdmContext       The SPDM context for the device.
 **/
 VOID
@@ -121,7 +121,7 @@ RecordSpdmDeviceInAuthenticationList (
 
 /**
   Check if an SPDM device is recorded in device list.
-  
+
   @param[in]  SpdmContext       The SPDM context for the device.
 
   @retval TRUE  The SPDM device is in the list.
@@ -134,7 +134,7 @@ IsSpdmDeviceInAuthenticationList (
 
 /**
   Return the SPDM device via Spdm protocol.
-  
+
   @param[in]  Spdm          The SPDM protocol instance.
 
   @return The SPDM device context.
@@ -146,7 +146,7 @@ GetSpdmDriverContextViaSpdmProtocol (
 
 /**
   Return the SPDM device via Spdm Context.
-  
+
   @param[in]  Spdm          The SPDM context instance.
 
   @return The SPDM device context.
@@ -158,7 +158,7 @@ GetSpdmDriverContextViaSpdmContext (
 
 /**
   The device driver uses this service to measure an SPDM device.
-  
+
   @param[in]  SpdmContext            The SPDM context for the device.
   @param[out] DeviceSecurityState    The Device Security state associated with the device.
 **/
@@ -170,7 +170,7 @@ DoDeviceMeasurement (
 
 /**
   The device driver uses this service to verify an SPDM device.
-  
+
   @param[in]  SpdmContext            The SPDM context for the device.
   @param[out] DeviceSecurityState    The Device Security state associated with the device.
 **/
