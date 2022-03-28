@@ -1,0 +1,41 @@
+/** @file
+  EDKII Device Security library for SPDM device.
+  It follows the SPDM Specification.
+
+Copyright (c) 2020, Intel Corporation. All rights reserved.<BR>
+SPDX-License-Identifier: BSD-2-Clause-Patent
+
+**/
+
+#include "SpdmSecurityLibInterna.h"
+
+/**
+  The device driver uses this service to measure an SPDM device.
+
+  @param[in]  SpdmDeviceInfo            The SPDM context for the device.
+**/
+EFI_STATUS
+EFIAPI
+SpdmDeviceAuthenticationAndMeasurement (
+  IN  EDKII_SPDM_DEVICE_INFO         *SpdmDeviceInfo,
+  IN  EDKII_DEVICE_SECURITY_POLICY   *SecuriryPolicy,
+  OUT EDKII_DEVICE_SECURITY_STATE    *SecuriryState
+  )
+{
+  EFI_STATUS                  Status;
+  SPDM_DEVICE_CONTEXT         *SpdmDeviceContext;
+
+  SpdmDeviceContext = CreateSpdmDeviceContext (SpdmDeviceInfo);
+  if (SpdmDeviceContext == NULL) {
+    return EFI_UNSUPPORTED;
+  }
+
+  Status = DoDeviceAuthentication (SpdmDeviceContext);
+
+  Status = DoDeviceMeasurement (SpdmDeviceContext);
+
+  DestroySpdmDeviceContext (SpdmDeviceContext);
+
+  return Status;
+}
+
