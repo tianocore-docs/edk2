@@ -22,6 +22,12 @@ typedef struct {
   EDKII_DEVICE_IDENTIFIER                         *DeviceId;
 
   //
+  // TRUE  means to use PCR 0 (code) / 1 (config).
+  // FALSE means to use PCR 2 (code) / 3 (config).
+  //
+  BOOLEAN                                         IsEmbeddedDevice;
+
+  //
   // API required by SpdmRegisterDeviceIoFunc in libspdm
   // It is used to send/receive transport message (SPDM + transport header).
   //

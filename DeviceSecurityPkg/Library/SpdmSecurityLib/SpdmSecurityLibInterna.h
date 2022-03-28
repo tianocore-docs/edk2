@@ -42,6 +42,7 @@ typedef struct {
   UINT32                                          Signature;
   // UEFI Context
   EDKII_DEVICE_IDENTIFIER                         DeviceId;
+  BOOLEAN                                         IsEmbeddedDevice;
   EFI_DEVICE_PATH_PROTOCOL                        *DevicePath;
   VOID                                            *DeviceIo;
   UINT64                                          DeviceUID;

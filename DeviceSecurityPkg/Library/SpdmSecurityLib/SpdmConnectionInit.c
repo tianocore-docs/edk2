@@ -33,6 +33,7 @@ CreateSpdmDeviceContext (
   ASSERT(SpdmDeviceContext != NULL);
   SpdmDeviceContext->Signature = SPDM_DEVICE_CONTEXT_SIGNATURE;
   CopyMem (&SpdmDeviceContext->DeviceId, SpdmDeviceInfo->DeviceId, sizeof(EDKII_DEVICE_IDENTIFIER));
+  SpdmDeviceContext->IsEmbeddedDevice = SpdmDeviceInfo->IsEmbeddedDevice;
 
   SpdmContextSize = SpdmGetContextSize();
   SpdmContext = AllocateZeroPool (SpdmContextSize);
