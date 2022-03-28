@@ -128,9 +128,17 @@ CreateSpdmDeviceContext (
 
   Data8 = SPDM_MEASUREMENT_BLOCK_HEADER_SPECIFICATION_DMTF;
   SpdmSetData (SpdmContext, SpdmDataMeasurementSpec, &Parameter, &Data8, sizeof(Data8));
-  Data32 = SPDM_ALGORITHMS_BASE_ASYM_ALGO_TPM_ALG_RSASSA_2048;
+  if (SpdmDeviceInfo->BaseAsymAlgo != 0) {
+    Data32 = SpdmDeviceInfo->BaseAsymAlgo;
+  } else {
+    Data32 = SPDM_ALGORITHMS_BASE_ASYM_ALGO_TPM_ALG_RSASSA_2048;
+  }
   SpdmSetData (SpdmContext, SpdmDataBaseAsymAlgo, &Parameter, &Data32, sizeof(Data32));
-  Data32 = SPDM_ALGORITHMS_BASE_HASH_ALGO_TPM_ALG_SHA_256;
+  if (SpdmDeviceInfo->BaseHashAlgo != 0) {
+    Data32 = SpdmDeviceInfo->BaseHashAlgo;
+  } else {
+    Data32 = SPDM_ALGORITHMS_BASE_HASH_ALGO_TPM_ALG_SHA_256;
+  }
   SpdmSetData (SpdmContext, SpdmDataBaseHashAlgo, &Parameter, &Data32, sizeof(Data32));
 
   Status = SpdmInitConnection (SpdmContext, FALSE);

@@ -28,6 +28,50 @@ typedef struct {
   BOOLEAN                                         IsEmbeddedDevice;
 
   //
+  // Below 9 APIs are used to send/receive SPDM request/response.
+  //
+  // The request flow is:
+  //   |<---                       SenderBufferSize                     --->|
+  //      |<---                TransportRequestBufferSize            --->|
+  //   |<--- HeaderSize  --->|<-SpdmRequestBufferSize ->|
+  //   +--+------------------+==========================+----------------+--+
+  //   |  | Transport Header |       SPDM Message       | Transport Tail |  |
+  //   +--+------------------+==========================+----------------+--+
+  //   ^  ^                  ^
+  //   |  |                  | SpdmRequestBuffer
+  //   |  | TransportRequestBuffer
+  //   | SenderBuffer
+  //
+  //   AcquireSenderBuffer (&SenderBuffer, &SenderBufferSize);
+  //   SpdmRequestBuffer = SenderBuffer + TransportGetHeaderSize();
+  //   /* build SPDM request in SpdmRequestBuffer */
+  //   TransportEncodeMessage (SpdmRequestBuffer, SpdmRequestBufferSize,
+  //       &TransportRequestBuffer, &TransportRequestBufferSize);
+  //   SendMessage (TransportRequestBuffer, TransportRequestBufferSize);
+  //   ReleaseSenderBuffer (SenderBuffer);
+  //
+  // The response flow is:
+  //   |<---                       ReceiverBufferSize                   --->|
+  //      |<---                TransportResponseBufferSize           --->|
+  //                         |<-SpdmResponseBufferSize->|
+  //   +--+------------------+==========================+----------------+--+
+  //   |  | Transport Header |       SPDM Message       | Transport Tail |  |
+  //   +--+------------------+==========================+----------------+--+
+  //   ^  ^                  ^
+  //   |  |                  | SpdmResponseBuffer
+  //   |  | TransportResponseBuffer
+  //   | ReceiverBuffer
+  //
+  //   AcquireReceiverBuffer (&ReceiverBuffer, &ReceiverBufferSize);
+  //   TransportResponseBuffer = ReceiverBuffer;
+  //   ReceiveMessage (&TransportResponseBuffer, &TransportResponseBufferSize);
+  //   TransportDecodeMessage (TransportResponseBuffer, TransportResponseBufferSize,
+  //       &SpdmResponseBuffer, &SpdmResponseBufferSize);
+  //   /* process SPDM response in SpdmResponseBuffer */
+  //   ReleaseReceiverBuffer (ReceiverBuffer);
+  //
+
+  //
   // API required by SpdmRegisterDeviceIoFunc in libspdm
   // It is used to send/receive transport message (SPDM + transport header).
   //
@@ -50,6 +94,14 @@ typedef struct {
   libspdm_device_release_sender_buffer_func       ReleaseSenderBuffer;
   libspdm_device_acquire_receiver_buffer_func     AcquireReceiverBuffer;
   libspdm_device_release_receiver_buffer_func     ReleaseReceiverBuffer;
+
+  //
+  // Preferred Algorithm List for SPDM negotiation.
+  // If it is none zero, it will be used directly.
+  // If it is zero, then the SpdmSecurityLib will set the default value.
+  //
+  UINT32                                          BaseHashAlgo;
+  UINT32                                          BaseAsymAlgo;
 
 } EDKII_SPDM_DEVICE_INFO;
 
