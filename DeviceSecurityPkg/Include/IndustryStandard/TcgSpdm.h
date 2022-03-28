@@ -45,7 +45,8 @@
 typedef struct {
   UINT8                          Signature[16];
   UINT16                         Version;
-  UINT16                         Reserved;
+  UINT8                          AuthState;
+  UINT8                          Reserved;
   UINT32                         Length; // Length in bytes for all following structures.
   UINT32                         DeviceType;
   UINT32                         SubHeaderType;
@@ -55,6 +56,13 @@ typedef struct {
 //UINT8                          DevicePath[DevicePathLength];
 } TCG_DEVICE_SECURITY_EVENT_DATA_HEADER2;
 
+#define TCG_DEVICE_SECURITY_EVENT_DATA_DEVICE_AUTH_STATE_SUCCESS          0
+#define TCG_DEVICE_SECURITY_EVENT_DATA_DEVICE_AUTH_STATE_FAIL_NO_AUTH     1
+#define TCG_DEVICE_SECURITY_EVENT_DATA_DEVICE_AUTH_STATE_FAIL_NO_SIG      2
+#define TCG_DEVICE_SECURITY_EVENT_DATA_DEVICE_AUTH_STATE_FAIL_INVALID     3
+#define TCG_DEVICE_SECURITY_EVENT_DATA_DEVICE_AUTH_STATE_FAIL_NO_BINDING  4
+#define TCG_DEVICE_SECURITY_EVENT_DATA_DEVICE_AUTH_STATE_NO_SPDM          0xFF
+
 #define TCG_DEVICE_SECURITY_EVENT_DATA_DEVICE_SUB_HEADER_TYPE_SPDM_MEASUREMENT_BLOCK          0
 #define TCG_DEVICE_SECURITY_EVENT_DATA_DEVICE_SUB_HEADER_TYPE_SPDM_MEASUREMENT_SUMMARY_HASH   1
 #define TCG_DEVICE_SECURITY_EVENT_DATA_DEVICE_SUB_HEADER_TYPE_SPDM_CERT_CHAIN                 2
@@ -62,6 +70,7 @@ typedef struct {
 typedef struct {
   UINT16                         SpdmVersion;
   UINT32                         SpdmMeasurementHashAlgo;
+  UINT8                          SpdmMeasurementBlockCount;
 //SPDM_MEASUREMENT_BLOCK         SpdmMeasurementBlock;
 } TCG_DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_MEASUREMENT_BLOCK;
 
@@ -75,6 +84,7 @@ typedef struct {
 typedef struct {
   UINT16                         SpdmVersion;
   UINT32                         SpdmHashAlgo;
+  UINT8                          SpdmSlotId;
 //SPDM_CERT_CHAIN                SpdmCertChain;
 } TCG_DEVICE_SECURITY_EVENT_DATA_SUB_HEADER_SPDM_CERT_CHAIN;
 
@@ -106,8 +116,8 @@ typedef struct {
    NV_EXTEND_INDEX_FOR_INSTANCE                0x01C40200   NV_INDEX_INSTANCE_EVENT_LOG_STRUCT   NV Extend Record for instance data (CertChain)
    NV_EXTEND_INDEX_FOR_DYNAMIC                 0x01C40201   NV_INDEX_DYNAMIC_EVENT_LOG_STRUCT    NV Extend Record for dynamic data  (Nonce)
 
-   EVENT_LOG_INTEGRITY_NV_INDEX.EXIT_PM_AUTH   0x01C40202   EVENT_LOG_INTEGRITY_NV_INDEX_STRUCT  Event Log Integrity for ExitPmAuth
-   EVENT_LOG_INTEGRITY_NV_INDEX.READY_TO_BOOT  0x01C40203   EVENT_LOG_INTEGRITY_NV_INDEX_STRUCT  Event Log Integrity for ReadyToBoot
+   EVENT_LOG_INTEGRITY_NV_INDEX_EXIT_PM_AUTH   0x01C40202   EVENT_LOG_INTEGRITY_NV_INDEX_STRUCT  Event Log Integrity for ExitPmAuth
+   EVENT_LOG_INTEGRITY_NV_INDEX_READY_TO_BOOT  0x01C40203   EVENT_LOG_INTEGRITY_NV_INDEX_STRUCT  Event Log Integrity for ReadyToBoot
   ======================================================================================================================
 */
 
