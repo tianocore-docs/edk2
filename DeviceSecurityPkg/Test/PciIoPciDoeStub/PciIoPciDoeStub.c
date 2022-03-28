@@ -921,7 +921,7 @@ MainEntryPoint (
                                   SpdmTransportPciDoeDecodeMessage, SpdmTransportPciDoeGetHeaderSize);
   SpdmRegisterDeviceBufferFunc (SpdmContext, SpdmDeviceAcquireSenderBuffer, SpdmDeviceReleaseSenderBuffer,
                                 SpdmDeviceAcquireReceiverBuffer, SpdmDeviceReleaseReceiverBuffer);
-  SpdmGetScratchBuffer (SpdmContext, mScratchBuffer, ScratchBufferSize);
+  SpdmSetScratchBuffer (SpdmContext, mScratchBuffer, ScratchBufferSize);
 
   Status = GetVariable2 (
              EDKII_DEVICE_SECURITY_DATABASE,

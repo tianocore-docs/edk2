@@ -316,7 +316,7 @@ CreateSpdmDriverContext (
                                   SpdmTransportPciDoeDecodeMessage, SpdmTransportPciDoeGetHeaderSize);
   SpdmRegisterDeviceBufferFunc (SpdmContext, SpdmDeviceAcquireSenderBuffer, SpdmDeviceReleaseSenderBuffer,
                                 SpdmDeviceAcquireReceiverBuffer, SpdmDeviceReleaseReceiverBuffer);
-  SpdmGetScratchBuffer (SpdmContext, mScratchBuffer, ScratchBufferSize);
+  SpdmSetScratchBuffer (SpdmContext, mScratchBuffer, ScratchBufferSize);
 
   SpdmDriverContext->SpdmContext = SpdmContext;
 

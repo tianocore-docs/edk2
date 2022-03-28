@@ -55,7 +55,7 @@ CreateSpdmDeviceContext (
     SpdmDeviceInfo->ReleaseSenderBuffer,
     SpdmDeviceInfo->AcquireReceiverBuffer,
     SpdmDeviceInfo->ReleaseReceiverBuffer);
-  SpdmGetScratchBuffer (SpdmContext, ScratchBuffer, ScratchBufferSize);
+  SpdmSetScratchBuffer (SpdmContext, ScratchBuffer, ScratchBufferSize);
 
   SpdmDeviceContext->SpdmContextSize = SpdmContextSize;
   SpdmDeviceContext->SpdmContext = SpdmContext;

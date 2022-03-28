@@ -287,7 +287,7 @@ typedef enum {
 #define        SpdmRegisterTransportLayerFunc        libspdm_register_transport_layer_func
 #define        SpdmGetSizeofRequiredScratchBuffer    libspdm_get_sizeof_required_scratch_buffer
 #define        SpdmRegisterDeviceBufferFunc          libspdm_register_device_buffer_func
-#define        SpdmGetScratchBuffer                  libspdm_set_scratch_buffer
+#define        SpdmSetScratchBuffer                  libspdm_set_scratch_buffer
 #define        SpdmResetMessageA        spdm_reset_message_a
 #define        SpdmResetMessageB        spdm_reset_message_b
 #define        SpdmResetMessageC        spdm_reset_message_c
