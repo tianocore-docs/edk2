@@ -67,6 +67,60 @@ INT32
 EFIAPI
 LibspdmX509CompareDateTimeStub (CONST VOID *date_time1, CONST VOID *date_time2);
 
+BOOLEAN
+EFIAPI
+LibspdmX509SetDateTimeStub (
+  CHAR8         *DateTimeStr,
+  IN OUT VOID   *DateTime,
+  IN OUT UINTN  *DateTimeSize
+  );
+
+BOOLEAN
+EFIAPI
+LibspdmX509GetSignatureAlgorithmStub (
+  IN CONST UINT8       *Cert,
+  IN       UINTN       CertSize,
+     OUT   UINT8       *Oid,  OPTIONAL
+  IN OUT   UINTN       *OidSize
+  );
+
+BOOLEAN
+EFIAPI
+LibspdmX509GetExtensionDataStub (
+  IN     CONST UINT8 *Cert,
+  IN     UINTN       CertSize,
+  IN     UINT8       *Oid,
+  IN     UINTN       OidSize,
+     OUT UINT8       *ExtensionData,
+  IN OUT UINTN       *ExtensionDataSize
+  );
+
+BOOLEAN
+EFIAPI
+LibspdmX509GetVersionStub (
+  IN      CONST UINT8   *Cert,
+  IN      UINTN         CertSize,
+  OUT     UINTN          *Version
+  );
+
+BOOLEAN
+EFIAPI
+LibspdmX509GetSerialNumberStub (
+  IN      CONST UINT8   *Cert,
+  IN      UINTN         CertSize,
+  OUT     UINT8         *SerialNumber,  OPTIONAL
+  IN OUT  UINTN         *SerialNumberSize
+  );
+
+BOOLEAN
+EFIAPI
+LibspdmX509GetExtendedKeyUsageStub (
+  IN     CONST UINT8   *Cert,
+  IN     UINTN         CertSize,
+     OUT UINT8         *Usage,
+  IN OUT UINTN         *UsageSize
+  );
+
 VOID LibspdmEcdFreeStub (VOID *ecd_context);
 
 VOID LibspdmSm2DsaFreeStub (VOID *sm2_context);
@@ -154,7 +208,7 @@ BOOLEAN
 EFIAPI
 LibspdmResetWatchdog (UINT32 session_id);
 
-RETURN_STATUS
+BOOLEAN
 EFIAPI
 LibspdmX509GetExtendedBasicConstraints            (
   CONST UINT8 *cert,

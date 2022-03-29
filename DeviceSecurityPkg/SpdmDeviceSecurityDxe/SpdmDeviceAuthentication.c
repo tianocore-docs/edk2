@@ -426,7 +426,12 @@ DoAuthenticationViaSpdm (
   if ((CapabilityFlags & SPDM_GET_CAPABILITIES_RESPONSE_FLAGS_CERT_CAP) != 0) {
     ZeroMem (TotalDigestBuffer, sizeof(TotalDigestBuffer));
     Status = SpdmGetDigest (SpdmContext, &SlotMask, TotalDigestBuffer);
-    DeviceSecurityState->AuthenticationState = SpdmGetLastError (SpdmContext);
+    if (EFI_ERROR (Status)) {
+      DeviceSecurityState->AuthenticationState = EDKII_DEVICE_SECURITY_STATE_ERROR;
+    } else {
+      DeviceSecurityState->AuthenticationState = EDKII_DEVICE_SECURITY_STATE_SUCCESS;
+    }
+    //DeviceSecurityState->AuthenticationState = SpdmGetLastError (SpdmContext);
     if (DeviceSecurityState->AuthenticationState != EDKII_DEVICE_SECURITY_STATE_SUCCESS) {
       return EFI_DEVICE_ERROR;
     }
@@ -436,7 +441,12 @@ DoAuthenticationViaSpdm (
     TrustAnchor = NULL;
     TrustAnchorSize = 0;
     Status = SpdmGetCertificateEx (SpdmContext, 0, &CertChainSize, CertChain, &TrustAnchor, &TrustAnchorSize);
-    DeviceSecurityState->AuthenticationState = SpdmGetLastError (SpdmContext);
+    if (EFI_ERROR (Status)) {
+      DeviceSecurityState->AuthenticationState = EDKII_DEVICE_SECURITY_STATE_ERROR;
+    } else {
+      DeviceSecurityState->AuthenticationState = EDKII_DEVICE_SECURITY_STATE_SUCCESS;
+    }
+    //DeviceSecurityState->AuthenticationState = SpdmGetLastError (SpdmContext);
     if (DeviceSecurityState->AuthenticationState != EDKII_DEVICE_SECURITY_STATE_SUCCESS) {
       return EFI_DEVICE_ERROR;
     }
@@ -448,7 +458,12 @@ DoAuthenticationViaSpdm (
   ZeroMem (ResponderNonce, sizeof(ResponderNonce));
   ZeroMem (RequesterNonceIn, sizeof(RequesterNonceIn));
   Status = SpdmChallengeEx (SpdmContext, 0, SPDM_CHALLENGE_REQUEST_TCB_COMPONENT_MEASUREMENT_HASH, MeasurementHash, NULL, RequesterNonceIn, RequesterNonce, ResponderNonce);
-  DeviceSecurityState->AuthenticationState = SpdmGetLastError (SpdmContext);
+  if (EFI_ERROR (Status)) {
+	DeviceSecurityState->AuthenticationState = EDKII_DEVICE_SECURITY_STATE_ERROR;
+  } else {
+	DeviceSecurityState->AuthenticationState = EDKII_DEVICE_SECURITY_STATE_SUCCESS;
+  }
+  //DeviceSecurityState->AuthenticationState = SpdmGetLastError (SpdmContext);
   if (EFI_ERROR(Status)) {
     return Status;
   }
