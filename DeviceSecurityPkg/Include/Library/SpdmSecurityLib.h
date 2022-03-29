@@ -33,7 +33,7 @@ typedef struct {
   // The request flow is:
   //   |<---                       SenderBufferSize                     --->|
   //      |<---                TransportRequestBufferSize            --->|
-  //   |<--- HeaderSize  --->|<-SpdmRequestBufferSize ->|
+  //   |<---MaxHeaderSize--->|<-SpdmRequestBufferSize ->|
   //   +--+------------------+==========================+----------------+--+
   //   |  | Transport Header |       SPDM Message       | Transport Tail |  |
   //   +--+------------------+==========================+----------------+--+
