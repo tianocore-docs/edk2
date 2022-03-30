@@ -475,10 +475,12 @@ DoMeasurementViaSpdm (
   VOID                  *SpdmContext;
 
   SpdmContext = SpdmDriverContext->SpdmContext;
+  DeviceSecurityState->MeasurementState = EDKII_DEVICE_SECURITY_STATE_SUCCESS;
 
   Status = SpdmSendReceiveGetMeasurement (SpdmDriverContext);
-  DeviceSecurityState->MeasurementState = SpdmGetLastError (SpdmContext);
+  //DeviceSecurityState->MeasurementState = SpdmGetLastError (SpdmContext);
   if (EFI_ERROR(Status)) {
+    DeviceSecurityState->MeasurementState = EDKII_DEVICE_SECURITY_STATE_ERROR;
     return Status;
   }
   return EFI_SUCCESS;
@@ -508,7 +510,8 @@ DoDeviceMeasurement (
 
   Status = DoMeasurementViaSpdm (SpdmDriverContext, DeviceSecurityState);
   if (Status != EFI_SUCCESS) {
-    DeviceSecurityState->MeasurementState = SpdmGetLastError (SpdmContext);
+    //DeviceSecurityState->MeasurementState = SpdmGetLastError (SpdmContext);
+    DeviceSecurityState->MeasurementState = EDKII_DEVICE_SECURITY_STATE_ERROR;
     return Status;
   }
 
